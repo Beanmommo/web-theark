@@ -5,16 +5,17 @@ import { storeToRefs } from 'pinia'
 
 const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
+const sportsStore = useSportsStore()
+const { activeSport } = storeToRefs(sportsStore)
 
 const router = useRouter()
 
 const selectedVenue = ref()
-const selectedSport = ref()
 const selectedDate = ref()
 
 function clickHandler() {
-  let url = '/booking'
-  if (selectedVenue.value || selectedDate.value) url += '?'
+  let url = `/booking?sport=${activeSport.value?.name}`
+  if (selectedVenue.value || selectedDate.value) url += '&'
   if (selectedVenue.value) url += `venue=${selectedVenue.value}`
   if (selectedVenue.value && selectedDate.value) url += '&'
   if (selectedDate.value) {
@@ -31,8 +32,6 @@ function format(date: Date) {
 
   return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
-
-
 </script>
 
 

@@ -11,8 +11,8 @@ const props = defineProps({
 
 const router = useRouter()
 
-function clickHandlerBookNow() {
-    router.push(`/booking?sport=${props.sport.name}`)
+function clickHandlerViewVenues() {
+    router.push(`/${props.sport.name}`)
 }
 </script>
 
@@ -27,9 +27,9 @@ function clickHandlerBookNow() {
                 <p>From SGD ${{ props.sport.startingRate }}/hour</p>
                 <sub>{{ props.sport.tag }}</sub>
                 <div class="buttons__container">
-                    <Button @click="clickHandlerBookNow" :color="props.sport.theme.colors.accent">Book Now</Button>
+                    <Button @click="clickHandlerViewVenues" :color="props.sport.theme.colors.accent">View
+                        Venues</Button>
                 </div>
-
             </div>
         </template>
     </div>

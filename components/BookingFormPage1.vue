@@ -29,17 +29,19 @@ const selectedDate = ref()
 const selectedVenue = ref()
 const selectedSport = ref()
 const selectedTimeslots = ref([] as BookingSlotDetails[])
+const initialLoad = ref(true)
 
 onMounted(() => {
-  initialiseSport()
-  initialiseVenue()
+  initialiseQuery()
 })
 
 watch(selectedSport, () => {
   selectedTimeslots.value = []
-  selectedVenue.value = undefined
-  selectedDate.value = undefined
-  router.replace({ query: { sport: selectedSport.value, } })
+  if (!initialLoad.value) {
+    selectedVenue.value = undefined
+    router.replace({ query: { sport: selectedSport.value, date: selectedDate.value } })
+  }
+  initialLoad.value = false
 })
 
 watch(selectedVenue, () => {
@@ -89,12 +91,9 @@ const totalPayable = computed(() => {
   return total
 })
 
-function initialiseSport() {
-  if (!route.query.sport) return;
-  selectedSport.value = route.query.sport
-}
-
-function initialiseVenue() {
+function initialiseQuery() {
+  initialLoad.value = true
+  if (route.query.sport) selectedSport.value = route.query.sport;
   if (!route.query.venue) return;
   selectedVenue.value = route.query.venue
 }

@@ -16,7 +16,7 @@ await Promise.all([
   <ClientOnly>
     <PromotionDialog />
   </ClientOnly>
-  <SectionQuickBooking />
+  <!-- <SectionQuickBooking /> -->
   <SectionSports />
   <SectionOurVenues />
 </template>

@@ -35,5 +35,15 @@ export const useSportsStore = defineStore("sport", () => {
       },
     },
   ]);
-  return { sports };
+
+  const activeSportName = ref<string>("");
+  const activeSport = computed(() => {
+    return sports.value.find((sport) => sport.name === activeSportName.value);
+  });
+
+  const setActiveSport = (sportName: string) => {
+    activeSportName.value = sportName;
+  };
+
+  return { sports, activeSport, setActiveSport };
 });
