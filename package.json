@@ -41,13 +41,14 @@
     "nuxt": "^3.12.4",
     "nuxt-lodash": "^2.5.0",
     "nuxt-security": "^2.1.5",
-    "vite-plugin-vuetify": "^1.0.2",
+    "vite-plugin-vuetify": "^2.1.0",
     "vuetify": "^3.5.0"
   },
   "overrides": {
     "vue": "latest"
   },
   "engines": {
-    "node": "18.19.4"
+    "node": "18.20.8",
+    "npm": "10.8.2"
   }
 }

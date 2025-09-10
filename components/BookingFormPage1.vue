@@ -21,77 +21,91 @@ const { timeslots } = storeToRefs(timeslotsStore);
 const pitchesStore = usePitchesStore()
 const { pitches } = storeToRefs(pitchesStore)
 const presalesStore = usePresalesStore()
+const sportsStore = useSportsStore()
+const { sports } = storeToRefs(sportsStore)
 
 const timeSelector = ref()
 const selectedDate = ref()
 const selectedVenue = ref()
+const selectedSport = ref()
 const selectedTimeslots = ref([] as BookingSlotDetails[])
 
-onMounted(() =>
-{
+onMounted(() => {
+  initialiseSport()
   initialiseVenue()
 })
 
-watch(selectedVenue, () =>
-{
+watch(selectedSport, () => {
   selectedTimeslots.value = []
-  router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
+  selectedVenue.value = undefined
+  selectedDate.value = undefined
+  router.replace({ query: { sport: selectedSport.value, } })
 })
 
-watch(selectedDate, () =>
-{
+watch(selectedVenue, () => {
   selectedTimeslots.value = []
-  router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
+  router.replace({ query: { sport: selectedSport.value, venue: selectedVenue.value, date: selectedDate.value } })
 })
 
-const showTimeSelector = computed(() =>
-{
+watch(selectedDate, () => {
+  selectedTimeslots.value = []
+  router.replace({ query: { sport: selectedSport.value, venue: selectedVenue.value, date: selectedDate.value } })
+})
+
+const sportPitches = computed(() => {
+  if (!selectedSport.value) return []
+  return pitches.value.filter(pitch => pitch.typeOfSports === selectedSport.value)
+})
+
+const availableLocations = computed(() => {
+  if (!selectedSport.value) return []
+  const availableLocationsKey = Array.from(new Set(sportPitches.value.map(pitch => pitch.locationKey))) //Gets unique locationKey
+  return locations.value.filter(location => availableLocationsKey.includes(location.key))
+})
+const showTimeSelector = computed(() => {
   return selectedDate.value && selectedVenue.value
 })
 
-const location = computed(() =>
-{
+const location = computed(() => {
   return locations.value.find(item => selectedVenue.value === item.name)
 })
 
-const locationPitches = computed(() =>
-{
+const locationPitches = computed(() => {
   if (!location.value) return []
-  return pitches.value.filter(pitch => pitch.locationKey === location.value?.key);
+  return pitches.value.filter(pitch => pitch.locationKey === location.value?.key && pitch.typeOfSports === selectedSport.value);
 })
 
-const locationTimeslots = computed(() =>
-{
+const locationTimeslots = computed(() => {
   if (!location.value) return []
   return timeslots.value.filter(timeslot => timeslot.locationKey === location.value?.key)
 })
 
-const totalPayable = computed(() =>
-{
+const totalPayable = computed(() => {
   let total = 0;
   selectedTimeslots.value &&
-    selectedTimeslots.value.forEach((slot: BookingSlotDetails) =>
-    {
+    selectedTimeslots.value.forEach((slot: BookingSlotDetails) => {
       total += slot.rate;
     });
   return total
 })
 
-function initialiseVenue()
-{
+function initialiseSport() {
+  if (!route.query.sport) return;
+  selectedSport.value = route.query.sport
+}
+
+function initialiseVenue() {
   if (!route.query.venue) return;
   selectedVenue.value = route.query.venue
 }
 
-function selectHandler(timeslots: BookingSlotDetails[]) 
-{
+function selectHandler(timeslots: BookingSlotDetails[]) {
   selectedTimeslots.value = timeslots
   const groupedTimeslots = groupAndSortTimeslots(timeslots)
   emit('update', groupedTimeslots)
 }
 
-function groupAndSortTimeslots(timeslots: BookingSlotDetails[])
-{
+function groupAndSortTimeslots(timeslots: BookingSlotDetails[]) {
   let sortedBookings = {} as GroupedTimeslots
   const groupedBookings = useGroupBy(timeslots, "date");
   const sortedKeys = useOrderBy(
@@ -99,20 +113,17 @@ function groupAndSortTimeslots(timeslots: BookingSlotDetails[])
     [(date: string) => dayjs(date, "DD-MM-YYYY")],
     ["asc"]
   );
-  sortedKeys.forEach((key: string) =>
-  {
+  sortedKeys.forEach((key: string) => {
     sortedBookings[key] = groupedBookings[key];
   });
   return sortedBookings
 }
 
-function clickHandler(date: string)
-{
+function clickHandler(date: string) {
   selectedDate.value = date
 }
 
-function clickHandlerBookNow()
-{
+function clickHandlerBookNow() {
   const bookingDetails: BookingDetails = {
     location: selectedVenue.value,
     slots: selectedTimeslots.value,
@@ -125,11 +136,13 @@ function clickHandlerBookNow()
 
 <template>
   <div class="bookingFormPage1">
-    <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="locations" />
+    <FieldInputSelect v-model="selectedSport" placeholder="Sport" :options="sports" />
+    <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="availableLocations" />
     <BookingFormDateSelector :selectedDate="selectedDate" @click="clickHandler" />
     <div ref='timeSelector' />
-    <BookingFormTimeSelector :date="selectedDate" :location="selectedVenue" :locationData="location" :locationPitches="locationPitches"
-      :locationTimeslots="locationTimeslots" @select="selectHandler" v-if="showTimeSelector" />
+    <BookingFormTimeSelector :date="selectedDate" :location="selectedVenue" :locationData="location"
+      :locationPitches="locationPitches" :locationTimeslots="locationTimeslots" @select="selectHandler"
+      v-if="showTimeSelector" />
     <BookingCallToAction :totalPayable="totalPayable" @click="clickHandlerBookNow" v-if="totalPayable > 0" />
   </div>
 </template>

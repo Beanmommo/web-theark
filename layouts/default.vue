@@ -6,7 +6,9 @@
       </ClientOnly>
     </template>
     <template #main>
+      <!-- <VApp> -->
       <slot />
+      <!-- </VApp> -->
     </template>
     <template #footer>
       <MainFooter />

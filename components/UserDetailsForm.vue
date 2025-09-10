@@ -13,31 +13,27 @@ const errorMessage = ref('')
 
 type FetchError = { data: { message: string } }
 
-onMounted(() =>
-{
+onMounted(() => {
   if (user.value?.displayName) displayName.value = user.value.displayName
   if (user.value?.phoneNumber) phoneNumber.value = user.value.phoneNumber.slice(3)
 })
 
-const fullDetails = computed(() =>
-{
+const fullDetails = computed(() => {
   return user.value?.displayName && user.value?.phoneNumber
 })
 
-async function clickHandler()
-{
+async function clickHandler() {
+  console.log('clickHandler')
   const re = /^(6|8|9)\d{7}$/;
   updateError.value = false
 
-  if (phoneNumber.value && re.test(phoneNumber.value) && displayName.value)
-  {
+  if (phoneNumber.value && re.test(phoneNumber.value) && displayName.value) {
     loading.value = true
     const finalNumber = '+65' + phoneNumber.value
     presalesStore.updateCustomerData({ contact: finalNumber, name: displayName.value })
     if (!user.value?.uid) return;
     const error = await auth.updateUser(user.value?.uid, { phoneNumber: finalNumber, displayName: displayName.value })
-    if (error)
-    {
+    if (error) {
       updateError.value = true
       if ((error as FetchError).data.message === 'auth/phone-number-already-exists')
         errorMessage.value = 'Phone number already exists'
@@ -70,7 +66,7 @@ async function clickHandler()
         <div class="number" v-else>Mobile : {{ user?.phoneNumber }}</div>
       </div>
       <v-alert v-model="updateError" type="error" variant='tonal'>{{ errorMessage }}</v-alert>
-      <Button @click="clickHandler" v-if="!fullDetails">Update</Button>
+      <VBtn @click="clickHandler" v-if="!fullDetails">Update</VBtn>
     </div>
   </div>
 </template>

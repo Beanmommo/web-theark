@@ -9,24 +9,22 @@ const { locations } = storeToRefs(locationsStore)
 const router = useRouter()
 
 const selectedVenue = ref()
+const selectedSport = ref()
 const selectedDate = ref()
 
-function clickHandler()
-{
+function clickHandler() {
   let url = '/booking'
   if (selectedVenue.value || selectedDate.value) url += '?'
   if (selectedVenue.value) url += `venue=${selectedVenue.value}`
   if (selectedVenue.value && selectedDate.value) url += '&'
-  if (selectedDate.value)
-  {
+  if (selectedDate.value) {
     const date = format(selectedDate.value)
     url += `date=${date}`
   }
   router.push(url)
 }
 
-function format(date: Date)
-{
+function format(date: Date) {
   const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
@@ -107,4 +105,4 @@ function format(date: Date)
 
   }
 }
-</style>~/stores/locations
+</style>

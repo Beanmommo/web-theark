@@ -1,11 +1,33 @@
 <script setup lang="ts">
-defineProps({
-  disabled: Boolean
+import { useTheme } from 'vuetify'
+const theme = useTheme()
+const accent = theme.current.value.colors.accent
+
+const props = defineProps({
+  disabled: Boolean,
+  color: String
 })
+
+const defaultColor = computed(() => props.color || accent)
+const hoverColor = computed(() => `${defaultColor.value}9a`)
+const activeColor = computed(() => `${defaultColor.value}cc`)
+
+const currentBg = ref(defaultColor.value)
+
+function setHover() {
+  currentBg.value = hoverColor.value
+}
+function setActive() {
+  currentBg.value = activeColor.value
+}
+function setDefault() {
+  currentBg.value = defaultColor.value
+}
 </script>
 
 <template>
-  <button class="button" :class="{ disabled: disabled }" :disabled="disabled">
+  <button class="button" :class="{ disabled: disabled }" :disabled="disabled" :style="{ background: currentBg }"
+    @mouseover="setHover" @mousedown="setActive" @mouseleave="setDefault" @mouseup="setHover">
     <slot />
   </button>
 </template>
@@ -15,7 +37,6 @@ defineProps({
   display: flex;
   justify-content: center;
   align-items: center;
-  background: $primary-green;
   color: $functional-white;
   padding: $unit $margin;
   border-radius: $margin * 2;
@@ -27,12 +48,10 @@ defineProps({
   text-indent: 0.089em;
 
   &:hover {
-    background: rgba(10, 138, 68, 0.7);
     transition: background 0.4s;
   }
 
   &:active {
-    background: rgba(10, 138, 68, 0.9);
     transition: background 0.2s;
   }
 }

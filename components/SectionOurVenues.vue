@@ -37,4 +37,4 @@ defineProps({
   display: grid;
   grid-gap: $p-margin;
 }
-</style>~/stores/locations
+</style>

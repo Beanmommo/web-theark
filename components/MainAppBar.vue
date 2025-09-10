@@ -8,13 +8,11 @@ const navItems = [
   { title: "Packages", to: "/packages" }
 ]
 
-function clickHandler(link: string)
-{
+function clickHandler(link: string) {
   router.push(link)
 }
 
-async function clickHandlerBookNow()
-{
+async function clickHandlerBookNow() {
   router.push("/booking")
 }
 </script>
@@ -33,7 +31,6 @@ async function clickHandlerBookNow()
       <Button @click="clickHandlerBookNow">Book Now</Button>
       <MainAppBarMobileMenu />
     </div>
-
   </div>
 </template>
 

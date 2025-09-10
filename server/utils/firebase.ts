@@ -1,19 +1,21 @@
-import { initializeApp, cert, getApp } from 'firebase-admin/app';
-import { getFirestore, FieldPath } from 'firebase-admin/firestore';
-import { getDatabase } from 'firebase-admin/database'
+import { initializeApp, cert, getApp } from "firebase-admin/app";
+import { getFirestore, FieldPath } from "firebase-admin/firestore";
+import { getDatabase } from "firebase-admin/database";
 
-
-const createFirebaseApp = () =>
-{
-  try
-  {
+const createFirebaseApp = () => {
+  try {
     return getApp();
-  } catch
-  {
+  } catch {
+    const runtimeConfig = useRuntimeConfig();
     return initializeApp({
-      credential: cert('./serviceAccountKey.json'),
-      databaseURL: 'https://the-ark-2f5fe-default-rtdb.asia-southeast1.firebasedatabase.app'
-    })
+      credential: cert({
+        clientEmail: runtimeConfig.firebaseadmin.clientEmail,
+        privateKey: runtimeConfig.firebaseadmin.privateKey,
+        projectId: runtimeConfig.firebaseadmin.projectId,
+      }),
+      databaseURL: runtimeConfig.firebaseadmin.databaseURL,
+    });
+
     // return initializeApp({
     //   credential: cert('./serviceAccountKeyDev.json'),
     //   databaseURL: 'https://thearksg-dev.firebaseio.com'
@@ -23,5 +25,5 @@ const createFirebaseApp = () =>
 
 export const app = createFirebaseApp();
 export const fs = getFirestore();
-export const fsFieldPath = FieldPath
+export const fsFieldPath = FieldPath;
 export const db = getDatabase();
