@@ -1,0 +1,75 @@
+// Ref: https://github.com/nuxt-community/vuetify-module#customvariables
+//
+// The variables you want to modify
+// $font-size-root: 20px;
+$body-font-family: "Montserrat";
+
+:root {
+  --v-theme-overlay-multiplier: 1;
+}
+
+.v-btn:hover>.v-btn__overlay {
+  --v-hover-opacity: 0.1;
+}
+
+h2 {
+  font-size: 50px;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+h5 {
+  font-family: Montserrat;
+  font-size: 22px;
+}
+
+h4 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.pitch-icon-text {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.pitch-address-text {
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.pitch-price-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media screen and (max-width: 700px) {
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+
+
+.qb-container {
+  margin: 20px auto;
+  max-width: 1144px;
+}
+
+.nm-container {
+  margin: 0px auto;
+  max-width: 1144px;
+}
+
+
+
+.login-background {
+  background-image: url("https://res.cloudinary.com/thearksg/image/upload/v1594089843/website/signup_page.png");
+  background-position: center;
+  background-size: cover;
+}
+
+.white--text {
+  color: #ffffff;
+}

@@ -1,0 +1,53 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "dev:host": "nuxt dev --host '192.168.0.115' --port 3000",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@nuxtjs/cloudinary": "^2.3.4",
+    "@pinia/nuxt": "^0.5.1",
+    "@popperjs/core": "^2.11.8",
+    "@stripe/stripe-js": "^3.4.1",
+    "@vuepic/vue-datepicker": "^6.1.0",
+    "firebase": "^9.21.0",
+    "firebase-admin": "^11.8.0",
+    "paynowqr": "^1.1.2",
+    "pinia": "^2.1.7",
+    "sass": "^1.62.0",
+    "stripe": "^15.9.0",
+    "v-calendar": "^3.1.2",
+    "vue-qr": "^4.0.9",
+    "vue-recaptcha": "^3.0.0-alpha.6",
+    "vue-recaptcha-v3": "^2.0.1",
+    "vue-use-stripe": "^0.1.1"
+  },
+  "devDependencies": {
+    "@cld-apis/types": "^0.1.6",
+    "@firebase/app-types": "^0.9.0",
+    "@mdi/font": "^7.4.47",
+    "@nuxt/fonts": "^0.7.2",
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@types/node": "^18.19.4",
+    "axios": "^1.7.7",
+    "cloudinary-build-url": "^0.2.4",
+    "dayjs-nuxt": "^2.1.9",
+    "nuxt": "^3.12.4",
+    "nuxt-lodash": "^2.5.0",
+    "nuxt-security": "^2.1.5",
+    "vite-plugin-vuetify": "^1.0.2",
+    "vuetify": "^3.5.0"
+  },
+  "overrides": {
+    "vue": "latest"
+  },
+  "engines": {
+    "node": "18.19.4"
+  }
+}
