@@ -8,15 +8,7 @@ export const useSportsStore = defineStore("sport", () => {
       icon: "mdi-soccer",
       startingRate: 60,
       tag: "Indoor & Outdoor",
-      theme: {
-        dark: false,
-        colors: {
-          primary: "#000",
-          secondary: "#b0bec5",
-          accent: "#0A8A44",
-          error: "#b71c1c",
-        },
-      },
+      theme: "futsalTheme",
     },
     {
       name: "Pickleball",
@@ -24,15 +16,7 @@ export const useSportsStore = defineStore("sport", () => {
       icon: "mdi-tennis",
       startingRate: 25,
       tag: "Indoor",
-      theme: {
-        dark: false,
-        colors: {
-          primary: "#000",
-          secondary: "#b0bec5",
-          accent: "#5A9AD2",
-          error: "#b71c1c",
-        },
-      },
+      theme: "pickleBallTheme",
     },
   ]);
 
@@ -45,5 +29,9 @@ export const useSportsStore = defineStore("sport", () => {
     activeSportName.value = sportName;
   };
 
-  return { sports, activeSport, setActiveSport };
+  const activeSportTheme = computed(() => {
+    return activeSport.value?.theme;
+  });
+
+  return { sports, activeSport, setActiveSport, activeSportTheme };
 });

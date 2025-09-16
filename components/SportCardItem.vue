@@ -27,7 +27,7 @@ function clickHandlerViewVenues() {
                 <p>From SGD ${{ props.sport.startingRate }}/hour</p>
                 <sub>{{ props.sport.tag }}</sub>
                 <div class="buttons__container">
-                    <Button @click="clickHandlerViewVenues" :color="props.sport.theme.colors.accent">View
+                    <Button @click="clickHandlerViewVenues">View
                         Venues</Button>
                 </div>
             </div>

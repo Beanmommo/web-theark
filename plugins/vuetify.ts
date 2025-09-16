@@ -42,7 +42,7 @@ export default defineNuxtPlugin((app) => {
       defaultSet: "mdi",
     },
     theme: {
-      defaultTheme: "futsalTheme",
+      defaultTheme: "thearkTheme",
       themes: {
         thearkTheme,
         futsalTheme,
