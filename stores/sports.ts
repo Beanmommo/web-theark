@@ -29,9 +29,9 @@ export const useSportsStore = defineStore("sport", () => {
     activeSportName.value = sportName;
   };
 
-  const activeSportTheme = computed(() => {
-    return activeSport.value?.theme;
-  });
+  const getSportByName = (sportName: string) => {
+    return sports.value.find((sport) => sport.name === sportName);
+  };
 
-  return { sports, activeSport, setActiveSport, activeSportTheme };
+  return { sports, activeSport, setActiveSport, getSportByName };
 });

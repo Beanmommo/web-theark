@@ -1,4 +1,7 @@
+import { useTheme } from "vuetify/lib/composables/theme.mjs";
+
 export const useSport = () => {
+  const vuetifyTheme = useTheme();
   const sportsStore = useSportsStore();
   const { activeSport } = storeToRefs(sportsStore);
 
@@ -7,13 +10,6 @@ export const useSport = () => {
 
   const pitchesStore = usePitchesStore();
   const { pitches } = storeToRefs(pitchesStore);
-
-  const sportPitches = computed(() => {
-    if (!activeSport.value) return [];
-    return pitches.value.filter(
-      (pitch) => pitch.typeOfSports === activeSport.value?.name
-    );
-  });
 
   const activeSportVenues = computed(() => {
     if (!activeSport.value) return [];

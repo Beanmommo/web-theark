@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
 
+const theme = useTheme()
+const accentColor = computed(() => theme.current.value.colors.accent)
 </script>
 
 <template>
@@ -20,7 +23,7 @@
   align-items: center;
   justify-items: center;
   grid-auto-flow: column;
-  background: $primary-green;
+  background: v-bind(accentColor);
   min-height: 300px;
 
   @include md {

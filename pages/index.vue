@@ -9,6 +9,8 @@ await Promise.all([
   useAsyncData(() => timeslotsStore.fetchTimeslots()),
   useAsyncData(() => configStore.fetchConfig())
 ])
+const sportsStore = useSportsStore()
+const { sports } = storeToRefs(sportsStore)
 
 </script>
 
@@ -17,6 +19,8 @@ await Promise.all([
     <PromotionDialog />
   </ClientOnly>
   <!-- <SectionQuickBooking /> -->
-  <SectionSports />
-  <SectionOurVenues />
+  <template v-for="sport in sports">
+    <SectionSports :sport="sport" />
+  </template>
+  <!-- <SectionOurVenues /> -->
 </template>
