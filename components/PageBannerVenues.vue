@@ -1,6 +1,6 @@
 <template>
   <section class="pageBannerPitches">
-    <h2>Our Pitches</h2>
+    <h2>Our Venues</h2>
   </section>
 </template>
 

@@ -3,12 +3,12 @@
         <PromotionDialog />
     </ClientOnly>
     <SectionQuickBooking />
-    <SectionSportVenues />
+    <SectionSportVenues :sport-name="sport" />
 </template>
 
 <script setup lang="ts">
 const route = useRoute()
-const sport = route.params.sport
+const sport = route.params.sport as string
 
 const sportsStore = useSportsStore()
 

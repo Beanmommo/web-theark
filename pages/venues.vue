@@ -8,9 +8,14 @@ await Promise.all([
   useAsyncData(() => pitchesStore.fetchPitches()),
   useAsyncData(() => timeslotsStore.fetchTimeslots())
 ])
+
+const sportsStore = useSportsStore()
+const { sports } = storeToRefs(sportsStore)
 </script>
 
 <template>
-  <PageBannerPitches />
-  <SectionOurVenues :showTitle="false" />
+  <PageBannerVenues />
+  <template v-for="sport in sports">
+    <SectionSportVenues :sport-name="sport.name" />
+  </template>
 </template>

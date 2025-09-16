@@ -44,7 +44,7 @@ const themeLogo = computed(() => {
         </div>
         <div class="content">
           <a href="/contactus">Contact Us</a>
-          <a href="/pitches">Our Pitches</a>
+          <a href="/venues">Our Venues</a>
           <a href="/packages">Packages</a>
           <div class="content--inner">
             <template v-if="isLogin">

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify/lib/composables/theme.mjs';
 
-
 const router = useRouter();
 
 const navItems = [
   { title: "Contact Us", to: "/contactus" },
-  { title: "Our Pitches", to: "/pitches" },
+  { title: "Our Venues", to: "/venues" },
   { title: "Packages", to: "/packages" }
 ]
 
