@@ -2,13 +2,14 @@
 //
 // The variables you want to modify
 // $font-size-root: 20px;
+@forward "variables";
 $body-font-family: "Montserrat";
 
 :root {
   --v-theme-overlay-multiplier: 1;
 }
 
-.v-btn:hover>.v-btn__overlay {
+.v-btn:hover > .v-btn__overlay {
   --v-hover-opacity: 0.1;
 }
 
@@ -50,8 +51,6 @@ h4 {
   }
 }
 
-
-
 .qb-container {
   margin: 20px auto;
   max-width: 1144px;
@@ -61,8 +60,6 @@ h4 {
   margin: 0px auto;
   max-width: 1144px;
 }
-
-
 
 .login-background {
   background-image: url("https://res.cloudinary.com/thearksg/image/upload/v1594089843/website/signup_page.png");
