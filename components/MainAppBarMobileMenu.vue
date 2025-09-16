@@ -1,19 +1,30 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useTheme } from 'vuetify'
 
 const { isLogin, logout } = useAuth()
 const showSidebar = ref(false)
 
 /* Set the width of the side navigation to 0 or 250px */
-function clickHandler()
-{
+function clickHandler() {
   showSidebar.value = !showSidebar.value
 }
 
-async function clickHandlerSignOut()
-{
+async function clickHandlerSignOut() {
   await logout()
 }
+
+const theme = useTheme()
+const arkLogo = {
+  "thearkTheme": "/Logo/theark.png",
+  "futsalTheme": "/Logo/theark_futsal.svg",
+  "pickleBallTheme": "/Logo/theark_pickleball.png",
+}
+
+const themeLogo = computed(() => {
+  const key = theme.global.name.value as keyof typeof arkLogo;
+  return arkLogo[key] ?? arkLogo["thearkTheme"];
+})
 </script>
 
 <template>
@@ -26,7 +37,7 @@ async function clickHandlerSignOut()
     <transition name="section">
       <div id="mySidenav" class="sidenav" v-show="showSidebar">
         <div class="header">
-          <img src="/Logo/ark_logo_header.svg" alt="The Ark Logo" />
+          <img :src="themeLogo" alt="The Ark Logo" width="72px" />
           <div class="closebtn" @click="clickHandler">
             <IconClose />
           </div>

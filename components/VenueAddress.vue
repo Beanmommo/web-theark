@@ -1,3 +1,14 @@
+<script setup lang="ts">
+const props = defineProps({
+  color: {
+    type: String,
+    default: 'green'
+  }
+})
+
+const iconColor = computed(() => props.color)
+</script>
+
 <template>
   <div class="venueAddress">
     <IconMapMarker />
@@ -13,7 +24,7 @@
 
   >svg {
     width: 30px;
-    color: green;
+    color: v-bind(iconColor);
   }
 }
 </style>

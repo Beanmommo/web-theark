@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import type { Sport } from '~/types/sport';
 
-defineProps({
+const props = defineProps({
     sport: {
         type: Object as PropType<Sport>,
         required: true
     }
 })
 
+const backgroundImage = computed(() => props.sport.backgroundImage)
+
 </script>
 
 <template>
-    <section class="sectionSports">
+    <section class="sectionSports" :style="{ backgroundImage: `url(${backgroundImage})` }">
         <SportCardItem :sport="sport" />
     </section>
 </template>
 
 <style lang="scss" scoped>
 .sectionSports {
-    background-image: url('https://res.cloudinary.com/thearksg/image/upload/f_auto/v1594089843/website/landingpage_image_slide1.png');
     background-repeat: no-repeat;
     background-size: cover;
     height: 500px;

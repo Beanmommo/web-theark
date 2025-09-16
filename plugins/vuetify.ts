@@ -7,7 +7,7 @@ const thearkTheme = {
   colors: {
     primary: "#000",
     secondary: "#b0bec5",
-    accent: "#110647",
+    accent: "#000000",
     error: "#b71c1c",
   },
 };

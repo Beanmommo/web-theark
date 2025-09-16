@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify/lib/composables/theme.mjs';
+
 
 const router = useRouter();
 
@@ -15,12 +17,24 @@ function clickHandler(link: string) {
 async function clickHandlerBookNow() {
   router.push("/booking")
 }
+const theme = useTheme()
+const arkLogo = {
+  "thearkTheme": "/Logo/theark.png",
+  "futsalTheme": "/Logo/theark_futsal.svg",
+  "pickleBallTheme": "/Logo/theark_pickleball.png",
+}
+const themeLogo = computed(() => {
+  const key = theme.global.name.value as keyof typeof arkLogo;
+  return arkLogo[key] ?? arkLogo["thearkTheme"];
+})
+
+
 </script>
 
 <template>
   <div class="main-app-bar">
     <div class="main-app-bar-left">
-      <img class="imgLogo" src="/Logo/ark_logo_header.svg" alt="The Ark Logo" @click="clickHandler('/')" />
+      <img class="imgLogo" :src="themeLogo" alt="The Ark Logo" @click="clickHandler('/')" width="80px" />
       <div class="nav-items">
         <MainAppBarNavItem v-for="item in navItems" :key="item.title" @click="clickHandler(item.to)">{{ item.title }}
         </MainAppBarNavItem>

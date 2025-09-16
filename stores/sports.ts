@@ -9,6 +9,8 @@ export const useSportsStore = defineStore("sport", () => {
       startingRate: 60,
       tag: "Indoor & Outdoor",
       theme: "futsalTheme",
+      backgroundImage:
+        "https://res.cloudinary.com/thearksg/image/upload/f_auto/v1594089843/website/landingpage_image_slide1.png",
     },
     {
       name: "Pickleball",
@@ -17,6 +19,8 @@ export const useSportsStore = defineStore("sport", () => {
       startingRate: 25,
       tag: "Indoor",
       theme: "pickleBallTheme",
+      backgroundImage:
+        "https://github.com/Beanmommo/web-theark/blob/main/public/Images/pickleball_background.png?raw=true",
     },
   ]);
 

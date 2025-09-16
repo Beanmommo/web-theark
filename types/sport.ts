@@ -5,4 +5,5 @@ export type Sport = {
   startingRate: number;
   icon: string;
   theme: string;
+  backgroundImage: string;
 };

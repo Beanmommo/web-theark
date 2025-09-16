@@ -28,8 +28,13 @@ export const useSport = () => {
     );
   };
 
+  const getSportByName = (sportName: string) => {
+    return sportsStore.getSportByName(sportName);
+  };
+
   return {
     activeSportVenues,
     getSportVenues,
+    getSportByName,
   };
 };

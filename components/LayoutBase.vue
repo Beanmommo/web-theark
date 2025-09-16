@@ -44,11 +44,11 @@
     flex-grow: 1;
   }
 
-  footer>div {
-    @media (min-width: $md) {
-      padding-top: $margin-md;
-    }
-  }
+  // footer>div {
+  //   @media (min-width: $md) {
+  //     padding-top: $margin-md;
+  //   }
+  // }
 
   header:first-child {
     position: fixed;

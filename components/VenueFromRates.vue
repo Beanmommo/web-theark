@@ -8,11 +8,14 @@ const timeslotsStore = useTimeslotsStore();
 const { timeslots } = storeToRefs(timeslotsStore);
 
 const props = defineProps({
-  locationKey: String
+  locationKey: String,
+  color: {
+    type: String,
+    default: 'green'
+  }
 })
-
-const lowestPrice = computed(() =>
-{
+const color = computed(() => props.color)
+const lowestPrice = computed(() => {
   const timeslotsPrices = useFilter(timeslots.value, { locationKey: props.locationKey }).map((slot: Timeslot) => parseInt(slot.rate))
   const lowestPrice = Math.min(...timeslotsPrices)
   return lowestPrice
@@ -28,7 +31,7 @@ const lowestPrice = computed(() =>
 
 <style lang="scss" scoped>
 .fromRates {
-  color: $primary-green;
+  color: v-bind(color);
   font-weight: 500;
 }
 </style>~/stores/timeslots

@@ -15,9 +15,6 @@ const { sports } = storeToRefs(sportsStore)
 </script>
 
 <template>
-  <ClientOnly>
-    <PromotionDialog />
-  </ClientOnly>
   <!-- <SectionQuickBooking /> -->
   <template v-for="sport in sports">
     <SectionSports :sport="sport" />

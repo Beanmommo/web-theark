@@ -7,6 +7,7 @@ const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
 const sportsStore = useSportsStore()
 const { activeSport } = storeToRefs(sportsStore)
+const { activeSportVenues } = useSport()
 
 const router = useRouter()
 
@@ -32,16 +33,18 @@ function format(date: Date) {
 
   return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
+
+const backgroundImage = computed(() => activeSport.value?.backgroundImage || '')
 </script>
 
 
 <template>
-  <section class="sectionQuickBooking">
+  <section class="sectionQuickBooking" :style="{ backgroundImage: `url(${backgroundImage})` }">
     <div class="sectionContainer">
       <div class="quickBooking">
-        <h2>Quick Booking</h2>
+        <h2>{{ activeSport?.name }} Quick Booking</h2>
         <div class="form__container">
-          <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="locations" />
+          <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="activeSportVenues" />
           <FieldInputDate v-model="selectedDate" placeholder="Date" />
           <Button class="form__container--button" @click="clickHandler">Search</Button>
         </div>
@@ -52,7 +55,6 @@ function format(date: Date) {
 
 <style lang="scss" scoped>
 .sectionQuickBooking {
-  background-image: url('https://res.cloudinary.com/thearksg/image/upload/f_auto/v1594089843/website/landingpage_image_slide1.png');
   background-repeat: no-repeat;
   background-size: cover;
   height: 500px;

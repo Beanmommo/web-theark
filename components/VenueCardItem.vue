@@ -10,10 +10,11 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const sportsStore = useSportsStore()
+const { activeSport } = storeToRefs(sportsStore)
 
-function clickHandlerBookNow()
-{
-  router.push(`/booking?venue=${props.venue.name}`)
+function clickHandlerBookNow() {
+  router.push(`/booking?sport=${activeSport.value?.name}&venue=${props.venue.name}`)
 }
 
 
@@ -25,7 +26,7 @@ function clickHandlerBookNow()
       <CldImage :src="`website/${props.venue.publicId}`" width="800" height="600" :alt="props.venue.name" />
       <div class="item__content">
         <h3>{{ props.venue.name }} Pitch</h3>
-        <VenuePitchesItem :locationKey="props.venue.key" />
+        <VenuePitchesItem :locationKey="props.venue.key" :sportName="activeSport?.name ?? ''" />
         <VenueAddress>{{ props.venue.address }}</VenueAddress>
         <div class="buttons__container">
           <VenueFromRates :locationKey="props.venue.key" />
@@ -44,7 +45,6 @@ function clickHandlerBookNow()
 
   @include md {
     grid-template-columns: 40% 60%;
-
   }
 
   .item__content {
@@ -58,8 +58,6 @@ function clickHandlerBookNow()
 
     }
   }
-
-
 
   .buttons__container {
     display: flex;
