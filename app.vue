@@ -19,6 +19,12 @@ function updateThemeByRoute() {
       isChanged = true
       return
     }
+    if (route.query.sport === sport.name) {
+      theme.change(sport.theme)
+      sportsStore.setActiveSport(sport.name)
+      isChanged = true
+      return
+    }
   }
   if (!isChanged) {
     theme.change('thearkTheme')
@@ -26,7 +32,7 @@ function updateThemeByRoute() {
   }
 }
 
-watch(() => route.path, updateThemeByRoute, { immediate: true })
+watch(() => [route.path, route.query.sport], updateThemeByRoute, { immediate: true })
 </script>
 
 <template>

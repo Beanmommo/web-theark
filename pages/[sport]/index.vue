@@ -1,5 +1,5 @@
 <template>
-    <ClientOnly>
+    <ClientOnly v-if="sport === 'Futsal'">
         <PromotionDialog />
     </ClientOnly>
     <SectionQuickBooking />
