@@ -28,8 +28,7 @@ await Promise.all([
 ])
 
 
-enum Step
-{
+enum Step {
   SelectionPage = 1,
   AuthPage = 2,
   PaymentPage = 3,
@@ -44,24 +43,20 @@ const groupedTimeslots = ref({} as GroupedTimeslots)
 const user = useAuthUser()
 const invoiceData = ref({} as Invoice)
 
-onMounted(() =>
-{
+onMounted(() => {
   if (!route.query.venue) return
   venue.value = route.query.venue
 })
 
 const isLogin = computed(() => user.value !== null)
 
-watch(isLogin, (login: boolean) =>
-{
+watch(isLogin, (login: boolean) => {
   if (login && step.value === Step.AuthPage) step.value = Step.PaymentPage
   if (!login && step.value === Step.PaymentPage) step.value = Step.AuthPage
 })
 
-watch(() => route.query.venue, (venue) =>
-{
-  if (!venue)
-  {
+watch(() => route.query.venue, (venue) => {
+  if (!venue) {
     step.value = Step.SelectionPage
     resetForm()
   }
@@ -72,20 +67,17 @@ const isAuthPage = computed(() => step.value === Step.AuthPage)
 const isPaymentPage = computed(() => step.value === Step.PaymentPage)
 const isQRPage = computed(() => step.value === Step.QRPage)
 
-function resetForm()
-{
+function resetForm() {
   groupedTimeslots.value = {}
   invoiceData.value = {} as Invoice
   venue.value = ''
 }
 
-function updateHandler(newGroupedTimeslots: GroupedTimeslots)
-{
+function updateHandler(newGroupedTimeslots: GroupedTimeslots) {
   groupedTimeslots.value = newGroupedTimeslots
 }
 
-function nextHandler()
-{
+function nextHandler() {
   if (step.value === Step.SelectionPage && isLogin.value)
     step.value = Step.PaymentPage
   else
@@ -94,14 +86,12 @@ function nextHandler()
 
 }
 
-function backHandler()
-{
+function backHandler() {
   step.value = Step.SelectionPage
   goTo('#booking')
 }
 
-function submitHandler(invoiceDetails: Invoice)
-{
+function submitHandler(invoiceDetails: Invoice) {
   step.value = Step.QRPage
   goTo('#booking')
   invoiceData.value = invoiceDetails

@@ -41,7 +41,6 @@ const themeLogo = computed(() => {
     </div>
     <div class="main-app-bar-right">
       <UserButton class="user__button" />
-      <Button @click="clickHandlerBookNow">Book Now</Button>
       <MainAppBarMobileMenu />
     </div>
   </div>

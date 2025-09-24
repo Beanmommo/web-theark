@@ -11,7 +11,6 @@ export default defineNuxtConfig({
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         {
-          hid: "description",
           name: "description",
           content:
             "The Ark futsal pitches in Funan, Orchid Country Club, Cuppage and Plaza 8 Singapore are great spots to play your favorite football game. Visit now for booking street soccer court!",

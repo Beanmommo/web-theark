@@ -22,7 +22,8 @@ const backgroundImage = computed(() => props.sport.backgroundImage)
 .sectionSports {
     background-repeat: no-repeat;
     background-size: cover;
-    height: 500px;
+    // min-height: 378px;
+    height: auto;
     display: grid;
     justify-items: center;
     align-items: center;
@@ -35,6 +36,5 @@ const backgroundImage = computed(() => props.sport.backgroundImage)
 
 .venues__container {
     display: grid;
-    grid-gap: $p-margin;
 }
 </style>

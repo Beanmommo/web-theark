@@ -32,7 +32,7 @@ function updateThemeByRoute() {
   }
 }
 
-watch(() => [route.path, route.query.sport], updateThemeByRoute, { immediate: true })
+watch(() => [route.query.sport], updateThemeByRoute, { immediate: true })
 </script>
 
 <template>

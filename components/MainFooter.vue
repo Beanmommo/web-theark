@@ -24,7 +24,7 @@ const accentColor = computed(() => theme.current.value.colors.accent)
   justify-items: center;
   grid-auto-flow: column;
   background: v-bind(accentColor);
-  min-height: 300px;
+  min-height: 400px;
 
   @include md {
     grid-template-columns: 25% 1fr 20%;

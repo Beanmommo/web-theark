@@ -30,13 +30,13 @@ const accentColor = computed(() => {
 <template>
     <div class="sportCardItem">
         <template v-if="props.sport">
-            <div class="sport__icon">
-                <VIcon :icon="props.sport.icon" size="72" />
+            <div class="sport__icon__container">
+                <VIcon :icon="props.sport.icon" size="64" class="sport__icon" />
             </div>
             <div class="item__content">
                 <h3>{{ props.sport.name }}</h3>
-                <p>From SGD ${{ props.sport.startingRate }}/hour</p>
-                <sub>{{ props.sport.tag }}</sub>
+                <p><b>From SGD ${{ props.sport.startingRate }}/hour</b></p>
+                <sub><b>{{ props.sport.tag }}</b></sub>
                 <div class="buttons__container">
                     <Button @click="clickHandlerViewVenues" :color="accentColor">View
                         Venues</Button>
@@ -52,7 +52,7 @@ const accentColor = computed(() => {
     box-shadow: $box-shadow;
     grid-template-columns: 1fr;
 
-    .sport__icon {
+    .sport__icon__container {
         display: flex;
         align-items: center;
         justify-content: center;

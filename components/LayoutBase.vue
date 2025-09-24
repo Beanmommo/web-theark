@@ -12,7 +12,6 @@
     </header>
     <main class="main">
       <div>
-
         <slot name="main" />
       </div>
     </main>
@@ -29,6 +28,7 @@
 .layout-base {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 
   header,
   main,

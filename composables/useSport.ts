@@ -1,7 +1,4 @@
-import { useTheme } from "vuetify/lib/composables/theme.mjs";
-
 export const useSport = () => {
-  const vuetifyTheme = useTheme();
   const sportsStore = useSportsStore();
   const { activeSport } = storeToRefs(sportsStore);
 
