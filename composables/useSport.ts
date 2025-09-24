@@ -10,7 +10,7 @@ export const useSport = () => {
 
   const activeSportVenues = computed(() => {
     if (!activeSport.value) return [];
-    return getSportVenues(activeSport.value.name);
+    return getSportVenues(activeSport.value.slug);
   });
 
   const getSportVenues = (sportSlug: string) => {

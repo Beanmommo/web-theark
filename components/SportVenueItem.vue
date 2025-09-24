@@ -21,7 +21,6 @@ const props = defineProps({
 import type { Pitch } from '~/types/data'
 const pitchesStore = usePitchesStore()
 const { pitches } = storeToRefs(pitchesStore)
-const { getSportByName } = useSport()
 
 const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey })
 const sportPitches = useFilter(pitchInLocation, { typeOfSports: props.sportSlug })

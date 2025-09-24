@@ -31,6 +31,9 @@ export const useSportsStore = defineStore("sport", () => {
 
   const setActiveSportBySlug = (slug: string) => {
     const sport = sports.value.find((sport) => sport.slug === slug);
+    if (sport) {
+      activeSportSlug.value = sport.slug;
+    }
   };
 
   const getSportByName = (sportName: string) => {

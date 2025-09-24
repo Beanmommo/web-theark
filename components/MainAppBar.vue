@@ -11,9 +11,6 @@ function clickHandler(link: string) {
   router.push(link)
 }
 
-// async function clickHandlerBookNow() {
-//   router.push("/booking")
-// }
 const theme = useTheme()
 const arkLogo = {
   "thearkTheme": "/Logo/theark.png",
