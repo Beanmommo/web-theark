@@ -5,8 +5,6 @@ const router = useRouter();
 
 const navItems = [
   { title: "Contact Us", to: "/contactus" },
-  { title: "Our Venues", to: "/venues" },
-  { title: "Packages", to: "/packages" }
 ]
 
 function clickHandler(link: string) {

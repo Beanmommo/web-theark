@@ -47,8 +47,6 @@ const themeLogo = computed(() => {
         </div>
         <div class="content">
           <a href="/contactus">Contact Us</a>
-          <a href="/venues">Our Venues</a>
-          <a href="/packages">Packages</a>
           <div class="content--inner">
             <template v-if="isLogin">
               <NuxtLink to="/profile" v-if="isLogin">Your Profile</NuxtLink>
@@ -57,7 +55,6 @@ const themeLogo = computed(() => {
             <DialogSignIn v-else>
               <IconButtonUser>Sign In</IconButtonUser>
             </DialogSignIn>
-            <Button>Book Now</Button>
           </div>
 
         </div>
