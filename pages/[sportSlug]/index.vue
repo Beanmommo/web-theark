@@ -1,20 +1,20 @@
 <template>
     <!-- TODO: Connect this with firebase later -->
-    <ClientOnly v-if="sport === 'Futsal'">
+    <ClientOnly v-if="sportSlug === 'futsal'">
         <PromotionDialog />
     </ClientOnly>
     <SectionQuickBooking />
-    <SectionSportVenues :sport-name="sport" />
+    <SectionSportVenues :sport-slug="sportSlug" />
 </template>
 
 <script setup lang="ts">
 const route = useRoute()
-const sport = route.params.sport as string
+const sportSlug = route.params.sportSlug as string
 
 const sportsStore = useSportsStore()
 
 onBeforeMount(() => {
-    sportsStore.setActiveSport(sport as string)
+    sportsStore.setActiveSportBySlug(sportSlug as string)
 })
 
 const locationsStore = useLocationsStore()

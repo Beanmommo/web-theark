@@ -13,9 +13,9 @@ export const useSport = () => {
     return getSportVenues(activeSport.value.name);
   });
 
-  const getSportVenues = (sportName: string) => {
+  const getSportVenues = (sportSlug: string) => {
     const sportPitches = pitches.value.filter(
-      (pitch) => pitch.typeOfSports === sportName
+      (pitch) => pitch.typeOfSports === sportSlug
     );
     const uniqueVenueKeys = Array.from(
       new Set(sportPitches.map((pitch) => pitch.locationKey))

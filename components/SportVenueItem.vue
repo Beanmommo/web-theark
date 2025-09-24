@@ -12,7 +12,7 @@ const props = defineProps({
         type: String,
         required: true
     },
-    sportName: {
+    sportSlug: {
         type: String,
         required: true
     }
@@ -24,32 +24,32 @@ const { pitches } = storeToRefs(pitchesStore)
 const { getSportByName } = useSport()
 
 const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey })
-const sportPitches = useFilter(pitchInLocation, { typeOfSports: props.sportName })
+const sportPitches = useFilter(pitchInLocation, { typeOfSports: props.sportSlug })
 
 const sportVenueItem = ref({} as VenueItem)
 
-const sportColors: Record<"Futsal" | "Pickleball", { borderColor: string; itemBackgroundColor: string }> = {
-    "Futsal": {
+const sportColors: Record<"futsal" | "pickleball", { borderColor: string; itemBackgroundColor: string }> = {
+    "futsal": {
         borderColor: "#0A8900",
         itemBackgroundColor: "#F7FFF4"
     },
-    "Pickleball": {
+    "pickleball": {
         borderColor: "#2282d6",
         itemBackgroundColor: "#E5F3FF"
     }
 }
 
 onMounted(() => {
-    if (props.sportName === 'Futsal') {
+    if (props.sportSlug === 'futsal') {
         initialiseFutsalItem()
-    } else if (props.sportName === 'Pickleball') {
+    } else if (props.sportSlug === 'pickleball') {
         initialisePickleballItem()
     }
 })
 
 function initialiseFutsalItem() {
-    if (props.sportName in sportColors) {
-        const colors = sportColors[props.sportName as "Futsal" | "Pickleball"];
+    if (props.sportSlug in sportColors) {
+        const colors = sportColors[props.sportSlug as "futsal" | "pickleball"];
         sportVenueItem.value.borderColor = colors.borderColor;
         sportVenueItem.value.itemBackgroundColor = colors.itemBackgroundColor;
         sportVenueItem.value.item = []
@@ -72,8 +72,8 @@ function initialiseFutsalItem() {
 }
 
 function initialisePickleballItem() {
-    if (props.sportName in sportColors) {
-        const colors = sportColors[props.sportName as "Futsal" | "Pickleball"];
+    if (props.sportSlug in sportColors) {
+        const colors = sportColors[props.sportSlug as "futsal" | "pickleball"];
         sportVenueItem.value.borderColor = colors.borderColor;
         sportVenueItem.value.itemBackgroundColor = colors.itemBackgroundColor;
         sportVenueItem.value.item = []

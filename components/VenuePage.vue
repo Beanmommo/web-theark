@@ -9,7 +9,7 @@
         </VCarousel>
         <div class="venue__info_container">
             <div class="venue-info">
-                <SportVenueItem :locationKey="selectedVenue.key" :sportName="sport" />
+                <SportVenueItem :locationKey="selectedVenue.key" :sportSlug="sport" />
                 <VenueAddress :color="sportColor">{{ selectedVenue.address }}</VenueAddress>
             </div>
             <div class="venue-actions">
@@ -71,21 +71,21 @@ const selectedVenue = computed(() => {
 // Theme and sport color
 
 const sportColor = computed(() => {
-    if (sport === 'Futsal') {
+    if (sport === 'futsal') {
         return 'green'
-    } else if (sport === 'Pickleball') {
+    } else if (sport === 'pickleball') {
         return "#2282d6"
     }
     return ''
 })
 
 // Operating hours computed property
-const operatingHours = computed(() => {
-    if (selectedVenue.value?.tillMidnight === 'true') {
-        return 'Open until midnight'
-    }
-    return 'Standard hours'
-})
+// const operatingHours = computed(() => {
+//     if (selectedVenue.value?.tillMidnight === 'true') {
+//         return 'Open until midnight'
+//     }
+//     return 'Standard hours'
+// })
 
 // Carousel images - combine publicId and gallery images
 const carouselHeight = computed(() => {

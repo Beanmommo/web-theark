@@ -7,31 +7,29 @@ const props = defineProps({
         type: Object as PropType<Venue>,
         required: true
     },
-    sportName: {
+    sportSlug: {
         type: String,
         required: true
     }
 })
-// Component Will get pitches in location and filter it with typeOfSport: sportName
 
 const router = useRouter()
 function clickHandlerViewVenue() {
-    // router.push(`/booking?sport=${props.sportName}&venue=${props.venue.name}`)
-    router.push(`/venue/${props.venue.key}?sport=${props.sportName}`)
+    router.push(`/venue/${props.venue.key}?sport=${props.sportSlug}`)
 }
 const courtName = computed(() => {
-    if (props.sportName === 'Futsal') {
+    if (props.sportSlug === 'futsal') {
         return 'Pitch'
-    } else if (props.sportName === 'Pickleball') {
+    } else if (props.sportSlug === 'pickleball') {
         return 'Court'
     }
     return ''
 })
 
 const sportColor = computed(() => {
-    if (props.sportName === 'Futsal') {
+    if (props.sportSlug === 'futsal') {
         return 'green'
-    } else if (props.sportName === 'Pickleball') {
+    } else if (props.sportSlug === 'pickleball') {
         return "#2282d6"
     }
     return ''
@@ -46,7 +44,7 @@ const sportColor = computed(() => {
                 @click="clickHandlerViewVenue" />
             <div class="item__content">
                 <h3>{{ props.venue.name }} {{ courtName }}</h3>
-                <SportVenueItem :locationKey="props.venue.key" :sportName="props.sportName" />
+                <SportVenueItem :locationKey="props.venue.key" :sportSlug="props.sportSlug" />
                 <VenueAddress :color="sportColor">{{ props.venue.address }}</VenueAddress>
                 <div class="buttons__container">
                     <VenueFromRates :locationKey="props.venue.key" :color="sportColor" />

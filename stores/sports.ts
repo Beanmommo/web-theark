@@ -24,18 +24,28 @@ export const useSportsStore = defineStore("sport", () => {
     },
   ]);
 
-  const activeSportName = ref<string>("");
+  const activeSportSlug = ref<string>("");
   const activeSport = computed(() => {
-    return sports.value.find((sport) => sport.name === activeSportName.value);
+    return sports.value.find((sport) => sport.slug === activeSportSlug.value);
   });
 
-  const setActiveSport = (sportName: string) => {
-    activeSportName.value = sportName;
+  const setActiveSportBySlug = (slug: string) => {
+    const sport = sports.value.find((sport) => sport.slug === slug);
   };
 
   const getSportByName = (sportName: string) => {
     return sports.value.find((sport) => sport.name === sportName);
   };
 
-  return { sports, activeSport, setActiveSport, getSportByName };
+  const getSportBySlug = (slug: string) => {
+    return sports.value.find((sport) => sport.slug === slug);
+  };
+
+  return {
+    sports,
+    activeSport,
+    setActiveSportBySlug,
+    getSportByName,
+    getSportBySlug,
+  };
 });

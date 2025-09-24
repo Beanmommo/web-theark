@@ -8,7 +8,7 @@ const { pitches } = storeToRefs(pitchesStore)
 
 const props = defineProps({
   locationKey: String,
-  sportName: {
+  sportSlug: {
     type: String,
     required: true
   }
@@ -52,10 +52,10 @@ const venueItem = {
 
 const sportVenueItem = ref({} as any)
 
-watch(() => props.sportName, (newVal) => {
-  if (newVal === 'futsalTheme') {
+watch(() => props.sportSlug, (newVal) => {
+  if (newVal === 'futsal') {
     initialiseFutsalItem()
-  } else if (newVal === 'pickleBallTheme') {
+  } else if (newVal === 'pickleball') {
     initialisePickleballItem()
   }
   console.log(sportVenueItem.value)
@@ -63,7 +63,7 @@ watch(() => props.sportName, (newVal) => {
 
 function initialiseFutsalItem() {
   sportVenueItem.value = venueItem.futsalTheme
-  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'Futsal' })
+  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'futsal' })
   const groupedPitches = useGroupBy(pitchInLocation, 'size')
   sportVenueItem.value.item = []
   for (const [key, value] of Object.entries(groupedPitches)) {
@@ -80,7 +80,7 @@ function initialiseFutsalItem() {
 
 function initialisePickleballItem() {
   sportVenueItem.value = venueItem.pickleBallTheme
-  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'Pickleball' })
+  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'pickleball' })
   sportVenueItem.value.item = []
   sportVenueItem.value.item.push({
     icon: "/Icon/pitch_blue_icon1.svg",

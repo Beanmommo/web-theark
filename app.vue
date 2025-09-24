@@ -13,17 +13,17 @@ const { sports } = storeToRefs(sportsStore)
 function updateThemeByRoute() {
   let isChanged = false
   for (const sport of sports.value) {
-    if (route.path.includes(sport.name)) {
+    if (route.path.includes(sport.slug)) {
       console.log('Changed to ' + sport.theme)
       theme.change(sport.theme)
-      sportsStore.setActiveSport(sport.name)
+      sportsStore.setActiveSportBySlug(sport.slug)
       isChanged = true
       return
     }
-    if (route.query.sport === sport.name) {
+    if (route.query.sport === sport.slug) {
       console.log('Changed to ' + sport.theme)
       theme.change(sport.theme)
-      sportsStore.setActiveSport(sport.name)
+      sportsStore.setActiveSportBySlug(sport.slug)
       isChanged = true
       return
     }

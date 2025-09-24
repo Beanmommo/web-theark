@@ -1,9 +1,9 @@
 <template>
     <SectionContainer>
-        <h2>{{ props.sportName }} Venues</h2>
+        <h2 v-if="selectedSport">{{ selectedSport?.name }} Venues</h2>
         <div class="venues__container">
             <template v-for="venue in sportVenues">
-                <SportVenueCardItem :venue="venue" :sport-name="props.sportName" />
+                <SportVenueCardItem :venue="venue" :sportSlug="props.sportSlug" />
             </template>
         </div>
     </SectionContainer>
@@ -13,14 +13,20 @@
 <script setup lang="ts">
 
 const props = defineProps({
-    sportName: {
+    sportSlug: {
         type: String,
         required: true
     }
 })
 
+const sportsStore = useSportsStore()
+
+const selectedSport = computed(() => {
+    return sportsStore.getSportBySlug(props.sportSlug)
+})
+
 const sportVenues = computed(() => {
-    return useSport().getSportVenues(props.sportName)
+    return useSport().getSportVenues(props.sportSlug)
 })
 </script>
 
