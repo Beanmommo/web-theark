@@ -1,15 +1,28 @@
 <script setup lang="ts">
-import { useLocationsStore } from '~/stores/locations'
-import { storeToRefs } from 'pinia'
 const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
+const route = useRoute()
+const sportSlug = route.params.sportSlug as string
+const sportVenues = computed(() => {
+  if (!sportSlug) return locations.value
+  return useSport().getSportVenues(sportSlug)
+})
+
+const pitchName = computed(() => {
+  if (sportSlug === 'futsal') {
+    return 'Pitch'
+  } else if (sportSlug === 'pickleball') {
+    return 'Court'
+  }
+  return 'Venue'
+})
 
 </script>
 
 <template>
   <SectionContainer>
-    <h3>Our Pitch Location</h3>
-    <template v-for="venue in locations">
+    <h3>Our {{ pitchName }} Location</h3>
+    <template v-for="venue in sportVenues">
       <div>
         <h4>{{ venue.name }}</h4>
         <div class="address__container">

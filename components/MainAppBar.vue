@@ -11,10 +11,10 @@ const sportSlug = route.params.sportSlug as string
 // TODO: Make navItems dynamic
 const navItems = computed(() => {
   if (sportSlug === 'futsal') {
-    return [{ title: "Pickleball", to: "/pickleball/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: "/contactus" }]
+    return [{ title: "Pickleball", to: "/pickleball/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` }]
   }
   if (sportSlug === 'pickleball') {
-    return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: "/contactus" },]
+    return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` },]
   }
   return [{ title: "Contact Us", to: "/contactus" },]
 })
