@@ -2,6 +2,9 @@
 import { useTheme } from 'vuetify';
 
 const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 </script>
 
 <template>

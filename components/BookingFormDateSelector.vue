@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { useBlockoutsStore } from '~/stores/blockouts';
 import { storeToRefs } from 'pinia';
-import { useTheme } from 'vuetify';
 type DisabledDate = { start: Date, end: Date }
 
 const emit = defineEmits(['click'])
@@ -96,11 +95,6 @@ function isOutsideRange(date: string) {
   const max = dayjs(maxDate.value)
   return day.isBefore(min, 'day') || day.isAfter(max, 'day')
 }
-
-const theme = useTheme()
-const accentColor = computed(() => {
-  return theme.current.value.colors.accent
-})
 </script>
 
 

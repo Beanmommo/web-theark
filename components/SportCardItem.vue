@@ -13,7 +13,7 @@ const props = defineProps({
 const theme = useTheme()
 const router = useRouter()
 
-function clickHandlerViewVenues() {
+function clickHandlerBookNow() {
     router.push(`/${props.sport.slug}`)
 }
 
@@ -38,8 +38,7 @@ const accentColor = computed(() => {
                 <p><b>From SGD ${{ props.sport.startingRate }}/hour</b></p>
                 <sub><b>{{ props.sport.tag }}</b></sub>
                 <div class="buttons__container">
-                    <Button @click="clickHandlerViewVenues" :color="accentColor">View
-                        Venues</Button>
+                    <Button @click="clickHandlerBookNow" :color="accentColor">Book Now</Button>
                 </div>
             </div>
         </template>
