@@ -29,6 +29,19 @@ const themeLogo = computed(() => {
   const key = theme.global.name.value as keyof typeof arkLogo;
   return arkLogo[key] ?? arkLogo["thearkTheme"];
 })
+
+const route = useRoute()
+const sportSlug = route.params.sportSlug as string
+
+const navItems = computed(() => {
+  if (sportSlug === 'futsal') {
+    return [{ title: "Pickleball", to: "/pickleball" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: "/contactus" }]
+  }
+  if (sportSlug === 'pickleball') {
+    return [{ title: "Futsal", to: "/futsal" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: "/contactus" },]
+  }
+  return [{ title: "Contact Us", to: "/contactus" },]
+})
 </script>
 
 <template>
@@ -46,7 +59,9 @@ const themeLogo = computed(() => {
           </div>
         </div>
         <div class="content">
-          <a href="/contactus">Contact Us</a>
+          <template v-for="item in navItems">
+            <a :href="item.to">{{ item.title }}</a>
+          </template>
           <div class="content--inner">
             <template v-if="isLogin">
               <NuxtLink to="/profile" v-if="isLogin">Your Profile</NuxtLink>
