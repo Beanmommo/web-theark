@@ -139,9 +139,11 @@ function clickHandlerBookNow() {
     <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="availableLocations" />
     <BookingFormDateSelector :selectedDate="selectedDate" @click="clickHandler" />
     <div ref='timeSelector' />
-    <BookingFormTimeSelector :date="selectedDate" :location="selectedVenue" :locationData="location"
-      :locationPitches="locationPitches" :locationTimeslots="locationTimeslots" @select="selectHandler"
-      v-if="showTimeSelector" />
+    <template v-if="location">
+      <BookingFormTimeSelector :date="selectedDate" :location="selectedVenue" :locationData="location"
+        :locationPitches="locationPitches" :locationTimeslots="locationTimeslots" @select="selectHandler"
+        v-if="showTimeSelector" />
+    </template>
     <BookingCallToAction :totalPayable="totalPayable" @click="clickHandlerBookNow" v-if="totalPayable > 0" />
   </div>
 </template>

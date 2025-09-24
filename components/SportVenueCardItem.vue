@@ -15,7 +15,7 @@ const props = defineProps({
 // Component Will get pitches in location and filter it with typeOfSport: sportName
 
 const router = useRouter()
-function clickHandlerBookNow() {
+function clickHandlerViewVenue() {
     // router.push(`/booking?sport=${props.sportName}&venue=${props.venue.name}`)
     router.push(`/venue/${props.venue.key}?sport=${props.sportName}`)
 }
@@ -42,14 +42,15 @@ const sportColor = computed(() => {
 <template>
     <div class="venueCardItem">
         <template v-if="props.venue">
-            <CldImage :src="`website/${props.venue.publicId}`" width="800" height="600" :alt="props.venue.name" />
+            <CldImage :src="`website/${props.venue.publicId}`" width="800" height="600" :alt="props.venue.name"
+                @click="clickHandlerViewVenue" />
             <div class="item__content">
                 <h3>{{ props.venue.name }} {{ courtName }}</h3>
                 <SportVenueItem :locationKey="props.venue.key" :sportName="props.sportName" />
                 <VenueAddress :color="sportColor">{{ props.venue.address }}</VenueAddress>
                 <div class="buttons__container">
                     <VenueFromRates :locationKey="props.venue.key" :color="sportColor" />
-                    <Button @click="clickHandlerBookNow">View Venue</Button>
+                    <Button @click="clickHandlerViewVenue">View Venue</Button>
                 </div>
             </div>
         </template>
