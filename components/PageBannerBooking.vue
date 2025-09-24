@@ -1,8 +1,17 @@
 <template>
   <section class="pageBannerPitches">
-    <h2>Booking</h2>
+    <h2>{{ sport }} Booking</h2>
   </section>
 </template>
+
+<script setup lang="ts">
+defineProps({
+  sport: {
+    type: String,
+    required: true
+  }
+})
+</script>
 
 <style lang="scss" scoped>
 .pageBannerPitches {

@@ -12,12 +12,6 @@
 
 <script setup lang="ts">
 
-const sportsStore = useSportsStore()
-// const { activeSport } = storeToRefs(sportsStore)
-// const sportName = computed(() => activeSport.value?.name ?? '')
-
-// const { activeSportVenues } = useSport()
-
 const props = defineProps({
     sportName: {
         type: String,

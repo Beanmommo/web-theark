@@ -16,7 +16,8 @@ const props = defineProps({
 
 const router = useRouter()
 function clickHandlerBookNow() {
-    router.push(`/booking?sport=${props.sportName}&venue=${props.venue.name}`)
+    // router.push(`/booking?sport=${props.sportName}&venue=${props.venue.name}`)
+    router.push(`/venue/${props.venue.key}?sport=${props.sportName}`)
 }
 const courtName = computed(() => {
     if (props.sportName === 'Futsal') {
@@ -48,7 +49,7 @@ const sportColor = computed(() => {
                 <VenueAddress :color="sportColor">{{ props.venue.address }}</VenueAddress>
                 <div class="buttons__container">
                     <VenueFromRates :locationKey="props.venue.key" :color="sportColor" />
-                    <Button @click="clickHandlerBookNow">Book Now</Button>
+                    <Button @click="clickHandlerBookNow">View Venue</Button>
                 </div>
             </div>
         </template>

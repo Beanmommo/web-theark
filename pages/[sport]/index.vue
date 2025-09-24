@@ -1,4 +1,5 @@
 <template>
+    <!-- TODO: Connect this with firebase later -->
     <ClientOnly v-if="sport === 'Futsal'">
         <PromotionDialog />
     </ClientOnly>

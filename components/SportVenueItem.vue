@@ -25,7 +25,6 @@ const { getSportByName } = useSport()
 
 const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey })
 const sportPitches = useFilter(pitchInLocation, { typeOfSports: props.sportName })
-const sport = getSportByName(props.sportName)
 
 const sportVenueItem = ref({} as VenueItem)
 

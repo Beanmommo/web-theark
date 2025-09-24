@@ -97,10 +97,12 @@ function submitHandler(invoiceDetails: Invoice) {
   invoiceData.value = invoiceDetails
 }
 
+const sport = route.query.sport as string
+
 </script>
 
 <template>
-  <PageBannerBooking id="booking" />
+  <PageBannerBooking :sport="sport" />
   <BookingFormPage1 v-if="isSelectionPage" @next="nextHandler" @update="updateHandler" />
   <BookingFormPage2 v-if="isAuthPage" />
   <BookingFormPage3 v-if="isPaymentPage" @back="backHandler" :groupedTimeslots="groupedTimeslots"
