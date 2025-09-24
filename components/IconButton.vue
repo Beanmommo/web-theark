@@ -1,5 +1,14 @@
+<script setup lang="ts">
+import { useTheme } from 'vuetify';
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
+</script>
+
 <template>
-  <div class="icon-button">
+  <div class="icon-button" :style="{ color: accentColor }">
     <div class="icon">
       <slot name="icon" />
     </div>
@@ -13,7 +22,7 @@
 .icon-button {
   display: flex;
   align-items: center;
-  color: $primary-green;
+  // color: $primary-green;
   cursor: pointer;
 
   .icon {
@@ -24,7 +33,7 @@
   h6 {
     font-size: 0.9rem;
     font-weight: 600;
-    color: $primary-green;
+    // color: $primary-green;
     margin: 0;
   }
 }

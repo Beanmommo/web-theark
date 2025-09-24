@@ -1,5 +1,14 @@
+<script setup lang="ts">
+import { useTheme } from 'vuetify';
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
+</script>
+
 <template>
-  <div class="button">
+  <div class="button" :style="{ borderColor: accentColor, color: accentColor }">
     <slot />
   </div>
 </template>
@@ -10,8 +19,7 @@
   align-items: center;
   justify-content: center;
   background: $functional-white;
-  color: $primary-green;
-  border: 1px solid $primary-green;
+  border: 1px solid;
   padding: $unit $margin;
   border-radius: $margin * 2;
   font-weight: 600;

@@ -14,12 +14,14 @@ function updateThemeByRoute() {
   let isChanged = false
   for (const sport of sports.value) {
     if (route.path.includes(sport.name)) {
+      console.log('Changed to ' + sport.theme)
       theme.change(sport.theme)
       sportsStore.setActiveSport(sport.name)
       isChanged = true
       return
     }
     if (route.query.sport === sport.name) {
+      console.log('Changed to ' + sport.theme)
       theme.change(sport.theme)
       sportsStore.setActiveSport(sport.name)
       isChanged = true

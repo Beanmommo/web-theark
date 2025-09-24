@@ -2,6 +2,8 @@
 import { useTheme } from 'vuetify/lib/composables/theme.mjs';
 
 const router = useRouter();
+const route = useRoute()
+const sportValue = ref('')
 
 const navItems = [
   { title: "Contact Us", to: "/contactus" },
@@ -27,6 +29,18 @@ const themeLogo = computed(() => {
   return arkLogo[key] ?? arkLogo["thearkTheme"];
 })
 
+watch(() => route.query.sport, (newValue) => {
+  sportValue.value = newValue as string
+})
+
+const sportColor = computed(() => {
+  if (sportValue.value === 'Futsal') {
+    return 'green'
+  } else if (sportValue.value === 'Pickleball') {
+    return "#2282d6"
+  }
+  return ''
+})
 
 </script>
 

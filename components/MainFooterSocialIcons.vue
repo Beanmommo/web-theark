@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { useTheme } from 'vuetify';
+
+const theme = useTheme()
+</script>
+
 <template>
   <div class="mainFooterSocialIcons">
     <h4>GST Registration Number : 200714008N</h4>
@@ -14,7 +20,7 @@
         <img src="/Icon/footer_whatsapp_icon.svg" alt="Whatsapp Icon" /></a>
     </div>
     <div class="link" @click="$router.push('/content/terms')">Terms and Conditions</div>
-    <div class="copyright">Copyright 2020 © The Ark Futsal</div>
+    <div class="copyright" :style="{ color: accentColor }">Copyright 2020 © The Ark Futsal</div>
   </div>
 </template>
 
@@ -46,13 +52,13 @@
 }
 
 .link {
-  color: lightgreen;
+  color: $functional-white;
   font-weight: 600;
   cursor: pointer;
 }
 
 .copyright {
-  color: lightgreen;
+  color: $functional-white;
 
 }
 </style>

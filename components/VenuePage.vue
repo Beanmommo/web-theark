@@ -10,7 +10,7 @@
         <div class="venue__info_container">
             <div class="venue-info">
                 <SportVenueItem :locationKey="selectedVenue.key" :sportName="sport" />
-                <VenueAddress>{{ selectedVenue.address }}</VenueAddress>
+                <VenueAddress :color="sportColor">{{ selectedVenue.address }}</VenueAddress>
             </div>
             <div class="venue-actions">
                 <Button @click="clickHandlerBookNow">Book Now</Button>
@@ -56,7 +56,6 @@
 </template>
 
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
 
 const route = useRoute()
 const router = useRouter()
@@ -68,17 +67,16 @@ const selectedVenue = computed(() => {
     return locationsStore.getLocationByKey(venueKey)
 })
 
+
 // Theme and sport color
-const theme = useTheme()
-const sportsStore = useSportsStore()
+
 const sportColor = computed(() => {
-    if (sport) {
-        const sportData = sportsStore.getSportByName(sport)
-        if (sportData) {
-            return theme.themes.value[sportData.theme].colors.accent
-        }
+    if (sport === 'Futsal') {
+        return 'green'
+    } else if (sport === 'Pickleball') {
+        return "#2282d6"
     }
-    return theme.current.value.colors.accent
+    return ''
 })
 
 // Operating hours computed property

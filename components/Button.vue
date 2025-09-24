@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 const theme = useTheme()
-const accent = theme.current.value.colors.accent
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 
 const props = defineProps({
   disabled: Boolean,
   color: String
 })
 
-const defaultColor = computed(() => props.color || accent)
+const defaultColor = computed(() => props.color || accentColor.value)
 const hoverColor = computed(() => `${defaultColor.value}9a`)
 const activeColor = computed(() => `${defaultColor.value}cc`)
 

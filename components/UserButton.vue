@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
+
 const { logout, isLogin } = useAuth()
 const router = useRouter()
 const user = useAuthUser();
@@ -6,18 +8,17 @@ const message = 'Signing Out'
 const loading = ref(false)
 const displayName = computed(() => { return user.value?.displayName ? user.value?.displayName : "No Name" })
 
-async function clickHandlerSignOut()
-{
+async function clickHandlerSignOut() {
   loading.value = true
   await logout()
   router.push('/')
   loading.value = false
 }
 
-function clickHandlerProfile()
-{
+function clickHandlerProfile() {
   router.push('/profile')
 }
+
 </script>
 
 <template>
@@ -28,13 +29,13 @@ function clickHandlerProfile()
         <IconButtonUser v-bind="props">{{ displayName }}</IconButtonUser>
       </template>
       <v-list>
-        <v-list-item class="item" color="primary" variant="plain" @click="clickHandlerProfile">
+        <v-list-item class="item" variant="plain" @click="clickHandlerProfile">
           <template v-slot:prepend>
             <v-icon icon="mdi-account-edit"></v-icon>
           </template>
           <v-list-item-title>Profile</v-list-item-title>
         </v-list-item>
-        <v-list-item class="item" color="primary" variant="plain" @click="clickHandlerSignOut">
+        <v-list-item class="item" variant="plain" @click="clickHandlerSignOut">
           <template v-slot:prepend>
             <v-icon icon="mdi-logout"></v-icon>
           </template>
