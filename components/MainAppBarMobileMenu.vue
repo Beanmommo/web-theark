@@ -21,6 +21,10 @@ const arkLogo = {
   "pickleBallTheme": "/Logo/theark_pickleball.png",
 }
 
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
+
 const themeLogo = computed(() => {
   const key = theme.global.name.value as keyof typeof arkLogo;
   return arkLogo[key] ?? arkLogo["thearkTheme"];
@@ -29,7 +33,6 @@ const themeLogo = computed(() => {
 
 <template>
   <div class="mobileMenu">
-
     <div class="hamburger" @click="clickHandler">
       <IconHamburger />
     </div>
@@ -38,7 +41,7 @@ const themeLogo = computed(() => {
       <div id="mySidenav" class="sidenav" v-show="showSidebar">
         <div class="header">
           <img :src="themeLogo" alt="The Ark Logo" width="72px" />
-          <div class="closebtn" @click="clickHandler">
+          <div class="closebtn" :style="{ color: accentColor }" @click="clickHandler">
             <IconClose />
           </div>
         </div>
@@ -51,12 +54,9 @@ const themeLogo = computed(() => {
               <NuxtLink to="/profile" v-if="isLogin">Your Profile</NuxtLink>
               <div class="signout" @click="clickHandlerSignOut">Sign Out</div>
             </template>
-
             <DialogSignIn v-else>
               <IconButtonUser>Sign In</IconButtonUser>
             </DialogSignIn>
-
-
             <Button>Book Now</Button>
           </div>
 
@@ -145,7 +145,6 @@ const themeLogo = computed(() => {
 /* Position and style the close button (top right corner) */
 .closebtn {
   cursor: pointer;
-  color: $primary-green;
   width: 30px;
 }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify'
 import type { Pitch, BookedSlot, SlotDetails, BookingSlotDetails } from '../types/data'
 
 const dayjs = useDayjs()
@@ -18,13 +19,11 @@ watch(() => props.date, async () => reloadData())
 
 watch(() => props.location, () => reloadData())
 
-function reloadData()
-{
+function reloadData() {
   selectedTimeslots.value = []
 }
 
-function checkBookedSlot(date: string, timeslot: SlotDetails, pitchIndex: number)
-{
+function checkBookedSlot(date: string, timeslot: SlotDetails, pitchIndex: number) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   const found = props.bookedSlots.find(slot =>
     slot.pitch === pitchIndex + 1 &&
@@ -32,12 +31,11 @@ function checkBookedSlot(date: string, timeslot: SlotDetails, pitchIndex: number
     dayjs(slot.date).isSame(formattedDate, "day")
   );
   if (found !== undefined)
-  console.log(found)
+    console.log(found)
   return found !== undefined
 }
 
-function checkSlot(date: string, start: string, pitchIndex: number)
-{
+function checkSlot(date: string, start: string, pitchIndex: number) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   return (
     selectedTimeslots.value &&
@@ -45,8 +43,7 @@ function checkSlot(date: string, start: string, pitchIndex: number)
   );
 }
 
-function selectTimeslot(timeslot: SlotDetails, pitchIndex: number)
-{
+function selectTimeslot(timeslot: SlotDetails, pitchIndex: number) {
   const { start } = timeslot;
   const dateSelected = props.date
   let newTimeSlots = selectedTimeslots.value ? [...selectedTimeslots.value] : [];
@@ -67,8 +64,7 @@ function selectTimeslot(timeslot: SlotDetails, pitchIndex: number)
     newTimeSlots,
     [
       "pitch",
-      function (slot: BookingSlotDetails)
-      {
+      function (slot: BookingSlotDetails) {
         let add = slot.start.includes("pm") && slot.start !== "12pm" ? 12 : 0;
         return slot.start.length === 3
           ? parseInt(slot.start[0]) + add
@@ -80,6 +76,11 @@ function selectTimeslot(timeslot: SlotDetails, pitchIndex: number)
 
   emit('select', selectedTimeslots.value)
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 </script>
 
 <template>
@@ -106,7 +107,7 @@ function selectTimeslot(timeslot: SlotDetails, pitchIndex: number)
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
               <div class="time__slot time__slot--button" @click.prevent="selectTimeslot(timeSlot, ind)" v-else>
-                <v-icon color="green" v-if="checkSlot(date, timeSlot.start, ind)">mdi-check-circle</v-icon>
+                <v-icon :color="accentColor" v-if="checkSlot(date, timeSlot.start, ind)">mdi-check-circle</v-icon>
                 <v-icon color="#c9c9c9" v-else>mdi-check-circle</v-icon>
               </div>
             </div>

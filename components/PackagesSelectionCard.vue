@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify'
 import { type PackageDetails } from '../types/data'
 
 const props = defineProps({
@@ -10,20 +11,22 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-const imageUrl = computed(() =>
-{
+const imageUrl = computed(() => {
   return `/Images/${props.packageItem.id}.png`
 })
 
-const extraCredit = computed(() =>
-{
+const extraCredit = computed(() => {
   return parseInt(props.packageItem.value) - parseInt(props.packageItem.amount)
 })
 
-function clickHandler()
-{
+function clickHandler() {
   emit('select', props.packageItem)
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 </script>
 
 <template>
@@ -31,8 +34,8 @@ function clickHandler()
     <h4>{{ packageItem.title }}</h4>
     <img :src="imageUrl" class="icon" />
     <div class="details">
-      <div class="amount">${{ packageItem.amount }}</div>
-      <div class="extra">+${{ extraCredit }} Credits</div>
+      <div class="amount" :style="{ color: accentColor }">${{ packageItem.amount }}</div>
+      <div class="extra" :style="{ color: accentColor }">+${{ extraCredit }} Credits</div>
     </div>
     <Button @click="clickHandler">Buy Package</Button>
   </div>
@@ -59,13 +62,11 @@ function clickHandler()
   .amount {
     font-size: 1.4rem;
     font-weight: 600;
-    color: $primary-green;
   }
 
   .extra {
     font-size: 0.8rem;
     font-weight: 500;
-    color: $primary-green;
   }
 }
 </style>

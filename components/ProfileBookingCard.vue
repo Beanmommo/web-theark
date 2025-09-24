@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
 import { useBookedSlotsStore } from '../stores/bookedslots';
 import type { Booking, BookedSlot } from '../types/data'
 
@@ -14,25 +15,27 @@ const bookedslotsStore = useBookedSlotsStore()
 const { myBookedslots } = storeToRefs(bookedslotsStore)
 
 const bookingSlots = ref<BookedSlot[]>([])
-onMounted(() =>
-{
+onMounted(() => {
   initialiseData()
 })
 
-function initialiseData()
-{
+function initialiseData() {
   if (!props.booking.slots) return
-  props.booking.slots.forEach(slotKey =>
-  {
+  props.booking.slots.forEach(slotKey => {
     if (!myBookedslots.value[slotKey]) return
     bookingSlots.value.push(myBookedslots.value[slotKey])
   })
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 </script>
 
 <template>
   <div class="profileBookingCard">
-    <img src="/Icon/activity_booking_icon.svg" alt="Booking Icon" class="icon" />
+    <img src="/Icon/activity_booking_icon.svg" alt="Booking Icon" class="icon" :style="{ background: accentColor }" />
     <div class="location__date">
       <b>{{ booking.location }}</b>
       <div>{{ dayjs(booking.date).format('DD MMM YYYY') }}</div>
@@ -57,7 +60,6 @@ function initialiseData()
   .icon {
     width: 3rem;
     height: 3rem;
-    background: $primary-green;
     border-radius: 50%;
     padding: $unit;
   }

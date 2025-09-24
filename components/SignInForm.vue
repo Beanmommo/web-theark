@@ -1,26 +1,30 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify'
+
 
 const emit = defineEmits(['success', 'change'])
 const { loginWithGoogle } = useAuth()
 const loading = ref(false)
 const message = 'Signing In'
 
-function successHandler()
-{
+function successHandler() {
   emit('success')
 }
 
-async function clickHandlerGoogle()
-{
+async function clickHandlerGoogle() {
   loading.value = true
   await loginWithGoogle()
   loading.value = false
 }
 
-async function clickHandlerSignUp()
-{
+async function clickHandlerSignUp() {
   emit('change')
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 
 </script>
 
@@ -38,7 +42,7 @@ async function clickHandlerSignUp()
 
     <div class="signup__option">
       Don't have an account?
-      <span class="accent" @click="clickHandlerSignUp">SIGN UP</span>
+      <span class="accent" :style="{ color: accentColor }" @click="clickHandlerSignUp">SIGN UP</span>
     </div>
     <!-- <v-alert v-model="loginError" type="error" outlined>Sorry. There is no record of user.</v-alert> -->
 

@@ -12,7 +12,7 @@ const accentColor = computed(() => {
     <div class="icon">
       <slot name="icon" />
     </div>
-    <h6>
+    <h6 :style="{ color: accentColor }">
       <slot name="title" />
     </h6>
   </div>

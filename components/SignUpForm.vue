@@ -1,30 +1,34 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify'
+
 
 const emit = defineEmits(['success', 'change'])
 const { signUpWithGoogle } = useAuth()
 const loading = ref(false)
 
-function successHandler()
-{
+function successHandler() {
   emit('success')
 }
 
-async function clickHandlerGoogle()
-{
+async function clickHandlerGoogle() {
   loading.value = true
   await signUpWithGoogle()
   loading.value = false
 }
 
-async function clickHandlerLogIn()
-{
+async function clickHandlerLogIn() {
   emit('change')
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
 
 </script>
 
 <template>
-  <div class="signUpForm">
+  <div class="signUpForm" :style="{ color: accentColor }">
     <Loading v-if="loading" />
     <h2>Sign Up</h2>
     <SignUpFormEmail @success="successHandler" />
@@ -34,10 +38,9 @@ async function clickHandlerLogIn()
         <img src="/Icon/button_google.svg" height="20" />Google
       </v-btn>
     </div>
-
     <div class="signup__option">
       Already have an account?
-      <span class="accent" @click.prevent="clickHandlerLogIn">Log In</span>
+      <span class="accent" :style="{ color: accentColor }" @click.prevent="clickHandlerLogIn">Log In</span>
     </div>
   </div>
 </template>
@@ -68,7 +71,6 @@ async function clickHandlerLogIn()
 }
 
 .accent {
-  color: $primary-accent;
   cursor: pointer;
   text-decoration: underline;
 }

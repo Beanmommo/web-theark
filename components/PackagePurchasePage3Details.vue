@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
 import { type PackageDetails } from '../types/data';
 const props = defineProps({
   packageItem: {
@@ -9,21 +10,25 @@ const props = defineProps({
 
 const dayjs = useDayjs()
 
-const expiryDate = computed(() =>
-{
+const expiryDate = computed(() => {
   return dayjs().add(props.packageItem.expiryPeriod, 'months').format('DD MMM YYYY')
+})
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
 })
 </script>
 
 <template>
   <div class="packagePurchasePage3Details">
     <h5>Package Purchase Details</h5>
-    <div class="details">
-      <div class="title">{{ packageItem.title }}</div>
+    <div class="details" :style="{ borderColor: accentColor }">
+      <div class="title" :style="{ color: accentColor }">{{ packageItem.title }}</div>
       <div>
-        <div class="details--text">Total Value : ${{ packageItem.value }}</div>
-        <div class="details--text">Amount Payable : ${{ packageItem.amount }}</div>
-        <div class="details--text">Expiry Date : {{ expiryDate }}</div>
+        <div class="details--text" :style="{ color: accentColor }">Total Value : ${{ packageItem.value }}</div>
+        <div class="details--text" :style="{ color: accentColor }">Amount Payable : ${{ packageItem.amount }}</div>
+        <div class="details--text" :style="{ color: accentColor }">Expiry Date : {{ expiryDate }}</div>
       </div>
 
     </div>
@@ -43,17 +48,14 @@ const expiryDate = computed(() =>
   background: rgb(245, 255, 245);
   border-width: 3px;
   border-style: solid;
-  border-color: green;
   padding: $margin;
 
   .title {
-    color: green;
     font-weight: bold;
     font-size: 1.2rem;
   }
 
   &--text {
-    color: $primary-green;
     font-weight: 500;
   }
 }
