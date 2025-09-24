@@ -49,6 +49,9 @@ export default defineNuxtConfig({
         transformAssetUrls,
       },
     },
+    build: {
+      chunkSizeWarningLimit: 2000,
+    },
   },
 
   modules: [
