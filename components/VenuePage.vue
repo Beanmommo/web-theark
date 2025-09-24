@@ -16,23 +16,6 @@
                 <Button @click="clickHandlerBookNow">Book Now</Button>
             </div>
         </div>
-        <!-- <div class="venue__details_container">
-            <div>
-                <h3 :style="{ color: sportColor }">About {{ selectedVenue.name }}</h3>
-                <p>{{ selectedVenue.description }}</p>
-            </div>
-            <div class="venue__contact_info">
-                <h3 :style="{ color: sportColor }">Contact Information</h3>
-                <span class="contact_info__details">
-                    <p>
-                        <VIcon :color="sportColor" class="mr-2" icon="mdi-phone" />{{ selectedVenue.contact }}
-                    </p>
-                    <p>
-                        <VIcon :color="sportColor" class="mr-2" icon="mdi-email" />{{ selectedVenue.email }}
-                    </p>
-                </span>
-            </div>
-        </div> -->
     </SectionContainer>
     <SectionContainer v-if="selectedVenue">
         <div>
@@ -58,7 +41,6 @@
 <script setup lang="ts">
 
 const route = useRoute()
-const router = useRouter()
 const venueKey = route.params.key as string
 const sport = route.params.sportSlug as string
 
@@ -79,13 +61,6 @@ const sportColor = computed(() => {
     return ''
 })
 
-// Operating hours computed property
-// const operatingHours = computed(() => {
-//     if (selectedVenue.value?.tillMidnight === 'true') {
-//         return 'Open until midnight'
-//     }
-//     return 'Standard hours'
-// })
 
 // Carousel images - combine publicId and gallery images
 const carouselHeight = computed(() => {
@@ -123,10 +98,6 @@ const currentCarouselIndex = ref(0)
 const showGalleryModal = ref(false)
 const currentImageIndex = ref(0)
 
-function openGalleryModal(index: number) {
-    currentImageIndex.value = index
-    showGalleryModal.value = true
-}
 
 function closeGalleryModal() {
     showGalleryModal.value = false
@@ -172,7 +143,7 @@ onMounted(() => {
 // Book now functionality
 function clickHandlerBookNow() {
     if (selectedVenue.value) {
-        router.push(`/booking?sport=${sport}&venue=${selectedVenue.value.name}`)
+        navigateTo(`/${sport}/booking?venue=${selectedVenue.value.name}`)
     }
 }
 </script>

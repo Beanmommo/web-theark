@@ -12,8 +12,5 @@ await Promise.all([
 </script>
 
 <template>
-    <!-- <SectionContainer>
-        <VBreadcrumbs :items="breadcrumbs" />
-    </SectionContainer> -->
     <VenuePage />
 </template>

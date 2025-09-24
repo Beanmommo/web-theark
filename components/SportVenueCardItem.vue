@@ -13,8 +13,7 @@ const props = defineProps({
     }
 })
 
-const router = useRouter()
-function clickHandlerBookNow() {
+function clickHandlerViewVenue() {
     navigateTo(`/${props.sportSlug}/venue/${props.venue.key}`)
 }
 const courtName = computed(() => {
@@ -41,14 +40,14 @@ const sportColor = computed(() => {
     <div class="venueCardItem">
         <template v-if="props.venue">
             <CldImage :src="`website/${props.venue.publicId}`" width="800" height="600" :alt="props.venue.name"
-                @click="clickHandlerBookNow" />
+                @click="clickHandlerViewVenue" />
             <div class="item__content">
                 <h3>{{ props.venue.name }} {{ courtName }}</h3>
                 <SportVenueItem :locationKey="props.venue.key" :sportSlug="props.sportSlug" />
                 <VenueAddress :color="sportColor">{{ props.venue.address }}</VenueAddress>
                 <div class="buttons__container">
                     <VenueFromRates :locationKey="props.venue.key" :color="sportColor" />
-                    <Button @click="clickHandlerBookNow">Book Now</Button>
+                    <Button @click="clickHandlerViewVenue">View Venue</Button>
                 </div>
             </div>
         </template>
