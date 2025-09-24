@@ -15,7 +15,7 @@ const props = defineProps({
 
 const router = useRouter()
 function clickHandlerBookNow() {
-    router.push(`/venue/${props.venue.key}?sport=${props.sportSlug}`)
+    navigateTo(`/${props.sportSlug}/venue/${props.venue.key}`)
 }
 const courtName = computed(() => {
     if (props.sportSlug === 'futsal') {

@@ -20,7 +20,7 @@ function updateThemeByRoute() {
       isChanged = true
       return
     }
-    if (route.query.sport === sport.slug) {
+    if (route.params.sportSlug === sport.slug) {
       console.log('Changed to ' + sport.theme)
       theme.change(sport.theme)
       sportsStore.setActiveSportBySlug(sport.slug)
@@ -34,7 +34,7 @@ function updateThemeByRoute() {
   }
 }
 
-watch(() => [route.query.sport], updateThemeByRoute, { immediate: true })
+watch(() => [route.params.sportSlug], updateThemeByRoute, { immediate: true })
 </script>
 
 <template>

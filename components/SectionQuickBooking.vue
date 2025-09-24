@@ -10,20 +10,19 @@ const { activeSport } = storeToRefs(sportsStore)
 const { activeSportVenues } = useSport()
 
 const router = useRouter()
-
 const selectedVenue = ref()
 const selectedDate = ref()
 
 function clickHandler() {
-  let url = `/booking?sport=${activeSport.value?.name}`
-  if (selectedVenue.value || selectedDate.value) url += '&'
+  let url = `/${activeSport.value?.slug}/booking`
+  if (selectedVenue.value || selectedDate.value) url += '?'
   if (selectedVenue.value) url += `venue=${selectedVenue.value}`
   if (selectedVenue.value && selectedDate.value) url += '&'
   if (selectedDate.value) {
     const date = format(selectedDate.value)
     url += `date=${date}`
   }
-  router.push(url)
+  navigateTo(url)
 }
 
 function format(date: Date) {

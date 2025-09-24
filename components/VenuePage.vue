@@ -59,8 +59,8 @@
 
 const route = useRoute()
 const router = useRouter()
-const venueKey = route.params.venuekey as string
-const sport = route.query.sport as string
+const venueKey = route.params.key as string
+const sport = route.params.sportSlug as string
 
 const locationsStore = useLocationsStore()
 const selectedVenue = computed(() => {

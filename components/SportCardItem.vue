@@ -14,7 +14,7 @@ const theme = useTheme()
 const router = useRouter()
 
 function clickHandlerBookNow() {
-    router.push(`/${props.sport.slug}`)
+    router.push(`/${props.sport.slug}/venue`)
 }
 
 const sportsStore = useSportsStore()

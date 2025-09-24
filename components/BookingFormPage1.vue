@@ -93,7 +93,7 @@ const totalPayable = computed(() => {
 
 function initialiseQuery() {
   initialLoad.value = true
-  if (route.query.sport) selectedSport.value = route.query.sport;
+  if (route.params.sportSlug) selectedSport.value = route.params.sportSlug;
   if (!route.query.venue) return;
   selectedVenue.value = route.query.venue
 }
