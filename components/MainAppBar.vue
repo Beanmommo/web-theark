@@ -2,10 +2,22 @@
 import { useTheme } from 'vuetify/lib/composables/theme.mjs';
 
 const router = useRouter();
+const route = useRoute()
+const sportSlug = route.params.sportSlug as string
 
-const navItems = [
-  { title: "Contact Us", to: "/contactus" },
-]
+// const navItems = [
+//   { title: "Contact Us", to: "/contactus" },
+// ]
+// TODO: Make navItems dynamic
+const navItems = computed(() => {
+  if (sportSlug === 'futsal') {
+    return [{ title: "Contact Us", to: "/contactus" }, { title: "Packages", to: `/${sportSlug}/packages` }]
+  }
+  if (sportSlug === 'pickleball') {
+    return [{ title: "Contact Us", to: "/contactus" }, { title: "Packages", to: `/${sportSlug}/packages` }]
+  }
+  return [{ title: "Contact Us", to: "/contactus" },]
+})
 
 function clickHandler(link: string) {
   router.push(link)
@@ -20,6 +32,10 @@ const arkLogo = {
 const themeLogo = computed(() => {
   const key = theme.global.name.value as keyof typeof arkLogo;
   return arkLogo[key] ?? arkLogo["thearkTheme"];
+})
+
+watch(() => route.params.sportSlug, (newVal) => {
+
 })
 
 </script>

@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { PackageDetails, Invoice } from '../../types/data'
-import { packagesConfig } from '../../configs/packages'
 import { usePresalesStore } from '../../stores/presales';
-enum Step
-{
+enum Step {
   SelectionPage = 1,
   AuthPage = 2,
   PaymentPage = 3,
@@ -16,26 +14,27 @@ const user = useAuthUser()
 const presalesStore = usePresalesStore()
 const isLogin = computed(() => user.value !== null)
 
+const packagesStore = usePackagesStore()
+const packageConfig = computed(() => {
+  return packagesStore.getPackagesBySport(route.params.sportSlug as string)
+})
+
 const step = ref(Step.SelectionPage)
 const selectedPackage = ref<PackageDetails>()
 const invoiceData = ref({} as Invoice)
 
-onMounted(() =>
-{
+onMounted(() => {
   if (route.query.package)
     initialisePackage(route.query.package as string)
 })
-watch(isLogin, (login: boolean) =>
-{
+watch(isLogin, (login: boolean) => {
   if (login && step.value === Step.AuthPage) step.value = Step.PaymentPage
   if (!login && step.value === Step.PaymentPage) step.value = Step.AuthPage
 })
 
-watch(() => route.query.package, (packageId) =>
-{
+watch(() => route.query.package, (packageId) => {
   if (!packageId) step.value = Step.SelectionPage
-  else
-  {
+  else {
     initialisePackage(packageId as string)
   }
 })
@@ -45,9 +44,8 @@ const isAuthPage = computed(() => step.value === Step.AuthPage)
 const isPaymentPage = computed(() => step.value === Step.PaymentPage)
 const isQRPage = computed(() => step.value === Step.QRPage)
 
-function initialisePackage(packageId: string)
-{
-  selectedPackage.value = packagesConfig.find(packageConfig => packageConfig.id === packageId)
+function initialisePackage(packageId: string) {
+  selectedPackage.value = packageConfig.value.find(pkg => pkg.id === packageId)
   if (selectedPackage.value)
     presalesStore.updatePackageDetails(selectedPackage.value)
 
@@ -57,8 +55,7 @@ function initialisePackage(packageId: string)
     step.value = Step.AuthPage
 }
 
-function updateHandler(packageSelected: PackageDetails)
-{
+function updateHandler(packageSelected: PackageDetails) {
   selectedPackage.value = packageSelected
   if (selectedPackage.value)
     presalesStore.updatePackageDetails(selectedPackage.value)
@@ -67,15 +64,13 @@ function updateHandler(packageSelected: PackageDetails)
   else step.value = Step.AuthPage
 }
 
-function backHandler()
-{
+function backHandler() {
   router.replace({ query: { package: undefined } })
   step.value = Step.SelectionPage
 }
 
 
-function submitHandler(invoiceDetails: Invoice)
-{
+function submitHandler(invoiceDetails: Invoice) {
   step.value = Step.QRPage
   invoiceData.value = invoiceDetails
 }

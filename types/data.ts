@@ -278,6 +278,7 @@ export type PackageDetails = {
   unit: string;
   value: string;
   id: string;
+  typeOfSports: string;
 };
 
 export type Config = {
