@@ -40,7 +40,7 @@ const navItems = computed(() => {
   if (sportSlug === 'pickleball') {
     return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` },]
   }
-  return [{ title: "Contact Us", to: "/contactus" },]
+  return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Pickleball", to: "/pickleball/venue" }, { title: "Contact Us", to: "/contactus" },]
 })
 </script>
 
