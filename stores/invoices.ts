@@ -1,54 +1,60 @@
-import { defineStore } from 'pinia'
-import type { Invoice } from '@/types/data'
+import { defineStore } from "pinia";
+import type { Invoice } from "@/types/data";
 
-export const useInvoicesStore = defineStore('invoices', () =>
-{
-  const dayjs = useDayjs()
+export const useInvoicesStore = defineStore("invoices", () => {
+  const dayjs = useDayjs();
 
-  const fetchNewInvoiceId = async () =>
-  {
+  const fetchNewInvoiceId = async () => {
     const invoiceId = await $fetch(`/api/invoices/id`);
-    return invoiceId
-  }
+    return invoiceId;
+  };
 
-  const addInvoice = async (invoiceData: Partial<Invoice>) =>
-  {
+  const addInvoice = async (invoiceData: Partial<Invoice>) => {
     const newInvoiceId = await fetchNewInvoiceId();
     if (!newInvoiceId) return;
     const finalInvoiceData = {
       ...invoiceData,
       id: newInvoiceId,
-      submittedDate: dayjs().format()
-    }
+      submittedDate: dayjs().format(),
+    };
     const invoiceSubmittedData = await $fetch(`/api/invoices`, {
-      method: 'POST',
-      body: JSON.stringify(finalInvoiceData)
+      method: "POST",
+      body: JSON.stringify(finalInvoiceData),
     });
     return invoiceSubmittedData;
-  }
+  };
 
-  const updateInvoiceBookingKey = async (invoiceKey: string, bookingKey: string) =>
-  {
+  const updateInvoiceBookingKey = async (
+    invoiceKey: string,
+    bookingKey: string
+  ) => {
     const data = await $fetch(`/api/invoices/update`, {
-      method: 'POST',
-      body: JSON.stringify({ invoiceKey, data: { bookingKey } })
+      method: "POST",
+      body: JSON.stringify({ invoiceKey, data: { bookingKey } }),
     });
-    return data
-  }
+    return data;
+  };
 
-  const updateInvoiceCreditPackageKey = async (invoiceKey: string, creditPackageKey: string) =>
-  {
+  const updateInvoiceCreditPackageKey = async (
+    invoiceKey: string,
+    creditPackageKey: string
+  ) => {
     const data = await $fetch(`/api/invoices/update`, {
-      method: 'POST',
-      body: JSON.stringify({ invoiceKey, data: { creditPackageKey } })
+      method: "POST",
+      body: JSON.stringify({ invoiceKey, data: { creditPackageKey } }),
     });
-    return data
-  }
+    return data;
+  };
 
+  const fetchInvoiceByKey = async (invoiceKey: string) => {
+    const invoiceData = await $fetch(`/api/invoices/${invoiceKey}`);
+    return invoiceData;
+  };
 
   return {
     addInvoice,
     updateInvoiceBookingKey,
-    updateInvoiceCreditPackageKey
-  }
-})
+    updateInvoiceCreditPackageKey,
+    fetchInvoiceByKey,
+  };
+});

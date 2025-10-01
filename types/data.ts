@@ -60,7 +60,7 @@ export type BookedSlot = {
   name: string;
 
   date: string;
-  pitch: number;
+  pitch: number | string;
   start: string;
   end: string;
   rate: number;
@@ -82,7 +82,7 @@ export type SlotDetails = {
 
 export type BookingSlotDetails = SlotDetails & {
   date: string;
-  pitch: number;
+  pitch: number | string;
   typeOfSports: string;
 };
 
@@ -214,7 +214,18 @@ export type Invoice = TotalCostData &
     invoiceType: InvoiceType;
     location: string;
     date?: string;
+    slots: InvoiceSlot[];
   };
+
+export type InvoiceSlot = {
+  pitch: number | string;
+  start: string;
+  end: string;
+  rate: number;
+  duration: number;
+  type: string;
+  date: string;
+};
 
 export type InvoiceBooking = Invoice & BookingDetails;
 export type InvoicePackage = Invoice & PackageDetails;
@@ -256,7 +267,7 @@ export type AutomateSlot = SlotDetails & {
   email: string;
   submittedDate: string;
   location: string;
-  pitch: number;
+  pitch: number | string;
   date: string;
 };
 

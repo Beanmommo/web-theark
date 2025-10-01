@@ -26,10 +26,10 @@ function reloadData() {
   selectedTimeslots.value = []
 }
 
-function checkBookedSlot(date: string, timeslot: SlotDetails, pitchIndex: number) {
+function checkBookedSlot(date: string, timeslot: SlotDetails, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   const found = props.bookedSlots.find(slot =>
-    slot.pitch === pitchIndex + 1 &&
+    slot.pitch === pitch.name &&
     (slot.start === timeslot.start || slot.end === timeslot.end) &&
     dayjs(slot.date).isSame(formattedDate, "day")
   );
@@ -38,21 +38,21 @@ function checkBookedSlot(date: string, timeslot: SlotDetails, pitchIndex: number
   return found !== undefined
 }
 
-function checkSlot(date: string, start: string, pitchIndex: number) {
+function checkSlot(date: string, start: string, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   return (
     selectedTimeslots.value &&
-    selectedTimeslots.value.findIndex((slot) => slot.start === start && slot.pitch === pitchIndex + 1 && dayjs(slot.date).isSame(formattedDate, "day")) !== -1
+    selectedTimeslots.value.findIndex((slot) => slot.start === start && slot.pitch === pitch.name && dayjs(slot.date).isSame(formattedDate, "day")) !== -1
   );
 }
 
-function selectTimeslot(timeslot: SlotDetails, pitchIndex: number) {
+function selectTimeslot(timeslot: SlotDetails, pitch: Pitch) {
   const { start } = timeslot;
   const dateSelected = props.date
   let newTimeSlots = selectedTimeslots.value ? [...selectedTimeslots.value] : [];
   const found = newTimeSlots.findIndex(slot =>
     slot.start === start &&
-    slot.pitch === pitchIndex + 1 &&
+    slot.pitch === pitch.name &&
     slot.date === dateSelected);
 
   if (found !== -1)
@@ -60,9 +60,9 @@ function selectTimeslot(timeslot: SlotDetails, pitchIndex: number) {
   else
     newTimeSlots.push({
       ...timeslot,
-      pitch: pitchIndex + 1,
+      pitch: pitch.name,
       date: dateSelected,
-      typeOfSports: props.locationPitches[pitchIndex].typeOfSports
+      typeOfSports: pitch.typeOfSports
     });
   selectedTimeslots.value = useOrderBy(
     newTimeSlots,
@@ -105,13 +105,13 @@ const accentColor = computed(() => {
       </v-col>
       <v-col cols="5" md="8">
         <div class="d-flex flex-row justify-center align-center">
-          <template v-for="(_, ind) in locationPitches">
+          <template v-for="pitch in locationPitches" :key="pitch.key">
             <div class="flex-grow-1">
-              <div class="time__slot time__slot--button" v-if="checkBookedSlot(date, timeSlot, ind)">
+              <div class="time__slot time__slot--button" v-if="checkBookedSlot(date, timeSlot, pitch)">
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
-              <div class="time__slot time__slot--button" @click.prevent="selectTimeslot(timeSlot, ind)" v-else>
-                <v-icon :color="accentColor" v-if="checkSlot(date, timeSlot.start, ind)">mdi-check-circle</v-icon>
+              <div class="time__slot time__slot--button" @click.prevent="selectTimeslot(timeSlot, pitch)" v-else>
+                <v-icon :color="accentColor" v-if="checkSlot(date, timeSlot.start, pitch)">mdi-check-circle</v-icon>
                 <v-icon color="#c9c9c9" v-else>mdi-check-circle</v-icon>
               </div>
             </div>
