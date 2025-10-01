@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
 import type { GroupedTimeslots, BookingSlotDetails } from '~/types/data';
 
-defineProps({
+const props = defineProps({
   groupedTimeslots: {
     type: Object as PropType<GroupedTimeslots>,
     default: {}
@@ -10,35 +11,56 @@ defineProps({
 
 const dayjs = useDayjs()
 const route = useRoute()
-
+const sport = computed(() => route.params.sportSlug)
 const venue = computed(() => route.query.venue)
 
-function formatDate(date: string)
-{
+function formatDate(date: string) {
   return dayjs(date, 'YYYY-MM-DD').format('MMMM DD, YYYY')
 }
 
-function formatSlot(slot: BookingSlotDetails)
-{
-  return `Pitch ${slot.pitch} : ${slot.start} - ${slot.end}`
+function formatSlot(slot: BookingSlotDetails) {
+  let pitchName = 'Pitch'
+  if (sport.value === 'pickleball') {
+    pitchName = 'Court'
+  }
+  return `${pitchName} ${slot.pitch} : ${slot.start} - ${slot.end}`
 }
+
+const theme = useTheme()
+const accentColor = computed(() => {
+  return theme.current.value.colors.accent
+})
+
+const brighterAccentColor = computed(() => {
+  if (sport.value === 'futsal') {
+    return '#cefad0'
+  } else if (sport.value === 'pickleball') {
+    return '#E5F3FF'
+  }
+  return '#fff'
+})
+
+function formatSport(sport: string) {
+  return sport.charAt(0).toUpperCase() + sport.slice(1)
+}
+
+
 </script>
 
 <template>
   <div class="bookingFormPage3Details">
     <h5>Booking Details</h5>
-    <div class="details">
-      <div class="venue">{{ venue }}</div>
+    <div class="details" :style="{ borderColor: accentColor, backgroundColor: brighterAccentColor }">
+      <div class="venue" :style="{ color: accentColor }">{{ `${venue} - ${formatSport(sport as string)}` }}</div>
       <template v-for="(dateBookings, date) in groupedTimeslots">
         <div class="dateDetails">
-          <div class="date">{{ formatDate(date as string) }}</div>
+          <div class="date" :style="{ color: accentColor }">{{ formatDate(date as string) }}</div>
           <template v-for="slot in dateBookings">
             <div class="slot">{{ formatSlot(slot) }}</div>
           </template>
         </div>
       </template>
     </div>
-
   </div>
 </template>
 
@@ -50,7 +72,6 @@ function formatSlot(slot: BookingSlotDetails)
 }
 
 .venue {
-  color: green;
   font-weight: bold;
   font-size: 1.2rem;
 }
@@ -58,14 +79,13 @@ function formatSlot(slot: BookingSlotDetails)
 .details {
   display: grid;
   grid-gap: $margin;
-  background: rgb(245, 255, 245);
   border-width: 3px;
   border-style: solid;
-  border-color: green;
   padding: $margin;
 }
 
 .date {
   color: green;
+  font-weight: 500
 }
 </style>

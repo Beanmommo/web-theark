@@ -21,13 +21,10 @@ const { timeslots } = storeToRefs(timeslotsStore);
 const pitchesStore = usePitchesStore()
 const { pitches } = storeToRefs(pitchesStore)
 const presalesStore = usePresalesStore()
-const sportsStore = useSportsStore()
-const { sports } = storeToRefs(sportsStore)
 
 const timeSelector = ref()
 const selectedDate = ref()
 const selectedVenue = ref()
-const selectedSport = ref()
 const selectedTimeslots = ref([] as BookingSlotDetails[])
 const initialLoad = ref(true)
 
@@ -35,32 +32,34 @@ onMounted(() => {
   initialiseQuery()
 })
 
-watch(selectedSport, () => {
-  selectedTimeslots.value = []
-  if (!initialLoad.value) {
-    selectedVenue.value = undefined
-    router.replace({ query: { sport: selectedSport.value, date: selectedDate.value } })
-  }
-  initialLoad.value = false
-})
+const sport = route.params.sportSlug as string
+
+// watch(selectedSport, () => {
+//   selectedTimeslots.value = []
+//   if (!initialLoad.value) {
+//     selectedVenue.value = undefined
+//     router.replace({ query: { sport: selectedSport.value, date: selectedDate.value } })
+//   }
+//   initialLoad.value = false
+// })
 
 watch(selectedVenue, () => {
   selectedTimeslots.value = []
-  router.replace({ query: { sport: selectedSport.value, venue: selectedVenue.value, date: selectedDate.value } })
+  router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
 })
 
 watch(selectedDate, () => {
   selectedTimeslots.value = []
-  router.replace({ query: { sport: selectedSport.value, venue: selectedVenue.value, date: selectedDate.value } })
+  router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
 })
 
 const sportPitches = computed(() => {
-  if (!selectedSport.value) return []
-  return pitches.value.filter(pitch => pitch.typeOfSports === selectedSport.value)
+  // if (!selectedSport.value) return []
+  return pitches.value.filter(pitch => pitch.typeOfSports === sport)
 })
 
 const availableLocations = computed(() => {
-  if (!selectedSport.value) return []
+  // if (!selectedSport.value) return []
   const availableLocationsKey = Array.from(new Set(sportPitches.value.map(pitch => pitch.locationKey))) //Gets unique locationKey
   return locations.value.filter(location => availableLocationsKey.includes(location.key))
 })
@@ -74,7 +73,7 @@ const location = computed(() => {
 
 const locationPitches = computed(() => {
   if (!location.value) return []
-  return pitches.value.filter(pitch => pitch.locationKey === location.value?.key && pitch.typeOfSports === selectedSport.value);
+  return pitches.value.filter(pitch => pitch.locationKey === location.value?.key && pitch.typeOfSports === sport);
 })
 
 const locationTimeslots = computed(() => {
@@ -93,7 +92,7 @@ const totalPayable = computed(() => {
 
 function initialiseQuery() {
   initialLoad.value = true
-  if (route.params.sportSlug) selectedSport.value = route.params.sportSlug;
+  // if (route.params.sportSlug) selectedSport.value = route.params.sportSlug;
   if (!route.query.venue) return;
   selectedVenue.value = route.query.venue
 }
@@ -126,7 +125,8 @@ function clickHandlerBookNow() {
   const bookingDetails: BookingDetails = {
     location: selectedVenue.value,
     slots: selectedTimeslots.value,
-    date: selectedDate.value
+    date: selectedDate.value,
+    typeOfSports: sport
   }
   presalesStore.updateBookingDetails(bookingDetails)
   emit('next')

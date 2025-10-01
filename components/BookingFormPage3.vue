@@ -14,6 +14,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['back', 'submit'])
 const { verifyRecaptcha } = useReCaptchaHandler();
+const route = useRoute()
+const sport = route.params.sportSlug as string
 
 
 // Composables
@@ -55,8 +57,7 @@ const paymentMethod = ref<PaymentMethods>()
 const creditCardValid = ref(false)
 const slotsBooked = ref(false)
 
-onMounted(async () =>
-{
+onMounted(async () => {
   loading.value = true
   await creditsStore.fetchUserCredits()
   initialiseUserDetailsPresalesStore()
@@ -65,20 +66,17 @@ onMounted(async () =>
   loading.value = false
 })
 
-const userDetailsCompleted = computed(() =>
-{
+const userDetailsCompleted = computed(() => {
   return user.value?.phoneNumber && user.value?.displayName
 })
 
-const formCompleted = computed(() =>
-{
+const formCompleted = computed(() => {
   return checklist.value && paymentMethod.value
     && ((paymentMethod.value === PaymentMethods.CREDIT_CARD && creditCardValid.value)
       || paymentMethod.value === PaymentMethods.PAYNOW || paymentMethod.value === PaymentMethods.MEMBERSHIP_CREDIT)
 })
 
-function initialiseUserDetailsPresalesStore()
-{
+function initialiseUserDetailsPresalesStore() {
   const customerDetails = {
     name: user.value?.displayName,
     email: user.value?.email,
@@ -88,10 +86,8 @@ function initialiseUserDetailsPresalesStore()
   presalesStore.updateCustomerData(customerDetails)
 }
 
-function updateHandlerPromoCode(promo: PromoCode)
-{
-  if (Object.keys(promo).length !== 0)
-  {
+function updateHandlerPromoCode(promo: PromoCode) {
+  if (Object.keys(promo).length !== 0) {
     const discount = getDiscount(props.groupedTimeslots, promo)
     updatePromoCodeDiscount(promo.promocode, discount)
   }
@@ -99,30 +95,28 @@ function updateHandlerPromoCode(promo: PromoCode)
     removePromoCodeDiscount()
   }
   if (paymentMethod.value === PaymentMethods.MEMBERSHIP_CREDIT)
-      updateMembershipCreditTotalPayable()
-    else 
-      updateTotalPayable()
-    if (paymentMethod.value === PaymentMethods.CREDIT_CARD)
-      updateCreditCardFee()
-    presalesStore.updateTotalCostData(totalCostData.value)
+    updateMembershipCreditTotalPayable()
+  else
+    updateTotalPayable()
+  if (paymentMethod.value === PaymentMethods.CREDIT_CARD)
+    updateCreditCardFee()
+  presalesStore.updateTotalCostData(totalCostData.value)
 }
 
-function updateHandlerCheckList(result: boolean)
-{
+function updateHandlerCheckList(result: boolean) {
   checklist.value = result
 }
 
-function updateHandlerPaymentSelection(paymentMode: PaymentMethods)
-{
+function updateHandlerPaymentSelection(paymentMode: PaymentMethods) {
   paymentMethod.value = paymentMode
   if (paymentMode === PaymentMethods.MEMBERSHIP_CREDIT)
     updateMembershipCredit()
   else {
     updateTotalPayable()
     if (paymentMode === PaymentMethods.CREDIT_CARD)
-    updateCreditCardFee()
-  else if (paymentMode === PaymentMethods.PAYNOW)
-    removeCreditCardFee()
+      updateCreditCardFee()
+    else if (paymentMode === PaymentMethods.PAYNOW)
+      removeCreditCardFee()
   }
   presalesStore.updateTotalCostData(totalCostData.value)
   presalesStore.updatePaymentData({
@@ -131,48 +125,40 @@ function updateHandlerPaymentSelection(paymentMode: PaymentMethods)
   })
 }
 
-function updateCardValidity(valid: boolean)
-{
+function updateCardValidity(valid: boolean) {
   creditCardValid.value = valid
 }
 
-async function handleCreditCardPayment(newInvoiceData: Partial<InvoiceBooking>)
-{
+async function handleCreditCardPayment(newInvoiceData: Partial<InvoiceBooking>) {
   if (!newInvoiceData.presaleId || !newInvoiceData.totalPayable) return; // Need to add error handling if newInvoiceData is not created
   const result = await paymentsStore.confirmCardPayment(newInvoiceData.presaleId, newInvoiceData.totalPayable, customerData.value)
-  if (result.status === 'succeeded')
-  {
+  if (result.status === 'succeeded') {
     return {
       paymentIntentId: result.id,
       paymentMethodId: result.payment_method as string
     }
   }
-  else
-  {
+  else {
     paymentError.value = true
     paymentErrorMessage.value = 'Payment failed. Please try again.'
     return null
   }
 }
 
-async function handleMembershipCreditPayment()
-{
+async function handleMembershipCreditPayment() {
   let remaining = totalCostData.value.totalPayable;
   let promises: Promise<any>[] = []
-  currentUserPackages.value.forEach(async (item) =>
-  {
+  currentUserPackages.value.forEach(async (item) => {
     if (remaining === 0) return;
     const creditsLeft: number = Number(item.creditsLeft)
       ? Number(item.creditsLeft)
       : Number(item.value);
     let creditPackageCreditsLeft = 0
-    if (creditsLeft >= remaining)
-    {
+    if (creditsLeft >= remaining) {
       creditPackageCreditsLeft = creditsLeft - remaining
       remaining = 0
     }
-    else if (creditsLeft < remaining)
-    {
+    else if (creditsLeft < remaining) {
       remaining -= creditsLeft
     }
     if (item.key)
@@ -182,16 +168,13 @@ async function handleMembershipCreditPayment()
   return creditPackageKeys
 }
 
-async function checkBookingSlots()
-{
+async function checkBookingSlots() {
   const bookedSlots = await bookedSlotsStore.fetchBookedSlotsByDate(bookingDetails.value.date, bookingDetails.value.location)
   let booked = false;
   if (bookedSlots)
-    Object.keys(props.groupedTimeslots).forEach((date) =>
-    {
+    Object.keys(props.groupedTimeslots).forEach((date) => {
       let slots = props.groupedTimeslots[date];
-      slots.forEach(({ pitch, start, date }) =>
-      {
+      slots.forEach(({ pitch, start, date }) => {
         const found = bookedSlots.find(slot =>
           slot.start === start && slot.pitch === pitch && dayjs(slot.date).format('YYYY-MM-DD') === date)
         if (found) booked = true
@@ -201,8 +184,7 @@ async function checkBookingSlots()
   return booked;
 }
 
-async function clickHandlerSubmit()
-{
+async function clickHandlerSubmit() {
   if (presaleData.value.total === 0) return;
   if (loading.value) return; // Prevent double submission
   // Set Loading State with loading message
@@ -211,28 +193,27 @@ async function clickHandlerSubmit()
   paymentError.value = false
   paymentErrorMessage.value = ''
 
-  // Check Recaptcha
-  const recaptchaResult = await verifyRecaptcha('submit_form');
-  if (!recaptchaResult.success)
-  {
-    alert(recaptchaResult.error);
-    loading.value = false
-    return;
-  }
+  // Check Recaptcha - TODO: re-enable later when .env RECAPTCHA_SECRET_KEY is added
+  // const recaptchaResult = await verifyRecaptcha('submit_form');
+  // if (!recaptchaResult.success) {
+  //   alert(recaptchaResult.error);
+  //   loading.value = false
+  //   return;
+  // }
 
 
   // Check whether slots is still available
   const slotsNotAvailable = await checkBookingSlots()
   slotsBooked.value = slotsNotAvailable
   // Show Error message if slots are not available
-  if (slotsBooked.value)
-  {
+  if (slotsBooked.value) {
     message.value = 'Slots have been booked. Please select other slots'
     loading.value = false
     const newBookingDetails: BookingDetails = {
       location: bookingDetails.value.location,
       slots: [],
-      date: bookingDetails.value.date
+      date: bookingDetails.value.date,
+      typeOfSports: sport
     }
     presalesStore.updateBookingDetails(newBookingDetails)
     return;
@@ -242,8 +223,7 @@ async function clickHandlerSubmit()
   const slotKeys = await bookedSlotsStore.addPendingBookedSlots(presaleData.value, props.groupedTimeslots)
 
   // Payment Process for Membership Credit
-  if (paymentMethod.value === PaymentMethods.MEMBERSHIP_CREDIT)
-  {
+  if (paymentMethod.value === PaymentMethods.MEMBERSHIP_CREDIT) {
     await creditsStore.fetchUserCredits()
     const creditPackageData: InvoiceBooking = {
       ...presaleData.value,
@@ -255,9 +235,8 @@ async function clickHandlerSubmit()
     const remainingCredits = totalCreditsLeft.value - totalCostData.value.totalPayable
     const creditPackageKeys = await handleMembershipCreditPayment()
     await creditsStore.addCreditReceipt(creditPackageData, remainingCredits, creditPackageKeys)
-    const bookingKey = await bookingsStore.addBooking(creditPackageData, slotKeys)
-    if (bookingKey)
-    {
+    const bookingKey = await bookingsStore.addBooking(creditPackageData, slotKeys, sport)
+    if (bookingKey) {
       const automateSlots = await bookedSlotsStore.updateBookedSlots(creditPackageData, slotKeys, bookingKey)
       await bookedSlotsStore.addAutomateSlots(automateSlots)
     }
@@ -271,11 +250,9 @@ async function clickHandlerSubmit()
   let newPresaleData = await presalesStore.addPresale()
 
   // Payment Process for Credit Card
-  if (paymentMethod.value === PaymentMethods.CREDIT_CARD)
-  {
+  if (paymentMethod.value === PaymentMethods.CREDIT_CARD) {
     const stripePaymentDetails = await handleCreditCardPayment(newPresaleData)
-    if (!stripePaymentDetails)
-    {
+    if (!stripePaymentDetails) {
       loading.value = false
       return;
     }
@@ -286,24 +263,21 @@ async function clickHandlerSubmit()
       invoiceType: InvoiceType.BOOKING
     }
     const finalInvoiceData = await invoicesStore.addInvoice(newInvoiceData)
-    if (slotKeys.length > 0)
-    {
-      const bookingKey = await bookingsStore.addBooking(finalInvoiceData, slotKeys)
-      if (bookingKey)
-      {
+    if (slotKeys.length > 0) {
+      const bookingKey = await bookingsStore.addBooking(finalInvoiceData, slotKeys, sport)
+      if (bookingKey) {
         await invoicesStore.updateInvoiceBookingKey(finalInvoiceData.id, bookingKey)
         const automateSlots = await bookedSlotsStore.updateBookedSlots(finalInvoiceData, slotKeys, bookingKey)
         await bookedSlotsStore.addAutomateSlots(automateSlots)
       }
     }
     await presalesStore.updatePresale(newPresaleData.id)
-    router.push('/booking/thankyou')
+    router.push(`/${sport}/booking/thankyou`)
     loading.value = false
   }
 
   // Payment Process for PayNow
-  else if (paymentMethod.value === PaymentMethods.PAYNOW)
-  {
+  else if (paymentMethod.value === PaymentMethods.PAYNOW) {
     paynowsStore.addPaynow(newPresaleData.id)
     paynowsStore.listenPaymentStatus(newPresaleData.id)
     emit('submit', newPresaleData)
@@ -329,6 +303,7 @@ async function clickHandlerSubmit()
       </template>
       <BookingFormPage3PaymentSummary />
       <BookingFormPage3CheckList @update="updateHandlerCheckList" />
+      <ButtonRecaptcha />
     </template>
     <AlertError v-if="paymentError">{{ paymentErrorMessage }}</AlertError>
     <AlertError v-if="slotsBooked">Slots have been booked. Please select other slots.</AlertError>

@@ -5,9 +5,6 @@ const router = useRouter();
 const route = useRoute()
 const sportSlug = route.params.sportSlug as string
 
-// const navItems = [
-//   { title: "Contact Us", to: "/contactus" },
-// ]
 // TODO: Make navItems dynamic
 const navItems = computed(() => {
   if (sportSlug === 'futsal') {
@@ -16,7 +13,7 @@ const navItems = computed(() => {
   if (sportSlug === 'pickleball') {
     return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` },]
   }
-  return [{ title: "Contact Us", to: "/contactus" },]
+  return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Pickelball", to: "/pickleball/venue" }, { title: "Contact Us", to: "/contactus" },]
 })
 
 function clickHandler(link: string) {

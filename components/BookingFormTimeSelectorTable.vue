@@ -6,7 +6,10 @@ const dayjs = useDayjs()
 const selectedTimeslots = ref([] as BookingSlotDetails[])
 
 const props = defineProps({
-  locationPitches: Array<Pitch>,
+  locationPitches: {
+    type: Array<Pitch>,
+    required: true
+  },
   timeSlots: Array<SlotDetails>,
   location: { type: String, required: true },
   date: { type: String, required: true },
@@ -59,6 +62,7 @@ function selectTimeslot(timeslot: SlotDetails, pitchIndex: number) {
       ...timeslot,
       pitch: pitchIndex + 1,
       date: dateSelected,
+      typeOfSports: props.locationPitches[pitchIndex].typeOfSports
     });
   selectedTimeslots.value = useOrderBy(
     newTimeSlots,

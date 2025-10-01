@@ -80,7 +80,11 @@ export type SlotDetails = {
   type: string;
 };
 
-export type BookingSlotDetails = SlotDetails & { date: string; pitch: number };
+export type BookingSlotDetails = SlotDetails & {
+  date: string;
+  pitch: number;
+  typeOfSports: string;
+};
 
 export type GroupedTimeslots = {
   [key: string]: BookingSlotDetails[];
@@ -158,6 +162,7 @@ export type Booking = CustomerDetails &
     key?: string;
     date: string;
     amount?: string;
+    typeOfSports: string;
   };
 
 export type BookingDetails = {
@@ -166,6 +171,7 @@ export type BookingDetails = {
   bookingKey?: string;
   slotKeys?: string[];
   date: string;
+  typeOfSports: string;
 };
 
 export type DBSPaymentDetails = {
