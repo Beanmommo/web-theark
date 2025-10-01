@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify';
 import { useBookedSlotsStore } from '../stores/bookedslots';
+import { useBookingsStore } from '../stores/bookings';
 import type { Booking, BookedSlot } from '../types/data'
 import { VTooltip } from 'vuetify/components';
 
@@ -14,6 +15,8 @@ const props = defineProps({
 const dayjs = useDayjs()
 const bookedslotsStore = useBookedSlotsStore()
 const { myBookedslots } = storeToRefs(bookedslotsStore)
+const bookingsStore = useBookingsStore()
+const user = useAuthUser()
 
 const bookingSlots = ref<BookedSlot[]>([])
 onMounted(() => {
@@ -52,16 +55,64 @@ function handleClickInvoice() {
   showInvoice.value = true
 }
 
-function handleClickCancel() {
+const isCancelling = ref(false)
 
+async function handleClickCancel() {
+  if (!props.booking.key) return;
+  message.value = 'Cancelling Booking'
+  // Show confirmation dialog
+  const confirmed = confirm(
+    'Are you sure you want to cancel this booking? ' +
+    `You will receive ${props.booking.subtotal} credits (gst + transaction fee not included) for this booking refund. ` +
+    'Refund credit package valid for 1 months'
+  );
+  if (!confirmed) return;
+
+  try {
+    loading.value = true
+    isCancelling.value = true;
+
+    // Call the cancellation function
+    await bookingsStore.cancelBooking(props.booking.key);
+
+    // Refresh bookings list
+    if (user.value) {
+      await bookingsStore.fetchMyBookings(user.value.email);
+      await bookedslotsStore.fetchMyBookedslots(user.value.email);
+    }
+    // Show success message
+    alert('Booking cancelled successfully. Credits have been added to your account.');
+  } catch (error) {
+    loading.value = false
+    console.error('Cancellation failed:', error);
+    alert('Failed to cancel booking. Please try again or contact support.');
+  } finally {
+    isCancelling.value = false;
+    loading.value = false
+    message.value = ''
+  }
 }
 
 const isCancellable = computed(() => {
-  return dayjs().isBefore(dayjs(props.booking.date).subtract(72, 'hours'))
+  // Make sure dayjs is configured with timezone plugin and "Asia/Singapore"
+  return dayjs().tz('Asia/Singapore').isBefore(dayjs(props.booking.date).tz('Asia/Singapore').subtract(72, 'hours'))
 })
+
+const pitchName = computed(() => {
+  if (props.booking.typeOfSports === 'futsal') {
+    return 'Pitch'
+  } else if (props.booking.typeOfSports === 'pickleball') {
+    return 'Court'
+  }
+  return 'Pitch'
+})
+
+const loading = ref(false)
+const message = ref('')
 </script>
 
 <template>
+  <Loading :message="message" v-if="loading" />
   <div class="profileBookingCard">
     <img src="/Icon/activity_booking_icon.svg" alt="Booking Icon" class="icon" :style="{ background: iconColor }" />
     <div class="location__date">
@@ -74,7 +125,7 @@ const isCancellable = computed(() => {
     <div class="total__slots">
       <div>${{ booking.totalPayable ? booking.totalPayable : booking.amount }}</div>
       <template v-for="slot in bookingSlots">
-        <div class="pitch">Pitch {{ slot.pitch }} - {{ slot.start }} to {{ slot.end }}</div>
+        <div class="pitch">{{ pitchName }} {{ slot.pitch }} - {{ slot.start }} to {{ slot.end }}</div>
       </template>
     </div>
     <div class="action">

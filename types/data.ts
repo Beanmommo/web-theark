@@ -174,6 +174,14 @@ export type BookingDetails = {
   typeOfSports: string;
 };
 
+export interface CancelledBooking extends Booking {
+  cancelledBy: string;
+  cancelledDate: string;
+  status: "cancelled";
+}
+
+export type CancelledBookingData = { [key: string]: CancelledBooking };
+
 export type DBSPaymentDetails = {
   amtDtls: {
     txnAmt: number;
