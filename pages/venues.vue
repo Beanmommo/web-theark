@@ -16,6 +16,6 @@ const { sports } = storeToRefs(sportsStore)
 <template>
   <PageBannerVenues />
   <template v-for="sport in sports">
-    <SectionSportVenues :sport-name="sport.name" />
+    <SectionSportVenues :sport-slug="sport.slug" />
   </template>
 </template>

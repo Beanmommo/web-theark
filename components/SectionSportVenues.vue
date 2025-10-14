@@ -20,13 +20,19 @@ const props = defineProps({
 })
 
 const sportsStore = useSportsStore()
+const locationsStore = useLocationsStore()
+const pitchesStore = usePitchesStore()
 
 const selectedSport = computed(() => {
-    return sportsStore.getSportBySlug(props.sportSlug)
+    const lowerCaseSlug = props.sportSlug.toLowerCase()
+    return sportsStore.getSportBySlug(lowerCaseSlug)
 })
 
 const sportVenues = computed(() => {
-    return useSport().getSportVenues(props.sportSlug)
+    const lowerCaseSlug = props.sportSlug.toLowerCase()
+    // Explicitly depend on locations and pitches for reactivity
+    const _ = [locationsStore.locations, pitchesStore.pitches]
+    return sportsStore.getSportVenues(lowerCaseSlug)
 })
 </script>
 

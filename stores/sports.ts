@@ -44,11 +44,44 @@ export const useSportsStore = defineStore("sport", () => {
     return sports.value.find((sport) => sport.slug === slug);
   };
 
+  // Get venues for a specific sport
+  // This filters locations based on which pitches are available for the sport
+  const getSportVenues = (sportSlug: string) => {
+    const lowerCaseSlug = sportSlug.toLowerCase()
+    const locationsStore = useLocationsStore();
+    const pitchesStore = usePitchesStore();
+
+    // Filter pitches by sport type
+    const sportPitches = pitchesStore.pitches.filter(
+      (pitch) =>
+      (pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
+      (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug)
+    );
+
+    // Get unique location keys from those pitches
+    const uniqueVenueKeys = Array.from(
+      new Set(sportPitches.map((pitch) => pitch.locationKey))
+    );
+
+    // Return locations that have pitches for this sport
+    return locationsStore.locations.filter((location) =>
+      uniqueVenueKeys.includes(location.key)
+    );
+  };
+
+  // Computed property for active sport venues
+  const activeSportVenues = computed(() => {
+    if (!activeSport.value) return [];
+    return getSportVenues(activeSport.value.slug);
+  });
+
   return {
     sports,
     activeSport,
+    activeSportVenues,
     setActiveSportBySlug,
     getSportByName,
     getSportBySlug,
+    getSportVenues,
   };
 });

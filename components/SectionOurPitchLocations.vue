@@ -1,11 +1,12 @@
 <script setup lang="ts">
 const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
+const sportsStore = useSportsStore()
 const route = useRoute()
 const sportSlug = route.params.sportSlug as string
 const sportVenues = computed(() => {
   if (!sportSlug) return locations.value
-  return useSport().getSportVenues(sportSlug)
+  return sportsStore.getSportVenues(sportSlug)
 })
 
 const pitchName = computed(() => {

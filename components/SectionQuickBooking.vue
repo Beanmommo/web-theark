@@ -6,8 +6,7 @@ import { storeToRefs } from 'pinia'
 const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
 const sportsStore = useSportsStore()
-const { activeSport } = storeToRefs(sportsStore)
-const { activeSportVenues } = useSport()
+const { activeSport, activeSportVenues } = storeToRefs(sportsStore)
 
 const router = useRouter()
 const selectedVenue = ref()

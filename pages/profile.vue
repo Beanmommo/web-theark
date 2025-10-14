@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { useCreditsStore } from '~/stores/credits'
+
 definePageMeta({
   middleware: 'auth'
 })
+
 const user = useAuthUser()
-const creditsStore = useCreditsStore();
+const creditsStore = useCreditsStore()
 
+// Fetch credits once during SSR/hydration
 await useAsyncData('credits', async () => {
-  await creditsStore.fetchUserCredits()
-  await creditsStore.fetchUserCreditRefunds()
-})
-
-onMounted(async () => {
-  console.log('fetch credit')
   await creditsStore.fetchUserCredits()
   await creditsStore.fetchUserCreditRefunds()
 })
