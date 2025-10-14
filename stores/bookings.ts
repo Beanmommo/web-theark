@@ -150,63 +150,86 @@ export const useBookingsStore = defineStore("bookings", () => {
       console.log(`Deleted original booking ${bookingKey}`);
 
       // ============================================
-      // 6. CREATE REFUND CREDIT PACKAGE
+      // 6. UPDATE ORIGINAL INVOICE TO REFUND
       // ============================================
+      const invoicesStore = useInvoicesStore();
       const creditsStore = useCreditsStore();
       const refundAmount = booking.subtotal - booking.discount;
+
+      // Check if booking has an invoice
+      if (!booking.invoiceKey) {
+        throw new Error(
+          `Booking ${bookingKey} does not have an associated invoice`
+        );
+      }
+
+      // Update the original invoice's paymentMethod to "Refund"
+      await invoicesStore.updateInvoicePaymentMethod(
+        booking.invoiceKey,
+        "Refund"
+      );
+
+      console.log(
+        `Updated invoice ${booking.invoiceKey} paymentMethod to "Refund"`
+      );
+
+      // ============================================
+      // 7. CREATE CREDIT REFUND (LINKED TO ORIGINAL INVOICE)
+      // ============================================
 
       // Create package details for the refund
       const refundPackage: PackageDetails = {
         title: `Refund - ${booking.location}`,
         amount: refundAmount.toString(),
         value: refundAmount.toString(),
-        expiryPeriod: 6, // 6 months expiry
+        expiryPeriod: 1, // 1 MONTH expiry for refunds
         type: "Refund",
         unit: "month",
         id: `refund-${bookingKey}`,
         typeOfSports: booking.typeOfSports,
       };
 
-      // Create invoice data for the refund
-      const refundInvoiceData: Partial<Invoice> = {
-        name: booking.name,
-        contact: booking.contact,
-        email: booking.email,
-        userId: booking.userId,
-        paymentMethod: "Refund" as PaymentMethods,
-        paymentStatus: "Paid",
-        id: `refund-inv-${bookingKey}`,
-        submittedDate: dayjs().format(),
-        invoiceType: "Credit Package" as InvoiceType,
-        location: booking.location,
-        subtotal: refundAmount,
-        total: refundAmount,
-        gst: 0,
-        gstPercentage: 0,
-        totalPayable: refundAmount,
-        discount: 0,
-        promocode: "",
-        transactionFee: 0,
-        transactionPercentage: 0,
-        slots: [],
-      };
-
-      // Add the credit package using existing function
-      const creditPackageKey = await creditsStore.addCreditPackage(
-        refundInvoiceData as Invoice,
-        refundPackage
+      // Fetch the original invoice to pass to addCreditRefund
+      const originalInvoice = await invoicesStore.fetchInvoiceByKey(
+        booking.invoiceKey
       );
 
-      console.log(`Created refund credit package: ${creditPackageKey}`);
+      if (!originalInvoice) {
+        throw new Error(`Invoice ${booking.invoiceKey} not found`);
+      }
+
+      // Create credit refund linked to original invoice
+      const creditRefundKey = await creditsStore.addCreditRefund(
+        originalInvoice,
+        refundPackage,
+        bookingKey
+      );
+
+      console.log(`Created credit refund: ${creditRefundKey}`);
 
       // ============================================
-      // 7. RETURN SUCCESS
+      // 8. LINK ORIGINAL INVOICE TO CREDIT REFUND
+      // ============================================
+      if (creditRefundKey) {
+        await invoicesStore.updateInvoiceCreditRefundKey(
+          booking.invoiceKey,
+          creditRefundKey,
+          bookingKey
+        );
+        console.log(
+          `Linked invoice ${booking.invoiceKey} to credit refund ${creditRefundKey}`
+        );
+      }
+
+      // ============================================
+      // 9. RETURN SUCCESS
       // ============================================
       return {
         success: true,
         bookingKey,
         refundAmount,
-        creditPackageKey,
+        invoiceKey: booking.invoiceKey,
+        creditRefundKey,
       };
     } catch (error) {
       console.error("Cancellation failed:", error);

@@ -223,6 +223,10 @@ export type Invoice = TotalCostData &
     location: string;
     date?: string;
     slots: InvoiceSlot[];
+    bookingKey?: string;
+    creditPackageKey?: string;
+    creditRefundKey?: string;
+    originalBookingKey?: string;
   };
 
 export type InvoiceSlot = {
@@ -293,7 +297,44 @@ export type CreditPackage = {
   email: string;
   contact: string;
   creditPackage: PackageDetails;
+
+  // Optional fields for refund credits stored in creditPackages (legacy)
+  invoiceKey?: string;
+  originalBookingKey?: string;
+  cancelledDate?: string;
+  cancelledBy?: string;
 };
+
+export type CreditRefund = {
+  // Customer Details
+  name: string;
+  contact: string;
+  email: string;
+  userKey: string;
+
+  // Credit Details
+  amount: string;
+  value: string;
+  creditsLeft: number;
+  expiryDate: string;
+  key?: string;
+
+  // Payment/Status
+  paymentMethod: PaymentMethods.REFUND;
+  paymentStatus: string;
+  submittedDate: string;
+
+  // Refund Metadata (optional for backward compatibility with legacy refunds)
+  refundInvoiceKey?: string;
+  originalBookingKey?: string;
+  cancelledDate?: string;
+  cancelledBy?: string;
+
+  // Package Details
+  creditPackage: PackageDetails;
+};
+
+export type CreditRefundData = { [key: string]: CreditRefund };
 
 export type PackageDetails = {
   title: string;

@@ -19,10 +19,8 @@ onMounted(async () => {
 
 async function initialiseData() {
   if (user.value) {
-    await Promise.all([
-      bookingsStore.fetchMyBookings(user.value.email),
-      bookedslotsStore.fetchMyBookedslots(user.value.email)
-    ])
+    await bookingsStore.fetchMyBookings(user.value.email),
+      await bookedslotsStore.fetchMyBookedslots(user.value.email)
   }
 }
 </script>

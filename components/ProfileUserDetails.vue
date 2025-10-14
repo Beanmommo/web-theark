@@ -1,12 +1,11 @@
 <script setup lang="ts">
 
 const creditsStore = useCreditsStore()
-const { totalCreditsLeft } = storeToRefs(creditsStore)
+const { totalCreditsLeft, purchasedCreditsLeft, refundCreditsLeft } = storeToRefs(creditsStore)
 const user = useAuthUser()
 const router = useRouter()
 
-function clickHandler()
-{
+function clickHandler() {
   router.push('/packages')
 }
 
@@ -20,8 +19,23 @@ function clickHandler()
       <p>{{ user?.email }}</p>
     </div>
     <div class="profile__credits">
-      <h6>Credits</h6>
+      <h6>Total Credits</h6>
       <h5>${{ totalCreditsLeft }}</h5>
+
+      <!-- Credits Breakdown -->
+      <div class="credits-breakdown">
+        <div class="credit-row">
+          <VIcon icon="mdi-cash-multiple" size="small" color="green" />
+          <span class="credit-label">Purchased:</span>
+          <span class="credit-amount">${{ purchasedCreditsLeft }}</span>
+        </div>
+        <div class="credit-row">
+          <VIcon icon="mdi-cash-refund" size="small" color="orange" />
+          <span class="credit-label">Refund:</span>
+          <span class="credit-amount">${{ refundCreditsLeft }}</span>
+        </div>
+      </div>
+
       <ButtonOutlined @click=clickHandler>Buy Package</ButtonOutlined>
     </div>
   </div>
@@ -43,12 +57,39 @@ function clickHandler()
 
 .profile {
   &__credits {
-    width: 150px;
+    width: 200px;
     display: flex;
     flex-direction: column;
     gap: $unit;
     align-items: flex-end;
     justify-self: self-end;
+
+    .credits-breakdown {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 4px;
+      font-size: 0.875rem;
+
+      .credit-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .credit-label {
+          flex: 1;
+          color: rgba(0, 0, 0, 0.6);
+        }
+
+        .credit-amount {
+          font-weight: 600;
+          color: rgba(0, 0, 0, 0.87);
+        }
+      }
+    }
   }
 }
 </style>

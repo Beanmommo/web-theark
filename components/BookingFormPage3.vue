@@ -38,7 +38,7 @@ const goTo = useGoTo()
 
 // Stores
 const creditsStore = useCreditsStore()
-const { totalCreditsLeft, currentUserPackages } = storeToRefs(creditsStore)
+const { totalCreditsLeft, currentUserPackages, currentCreditRefunds } = storeToRefs(creditsStore)
 const presalesStore = usePresalesStore()
 const invoicesStore = useInvoicesStore()
 const bookedSlotsStore = useBookedSlotsStore()
@@ -60,6 +60,7 @@ const slotsBooked = ref(false)
 onMounted(async () => {
   loading.value = true
   await creditsStore.fetchUserCredits()
+  await creditsStore.fetchUserCreditRefunds()
   initialiseUserDetailsPresalesStore()
   updateSubtotal(props.groupedTimeslots)
   goTo('#booking')
@@ -148,23 +149,54 @@ async function handleCreditCardPayment(newInvoiceData: Partial<InvoiceBooking>) 
 async function handleMembershipCreditPayment() {
   let remaining = totalCostData.value.totalPayable;
   let promises: Promise<any>[] = []
-  currentUserPackages.value.forEach(async (item) => {
+  const creditPackageKeys: string[] = []
+
+  // Combine credits: refunds first (sorted by expiry), then purchased (sorted by expiry)
+  const refunds = currentCreditRefunds.value
+    .map(refund => ({ ...refund, isRefund: true }))
+    .sort((a, b) => dayjs(a.expiryDate).diff(dayjs(b.expiryDate)))
+
+  const purchased = currentUserPackages.value
+    .map(pkg => ({ ...pkg, isRefund: false }))
+    .sort((a, b) => dayjs(a.expiryDate).diff(dayjs(b.expiryDate)))
+
+  // Refunds first, then purchased
+  const allCredits = [...refunds, ...purchased]
+
+  allCredits.forEach(async (item) => {
     if (remaining === 0) return;
-    const creditsLeft: number = Number(item.creditsLeft)
-      ? Number(item.creditsLeft)
-      : Number(item.value);
+
+    const creditsLeft = Number(item.creditsLeft) || Number(item.value);
     let creditPackageCreditsLeft = 0
+
     if (creditsLeft >= remaining) {
       creditPackageCreditsLeft = creditsLeft - remaining
       remaining = 0
-    }
-    else if (creditsLeft < remaining) {
+    } else if (creditsLeft < remaining) {
       remaining -= creditsLeft
+      creditPackageCreditsLeft = 0
     }
-    if (item.key)
-      promises.push(creditsStore.updateCreditPackage({ key: item.key, creditsLeft: creditPackageCreditsLeft }))
+
+    if (item.key) {
+      // Check if it's a refund credit or purchased credit
+      if (item.isRefund) {
+        // Smart update: tries creditRefunds first, then creditPackages
+        promises.push(creditsStore.updateCreditRefund({
+          key: item.key,
+          creditsLeft: creditPackageCreditsLeft
+        }))
+      } else {
+        promises.push(creditsStore.updateCreditPackage({
+          key: item.key,
+          creditsLeft: creditPackageCreditsLeft
+        }))
+      }
+
+      creditPackageKeys.push(item.key)
+    }
   });
-  const creditPackageKeys = await Promise.all(promises)
+
+  await Promise.all(promises)
   return creditPackageKeys
 }
 
@@ -295,6 +327,10 @@ async function clickHandlerSubmit() {
     <BookingFormPage3UserDetails />
     <template v-if="userDetailsCompleted">
       <BookingFormPage3PromoCode @update="updateHandlerPromoCode" />
+
+      <!-- Show credit packages when Membership Credit is available -->
+      <BookingFormPage3CreditPackages v-if="totalCreditsLeft > 0" />
+
       <BookingFormPage3PaymentSelection @update="updateHandlerPaymentSelection" :totalCostData="totalCostData" />
     </template>
     <template v-if="paymentMethod">

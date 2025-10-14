@@ -51,10 +51,44 @@ export const useInvoicesStore = defineStore("invoices", () => {
     return invoiceData;
   };
 
+  const updateInvoicePaymentMethod = async (
+    invoiceKey: string,
+    paymentMethod: string
+  ) => {
+    const data = await $fetch(`/api/invoices/update`, {
+      method: "POST",
+      body: JSON.stringify({
+        invoiceKey,
+        data: { paymentMethod },
+      }),
+    });
+    return data;
+  };
+
+  const updateInvoiceCreditRefundKey = async (
+    invoiceKey: string,
+    creditRefundKey: string,
+    originalBookingKey: string
+  ) => {
+    const data = await $fetch(`/api/invoices/update`, {
+      method: "POST",
+      body: JSON.stringify({
+        invoiceKey,
+        data: {
+          creditRefundKey,
+          originalBookingKey,
+        },
+      }),
+    });
+    return data;
+  };
+
   return {
     addInvoice,
     updateInvoiceBookingKey,
     updateInvoiceCreditPackageKey,
     fetchInvoiceByKey,
+    updateInvoicePaymentMethod,
+    updateInvoiceCreditRefundKey,
   };
 });

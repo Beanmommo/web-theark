@@ -6,12 +6,15 @@ definePageMeta({
 const user = useAuthUser()
 const creditsStore = useCreditsStore();
 
-await useAsyncData('credits', () => creditsStore.fetchUserCredits())
+await useAsyncData('credits', async () => {
+  await creditsStore.fetchUserCredits()
+  await creditsStore.fetchUserCreditRefunds()
+})
 
-onMounted(async () =>
-{
+onMounted(async () => {
   console.log('fetch credit')
   await creditsStore.fetchUserCredits()
+  await creditsStore.fetchUserCreditRefunds()
 })
 
 </script>
