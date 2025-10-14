@@ -9,3 +9,4 @@ node_modules
 .production.env
 dist
 .DS_Store
+augment_summary
