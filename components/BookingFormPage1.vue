@@ -53,9 +53,10 @@ watch(selectedDate, () => {
   router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
 })
 
+const sportsStore = useSportsStore()
+
 const sportPitches = computed(() => {
-  // if (!selectedSport.value) return []
-  return pitches.value.filter(pitch => pitch.typeOfSports === sport)
+  return sportsStore.getSportPitches(sport)
 })
 
 const availableLocations = computed(() => {
@@ -71,9 +72,11 @@ const location = computed(() => {
   return locations.value.find(item => selectedVenue.value === item.name)
 })
 
+
 const locationPitches = computed(() => {
+  const sportPitches = sportsStore.getSportPitches(sport)
   if (!location.value) return []
-  return pitches.value.filter(pitch => pitch.locationKey === location.value?.key && pitch.typeOfSports === sport);
+  return sportPitches.filter(pitch => pitch.locationKey === location.value?.key)
 })
 
 const locationTimeslots = computed(() => {
@@ -135,7 +138,6 @@ function clickHandlerBookNow() {
 
 <template>
   <div class="bookingFormPage1">
-    <!-- <FieldInputSelect v-model="selectedSport" placeholder="Sport" :options="sports" /> -->
     <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="availableLocations" />
     <BookingFormDateSelector :selectedDate="selectedDate" @click="clickHandler" />
     <div ref='timeSelector' />

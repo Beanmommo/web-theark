@@ -21,6 +21,11 @@ export const useConfigStore = defineStore('config', () =>
     showPopup.value = false
   }
 
+  const getSportTypes = () =>
+  {
+    return config.value?.sportTypes
+  }
+
   return {
     config, showPopup, fetchConfig, closePopup
   }

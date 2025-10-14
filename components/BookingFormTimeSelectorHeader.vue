@@ -10,6 +10,19 @@ const theme = useTheme()
 const accentColor = computed(() => {
   return theme.current.value.colors.accent
 })
+
+const configStore = useConfigStore()
+
+function getPitchName(pitch: Pitch) {
+  if (!pitch.typeOfSports) return 'Pitch ' + pitch.name
+  if (pitch.typeOfSports.toLowerCase() === 'futsal') {
+    return 'Pitch ' + pitch.name
+  }
+  if (pitch.typeOfSports.toLowerCase() === 'pickleball') {
+    return 'Court ' + pitch.name
+  }
+  return 'Pitch ' + pitch.name
+}
 </script>
 
 <template>
@@ -24,7 +37,7 @@ const accentColor = computed(() => {
       <div class="d-flex flex-row">
         <template v-for="pitch in locationPitches">
           <div class="time-slot-header flex-grow-1" :style="{ background: accentColor }">
-            Pitch {{ pitch.name }}
+            {{ getPitchName(pitch) }}
           </div>
         </template>
       </div>
