@@ -200,7 +200,7 @@ async function handleMembershipCreditPayment() {
 }
 
 async function checkBookingSlots() {
-  const bookedSlots = await bookedSlotsStore.fetchBookedSlotsByDate(bookingDetails.value.date, bookingDetails.value.location)
+  const bookedSlots = await bookedSlotsStore.fetchBookedSlotsByDate(bookingDetails.value.date, bookingDetails.value.location, sport)
   let booked = false;
   if (bookedSlots)
     Object.keys(props.groupedTimeslots).forEach((date) => {
@@ -262,6 +262,11 @@ async function clickHandlerSubmit() {
       invoiceType: InvoiceType.BOOKING,
       paymentStatus: 'Paid',
       submittedDate: dayjs().format(),
+      typeOfSports: presaleData.value.typeOfSports?.toLowerCase() || 'futsal',
+      slots: presaleData.value.slots?.map(slot => ({
+        ...slot,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+      }))
     }
     const remainingCredits = totalCreditsLeft.value - totalCostData.value.totalPayable
     const creditPackageKeys = await handleMembershipCreditPayment()
@@ -291,7 +296,12 @@ async function clickHandlerSubmit() {
       ...newPresaleData,
       paymentDetails: stripePaymentDetails,
       paymentStatus: 'Paid',
-      invoiceType: InvoiceType.BOOKING
+      invoiceType: InvoiceType.BOOKING,
+      typeOfSports: presaleData.value.typeOfSports?.toLowerCase() || 'futsal',
+      slots: presaleData.value.slots?.map(slot => ({
+        ...slot,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+      }))
     }
     const finalInvoiceData = await invoicesStore.addInvoice(newInvoiceData)
     if (slotKeys.length > 0) {

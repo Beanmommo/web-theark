@@ -52,5 +52,15 @@ export default defineEventHandler(async (event) => {
     ...firestoreData,
   };
 
-  return mergedData;
+  // Normalize typeOfSports for all slots
+  const normalizedData: BookedSlotData = {};
+  Object.keys(mergedData).forEach(key => {
+    const slot = mergedData[key];
+    normalizedData[key] = {
+      ...slot,
+      typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+    };
+  });
+
+  return normalizedData;
 });

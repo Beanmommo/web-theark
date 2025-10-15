@@ -13,7 +13,11 @@ export default defineEventHandler(async (event) => {
 
     if (doc.exists) {
       console.log(`Found slot ${id} in Firestore`);
-      return { id: doc.id, ...doc.data() } as BookedSlot;
+      const slot = { id: doc.id, ...doc.data() } as BookedSlot;
+      return {
+        ...slot,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+      };
     }
   } catch (error) {
     console.log("Firestore read failed:", error);
@@ -27,7 +31,11 @@ export default defineEventHandler(async (event) => {
 
     if (snapshot.exists()) {
       console.log(`Found slot ${id} in RTDB`);
-      return { key: id, ...snapshot.val() } as BookedSlot;
+      const slot = { key: id, ...snapshot.val() } as BookedSlot;
+      return {
+        ...slot,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+      };
     }
   } catch (error) {
     console.log("RTDB read failed:", error);

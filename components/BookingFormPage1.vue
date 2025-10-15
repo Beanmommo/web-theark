@@ -34,15 +34,6 @@ onMounted(() => {
 
 const sport = route.params.sportSlug as string
 
-// watch(selectedSport, () => {
-//   selectedTimeslots.value = []
-//   if (!initialLoad.value) {
-//     selectedVenue.value = undefined
-//     router.replace({ query: { sport: selectedSport.value, date: selectedDate.value } })
-//   }
-//   initialLoad.value = false
-// })
-
 watch(selectedVenue, () => {
   selectedTimeslots.value = []
   router.replace({ query: { venue: selectedVenue.value, date: selectedDate.value } })
@@ -81,7 +72,11 @@ const locationPitches = computed(() => {
 
 const locationTimeslots = computed(() => {
   if (!location.value) return []
-  return timeslots.value.filter(timeslot => timeslot.locationKey === location.value?.key)
+  const normalizedSport = sport?.toLowerCase() || 'futsal';
+  return timeslots.value.filter(timeslot => {
+    const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
+    return timeslot.locationKey === location.value?.key && timeslotSport === normalizedSport;
+  })
 })
 
 const totalPayable = computed(() => {
@@ -143,7 +138,7 @@ function clickHandlerBookNow() {
     <div ref='timeSelector' />
     <template v-if="location">
       <BookingFormTimeSelector :date="selectedDate" :location="selectedVenue" :locationData="location"
-        :locationPitches="locationPitches" :locationTimeslots="locationTimeslots" @select="selectHandler"
+        :locationPitches="locationPitches" :locationTimeslots="locationTimeslots" :sport="sport" @select="selectHandler"
         v-if="showTimeSelector" />
     </template>
     <BookingCallToAction :totalPayable="totalPayable" @click="clickHandlerBookNow" v-if="totalPayable > 0" />

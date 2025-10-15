@@ -68,13 +68,15 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
       });
       promises.push(slotPromise);
       automateSlots.push({
+        ...slot,
         slotKey: slotKey,
         bookingKey,
         location,
         name,
         email,
         submittedDate,
-        ...slot,
+        color: null,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal',
       });
     });
     await Promise.all(promises);
@@ -116,6 +118,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
         start: startSlot.start,
         status: "Paid",
         submittedDate: startSlot.submittedDate,
+        typeOfSports: startSlot.typeOfSports?.toLowerCase() || 'futsal',
       };
       const slotPromise = $fetch(`/api/automate`, {
         method: "POST",
@@ -169,6 +172,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
           type: slot.type,
           paymentMethod: presale.paymentMethod,
           paymentStatus: presale.paymentStatus,
+          typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal',
         });
       });
     });
@@ -176,7 +180,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
     return bookedslots;
   }
 
-  const fetchBookedSlotsByDate = async (date: string, location: string) => {
+  const fetchBookedSlotsByDate = async (date: string, location: string, sport?: string) => {
     const formattedDate = dayjs(date).format("YYYY-MM-DD");
     const bookedSlots = await $fetch<BookedSlotData>(
       `/api/bookedslots/date/${formattedDate}`
@@ -203,6 +207,15 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
       // Filter by location
       if (location && slot.location !== location) {
         return;
+      }
+
+      // Filter by typeOfSports
+      if (sport) {
+        const normalizedSport = sport.toLowerCase();
+        const slotSport = slot.typeOfSports?.toLowerCase() || 'futsal';
+        if (slotSport !== normalizedSport) {
+          return;
+        }
       }
 
       bookedslotList.push({

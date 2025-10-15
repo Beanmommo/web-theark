@@ -14,7 +14,10 @@ const props = defineProps({
     type: String,
     required: true
   },
-  locationPitches: Array<Pitch>,
+  locationPitches: {
+    type: Array<Pitch>,
+    default: () => []
+  },
   locationTimeslots: {
     type: Array<Timeslot>,
     required: true
@@ -22,6 +25,10 @@ const props = defineProps({
   locationData: {
     type : Object as PropType<Venue>,
       required: true
+  },
+  sport: {
+    type: String,
+    required: true
   }
 })
 const emit = defineEmits(['select'])
@@ -57,7 +64,7 @@ async function reloadData()
 
 async function initialiseBookedSlots(date: string, location: string)
 {
-  await bookedSlotsStore.fetchBookedSlotsByDate(date, location)
+  await bookedSlotsStore.fetchBookedSlotsByDate(date, location, props.sport)
 }
 
 function initialiseTimeslots()
@@ -130,13 +137,26 @@ function checkIsHoliday(dateSelected: string, holidayList: Holiday[])
 
 function checkSlotDetail(currentTime: Dayjs, dateSelected: string, isHoliday: boolean)
 {
+  // Normalize sport slug to lowercase, default to "futsal" if null/undefined
+  const normalizedSport = props.sport?.toLowerCase() || 'futsal';
+
   if (isHoliday)
-    return props.locationTimeslots.find(timeslot => timeslot.type === 'Holiday');
+    return props.locationTimeslots.find(timeslot => {
+      // Check typeOfSports match for holiday slots
+      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
+      return timeslot.type === 'Holiday' && timeslotSport === normalizedSport;
+    });
 
   return props.locationTimeslots.find(timeslot =>
   {
     if (timeslot.days.includes(dayjs(dateSelected).format("ddd")) && timeslot.type !== "Holiday")
     {
+      // Check typeOfSports match
+      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
+      if (timeslotSport !== normalizedSport) {
+        return false;
+      }
+
       const start = dayjs(`${dateSelected} ${timeslot.startTime}`, "YYYY-MM-DD hh:mm");
       const end = dayjs(`${dateSelected} ${timeslot.endTime}`, "YYYY-MM-DD hh:mm");
       return currentTime.isSameOrAfter(start) && currentTime.isBefore(end);

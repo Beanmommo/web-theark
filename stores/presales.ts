@@ -12,12 +12,27 @@ export const usePresalesStore = defineStore('presales', () =>
 
   const presaleData = computed(() =>
   {
-    return {
+    const data = {
       ...totalCostData.value,
       ...customerData.value,
       ...paymentData.value,
       ...bookingDetails.value,
-    } as PresaleBooking
+    } as PresaleBooking;
+
+    // Normalize typeOfSports if it exists
+    if (data.typeOfSports) {
+      data.typeOfSports = data.typeOfSports.toLowerCase();
+    }
+
+    // Normalize typeOfSports in slots if they exist
+    if (data.slots) {
+      data.slots = data.slots.map(slot => ({
+        ...slot,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+      }));
+    }
+
+    return data;
   })
   const presalePackageData = computed(() =>
   {

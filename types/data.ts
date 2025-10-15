@@ -41,6 +41,7 @@ export type Timeslot = {
   newRate: string;
   startDate: string;
   color: string;
+  typeOfSports: string;
 };
 
 export interface Holiday {
@@ -69,6 +70,7 @@ export type BookedSlot = {
 
   paymentMethod: string;
   paymentStatus: string;
+  typeOfSports: string;
 };
 
 export type SlotDetails = {
@@ -227,6 +229,7 @@ export type Invoice = TotalCostData &
     creditPackageKey?: string;
     creditRefundKey?: string;
     originalBookingKey?: string;
+    typeOfSports?: string;
   };
 
 export type InvoiceSlot = {
@@ -237,6 +240,7 @@ export type InvoiceSlot = {
   duration: number;
   type: string;
   date: string;
+  typeOfSports: string;
 };
 
 export type InvoiceBooking = Invoice & BookingDetails;
@@ -248,6 +252,7 @@ export type Presale = TotalCostData &
     id: string;
     submittedDate: string;
     invoiceType: InvoiceType;
+    typeOfSports?: string;
   };
 
 export type PresaleBooking = Presale & BookingDetails;
@@ -281,6 +286,7 @@ export type AutomateSlot = SlotDetails & {
   location: string;
   pitch: number | string;
   date: string;
+  typeOfSports: string;
 };
 
 export type CreditPackage = {

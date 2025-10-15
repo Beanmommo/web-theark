@@ -10,7 +10,17 @@ export default defineEventHandler(async (event) => {
 
     if (doc.exists) {
       console.log(`Found invoice ${id} in Firestore`);
-      return { id: doc.id, ...doc.data() };
+      const invoice = { id: doc.id, ...doc.data() } as any;
+
+      // Normalize typeOfSports
+      return {
+        ...invoice,
+        typeOfSports: invoice.typeOfSports ? invoice.typeOfSports.toLowerCase() : undefined,
+        slots: invoice.slots?.map((slot: any) => ({
+          ...slot,
+          typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal'
+        }))
+      };
     }
   } catch (error) {
     console.log("Firestore read failed:", error);
