@@ -9,9 +9,8 @@ const user = useAuthUser()
 const creditsStore = useCreditsStore()
 
 // Fetch credits once during SSR/hydration
-await useAsyncData('credits', async () => {
-  await creditsStore.fetchUserCredits()
-  await creditsStore.fetchUserCreditRefunds()
+onMounted(async () => {
+  await creditsStore.fetchUserCreditsAndRefunds()
 })
 
 // Toggle for showing past bookings

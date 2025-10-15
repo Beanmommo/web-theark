@@ -24,7 +24,7 @@ await Promise.all([
   useAsyncData('holidays', () => holidaysStore.fetchHolidays()),
   useAsyncData('blockouts', () => blockoutsStore.fetchBlockouts()),
   useAsyncData('promocodes', () => promocodesStore.fetchPromoCodes()),
-  useAsyncData('credits', () => creditsStore.fetchUserCredits())
+  useAsyncData('credits', () => creditsStore.fetchUserCreditsAndRefunds())
 ])
 
 

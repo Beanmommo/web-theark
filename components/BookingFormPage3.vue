@@ -59,8 +59,7 @@ const slotsBooked = ref(false)
 
 onMounted(async () => {
   loading.value = true
-  await creditsStore.fetchUserCredits()
-  await creditsStore.fetchUserCreditRefunds()
+  await creditsStore.fetchUserCreditsAndRefunds()
   initialiseUserDetailsPresalesStore()
   updateSubtotal(props.groupedTimeslots)
   goTo('#booking')
@@ -226,12 +225,12 @@ async function clickHandlerSubmit() {
   paymentErrorMessage.value = ''
 
   // Check Recaptcha - TODO: re-enable later when .env RECAPTCHA_SECRET_KEY is added
-  // const recaptchaResult = await verifyRecaptcha('submit_form');
-  // if (!recaptchaResult.success) {
-  //   alert(recaptchaResult.error);
-  //   loading.value = false
-  //   return;
-  // }
+  const recaptchaResult = await verifyRecaptcha('submit_form');
+  if (!recaptchaResult.success) {
+    alert(recaptchaResult.error);
+    loading.value = false
+    return;
+  }
 
 
   // Check whether slots is still available
@@ -256,7 +255,7 @@ async function clickHandlerSubmit() {
 
   // Payment Process for Membership Credit
   if (paymentMethod.value === PaymentMethods.MEMBERSHIP_CREDIT) {
-    await creditsStore.fetchUserCredits()
+    await creditsStore.fetchUserCreditsAndRefunds()
     const creditPackageData: InvoiceBooking = {
       ...presaleData.value,
       slotKeys,
@@ -272,7 +271,7 @@ async function clickHandlerSubmit() {
       const automateSlots = await bookedSlotsStore.updateBookedSlots(creditPackageData, slotKeys, bookingKey)
       await bookedSlotsStore.addAutomateSlots(automateSlots)
     }
-    router.push('/booking/thankyou')
+    router.push(`/${sport}/booking/thankyou`)
     loading.value = false
     return;
   }

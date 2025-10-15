@@ -17,28 +17,91 @@ export const useCreditsStore = defineStore("credits", () => {
   const refundCreditsLeft = ref(0);
   const currentCreditRefunds = ref([] as Array<CreditRefund>);
   const dayjs = useDayjs();
-  const fetchUserCredits = async () => {
+  const fetchUserCreditsAndRefunds = async () => {
     const user = useAuthUser();
-    if (user.value) {
-      const userCreditPackages: CreditPackageData = await $fetch(
-        `/api/credits/${user.value.uid}`
-      );
-      const paidCredits = {} as CreditPackageData;
-      if (userCreditPackages)
-        Object.keys(userCreditPackages).forEach(
-          (key: keyof CreditPackageData) => {
-            if (
-              userCreditPackages[key].paymentStatus !== "Pending" &&
-              userCreditPackages[key].creditsLeft !== 0
-            ) {
-              paidCredits[key] = { ...userCreditPackages[key] };
-            }
+    if (!user.value) return { credits: {}, refunds: {} };
+
+    // 1. Single call to /api/credits/${uid} (RTDB + Firestore creditPackages)
+    const userCreditPackages: CreditPackageData = await $fetch(
+      `/api/credits/${user.value.uid}`
+    );
+
+    // 2. Single call to /api/creditRefunds/${uid} (Firestore creditRefunds)
+    const userCreditRefunds: CreditRefundData = await $fetch(
+      `/api/creditRefunds/${user.value.uid}`
+    );
+
+    // 3. Process creditPackages - separate purchased vs refunds
+    const purchasedCredits = {} as CreditPackageData;
+    const refundsFromPackages = {} as CreditRefundData;
+
+    if (userCreditPackages) {
+      Object.keys(userCreditPackages).forEach(
+        (key: keyof CreditPackageData) => {
+          const pkg = userCreditPackages[key];
+
+          // Skip pending or empty credits
+          if (pkg.paymentStatus === "Pending" || pkg.creditsLeft === 0) {
+            return;
           }
-        );
-      setUserPackages(paidCredits);
-      return paidCredits;
+
+          // Separate by payment method
+          if (pkg.paymentMethod === "Refund") {
+            // This is a refund credit (legacy location)
+            refundsFromPackages[key] = {
+              ...pkg,
+              refundInvoiceKey: pkg.invoiceKey || "",
+              originalBookingKey: pkg.originalBookingKey || "",
+              cancelledDate: pkg.cancelledDate || pkg.submittedDate,
+              cancelledBy: pkg.cancelledBy || "system",
+            } as CreditRefund;
+          } else {
+            // This is a purchased credit
+            purchasedCredits[key] = { ...pkg };
+          }
+        }
+      );
     }
-    return {};
+
+    // 4. Process creditRefunds collection
+    const refundsFromCollection = {} as CreditRefundData;
+    if (userCreditRefunds) {
+      Object.keys(userCreditRefunds).forEach((key: keyof CreditRefundData) => {
+        const refund = userCreditRefunds[key];
+
+        // Skip pending or empty refunds
+        if (refund.paymentStatus !== "Pending" && refund.creditsLeft !== 0) {
+          refundsFromCollection[key] = { ...refund };
+        }
+      });
+    }
+
+    // 5. Merge refunds (creditRefunds collection takes precedence)
+    const allRefunds: CreditRefundData = {
+      ...refundsFromPackages,
+      ...refundsFromCollection,
+    };
+
+    // 6. Update state
+    setUserPackages(purchasedCredits);
+    setUserCreditRefunds(allRefunds);
+
+    console.log(
+      `Fetched ${Object.keys(purchasedCredits).length} purchased credits`
+    );
+    console.log(
+      `Fetched ${
+        Object.keys(refundsFromPackages).length
+      } refunds from creditPackages`
+    );
+    console.log(
+      `Fetched ${
+        Object.keys(refundsFromCollection).length
+      } refunds from creditRefunds collection`
+    );
+    console.log(`Total refunds: ${Object.keys(allRefunds).length}`);
+
+    return { credits: purchasedCredits, refunds: allRefunds };
   };
 
   function setUserPackages(packages: CreditPackageData) {
@@ -49,7 +112,7 @@ export const useCreditsStore = defineStore("credits", () => {
       const { creditsLeft, expiryDate, paymentMethod, value } = packages[key];
       const notExpired = dayjs().isSameOrBefore(expiryDate, "day");
 
-      // IMPORTANT: Exclude refund credits (they're handled separately in fetchUserCreditRefunds)
+      // IMPORTANT: Exclude refund credits (they're handled separately in fetchUserCreditsAndRefunds)
       if (notExpired && paymentMethod !== "Refund") {
         userPackages.push({
           ...packages[key],
@@ -74,80 +137,7 @@ export const useCreditsStore = defineStore("credits", () => {
     totalCreditsLeft.value = totalCredits;
   }
 
-  const fetchUserCreditRefunds = async () => {
-    const user = useAuthUser();
-    if (!user.value) return {};
 
-    // 1. FETCH FROM creditPackages (where paymentMethod === "Refund")
-    const userCreditPackages: CreditPackageData = await $fetch(
-      `/api/credits/${user.value.uid}`
-    );
-    const refundsFromPackages = {} as CreditRefundData;
-
-    if (userCreditPackages) {
-      Object.keys(userCreditPackages).forEach(
-        (key: keyof CreditPackageData) => {
-          const pkg = userCreditPackages[key];
-
-          // Filter for refund credits only
-          if (
-            pkg.paymentMethod === "Refund" &&
-            pkg.paymentStatus !== "Pending" &&
-            pkg.creditsLeft !== 0
-          ) {
-            // Convert CreditPackage to CreditRefund format
-            refundsFromPackages[key] = {
-              ...pkg,
-              refundInvoiceKey: pkg.invoiceKey || "",
-              originalBookingKey: pkg.originalBookingKey || "",
-              cancelledDate: pkg.cancelledDate || pkg.submittedDate,
-              cancelledBy: pkg.cancelledBy || "system",
-            } as CreditRefund;
-          }
-        }
-      );
-    }
-
-    console.log(
-      `Fetched ${
-        Object.keys(refundsFromPackages).length
-      } refund credits from creditPackages`
-    );
-
-    // 2. FETCH FROM creditRefunds collection
-    const userCreditRefunds: CreditRefundData = await $fetch(
-      `/api/creditRefunds/${user.value.uid}`
-    );
-
-    const refundsFromCollection = {} as CreditRefundData;
-    if (userCreditRefunds) {
-      Object.keys(userCreditRefunds).forEach((key: keyof CreditRefundData) => {
-        if (
-          userCreditRefunds[key].paymentStatus !== "Pending" &&
-          userCreditRefunds[key].creditsLeft !== 0
-        ) {
-          refundsFromCollection[key] = { ...userCreditRefunds[key] };
-        }
-      });
-    }
-
-    console.log(
-      `Fetched ${
-        Object.keys(refundsFromCollection).length
-      } refund credits from creditRefunds collection`
-    );
-
-    // 3. MERGE BOTH SOURCES (creditRefunds takes precedence)
-    const allRefunds: CreditRefundData = {
-      ...refundsFromPackages,
-      ...refundsFromCollection,
-    };
-
-    console.log(`Total refund credits: ${Object.keys(allRefunds).length}`);
-
-    setUserCreditRefunds(allRefunds);
-    return allRefunds;
-  };
 
   function setUserCreditRefunds(creditRefunds: CreditRefundData) {
     let userCreditRefunds = [] as CreditRefund[];
@@ -221,8 +211,8 @@ export const useCreditsStore = defineStore("credits", () => {
     key: string;
     creditsLeft: number;
   }) => {
-    const creditPackageKey = await $fetch(`api/credits/id/${key}`, {
-      method: "POST",
+    const creditPackageKey = await $fetch(`/api/credits/id/${key}`, {
+      method: "PATCH",
       body: JSON.stringify({ creditsLeft }),
     });
     return creditPackageKey;
@@ -317,47 +307,25 @@ export const useCreditsStore = defineStore("credits", () => {
     key: string;
     creditsLeft: number;
   }) => {
-    // Try to update in creditRefunds collection first
-    try {
-      const result = await $fetch(`api/creditRefunds/id/${key}`, {
-        method: "POST",
-        body: JSON.stringify({ creditsLeft }),
-      });
-      console.log(`Updated credit refund ${key} in creditRefunds collection`);
-      return result;
-    } catch (error) {
-      console.log(
-        `Credit refund ${key} not found in creditRefunds, trying creditPackages...`
-      );
+    // Single call to PATCH endpoint that handles all fallbacks
+    const result = await $fetch(`/api/creditRefunds/id/${key}`, {
+      method: "PATCH",
+      body: JSON.stringify({ creditsLeft }),
+    });
 
-      // If not found, try creditPackages (legacy refunds)
-      try {
-        const result = await $fetch(`api/credits/id/${key}`, {
-          method: "POST",
-          body: JSON.stringify({ creditsLeft }),
-        });
-        console.log(`Updated credit refund ${key} in creditPackages`);
-        return result;
-      } catch (error2) {
-        console.error(
-          `Failed to update credit refund ${key} in both collections`,
-          error2
-        );
-        throw error2;
-      }
-    }
+    console.log(`Updated credit refund ${key} in ${result.database}`);
+    return result;
   };
 
   return {
     addCreditPackage,
     updateCreditPackage,
-    fetchUserCredits,
+    fetchUserCreditsAndRefunds,
     currentUserPackages,
     purchasedCreditsLeft,
     totalCreditsLeft,
     addCreditReceipt,
     // Refund credit functions
-    fetchUserCreditRefunds,
     addCreditRefund,
     updateCreditRefund,
     currentCreditRefunds,
