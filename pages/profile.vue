@@ -14,13 +14,41 @@ await useAsyncData('credits', async () => {
   await creditsStore.fetchUserCreditRefunds()
 })
 
+// Toggle for showing past bookings
+const showPastBookings = ref(false)
+
+function togglePastBookings() {
+  showPastBookings.value = !showPastBookings.value
+}
+
 </script>
 
 <template>
   <PageBannerProfile>Hi {{ user?.displayName }}!</PageBannerProfile>
   <SectionContainer>
     <ProfileUserDetails />
-    <ProfileBookings />
+    <ProfileUpcomingBookings />
+
+    <div class="past-bookings-toggle">
+      <VBtn
+        @click="togglePastBookings"
+        variant="outlined"
+        color="primary"
+        prepend-icon="mdi-history"
+      >
+        {{ showPastBookings ? 'Hide Past Bookings' : 'View Past Bookings' }}
+      </VBtn>
+    </div>
+
+    <ProfilePastBookings v-if="showPastBookings" />
   </SectionContainer>
 
 </template>
+
+<style scoped>
+.past-bookings-toggle {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+</style>

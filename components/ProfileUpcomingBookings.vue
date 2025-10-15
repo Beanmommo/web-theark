@@ -10,6 +10,7 @@ const { myBookedslots } = storeToRefs(bookedslotsStore)
 const isLoading = ref(true)
 
 const user = useAuthUser()
+const dayjs = useDayjs()
 
 onMounted(async () => {
   isLoading.value = true
@@ -23,27 +24,37 @@ async function initialiseData() {
       await bookedslotsStore.fetchMyBookedslots(user.value.email)
   }
 }
+
+// Filter for upcoming bookings (today and future)
+const upcomingBookings = computed(() => {
+  return myBookings.value.filter(booking => {
+    return dayjs(booking.date).tz('Asia/Singapore').isSameOrAfter(dayjs().tz('Asia/Singapore'), 'day')
+  })
+})
 </script>
 
 <template>
-  <section class="profileBookings">
+  <section class="profileUpcomingBookings">
     <div v-if="isLoading && !myBookings.length && !Object.keys(myBookedslots).length"
       style="display: flex; justify-content: center; align-items: center; min-height: 200px;">
       <VProgressCircular indeterminate color="#0A8A44" />
     </div>
-    <template v-if="myBookings.length > 0 && Object.keys(myBookedslots).length > 0">
-      <h5>Bookings</h5>
-      <div class="content">
-        <template v-for="booking in myBookings">
+    <template v-if="!isLoading && Object.keys(myBookedslots).length > 0">
+      <h5>Upcoming Bookings</h5>
+      <div v-if="upcomingBookings.length > 0" class="content">
+        <template v-for="booking in upcomingBookings" :key="booking.key">
           <ProfileBookingCard :booking="booking" />
         </template>
+      </div>
+      <div v-else class="empty-state">
+        <p>No upcoming bookings</p>
       </div>
     </template>
   </section>
 </template>
 
 <style lang="scss" scoped>
-.profileBookings {
+.profileUpcomingBookings {
   .content {
     display: grid;
     grid-template-columns: 1fr;
@@ -51,5 +62,12 @@ async function initialiseData() {
     column-gap: 1rem;
     row-gap: 1rem;
   }
+
+  .empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+  }
 }
 </style>
+

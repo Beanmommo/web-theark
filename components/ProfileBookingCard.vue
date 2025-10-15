@@ -98,6 +98,11 @@ const isCancellable = computed(() => {
   return dayjs().tz('Asia/Singapore').isBefore(dayjs(props.booking.date).tz('Asia/Singapore').subtract(72, 'hours'))
 })
 
+const isPastBooking = computed(() => {
+  // Check if booking date is before today
+  return dayjs(props.booking.date).tz('Asia/Singapore').isBefore(dayjs().tz('Asia/Singapore'), 'day')
+})
+
 const configStore = useConfigStore()
 
 const pitchName = computed(() => {
@@ -130,29 +135,32 @@ const message = ref('')
         <VBtn icon="mdi-dots-vertical" density="compact" variant="plain" />
         <VMenu activator="parent">
           <VList density="compact">
-            <VTooltip v-if="!isCancellable" location="right">
-              <template #activator="{ props }">
-                <div v-bind="props">
-                  <VListItem disabled>
-                    <template #prepend>
-                      <VIcon icon="mdi-close" color="red" />
-                    </template>
-                    <VListItemTitle color="red">
-                      Cancel Booking
-                    </VListItemTitle>
-                  </VListItem>
-                </div>
-              </template>
-              <span>Cancellation is not allowed 72 hours before the booking date</span>
-            </VTooltip>
-            <VListItem v-else @click="handleClickCancel">
-              <template #prepend>
-                <VIcon icon="mdi-close" color="red" />
-              </template>
-              <VListItemTitle color="red">
-                Cancel Booking
-              </VListItemTitle>
-            </VListItem>
+            <!-- Hide cancel button for past bookings -->
+            <template v-if="!isPastBooking">
+              <VTooltip v-if="!isCancellable" location="right">
+                <template #activator="{ props }">
+                  <div v-bind="props">
+                    <VListItem disabled>
+                      <template #prepend>
+                        <VIcon icon="mdi-close" color="red" />
+                      </template>
+                      <VListItemTitle color="red">
+                        Cancel Booking
+                      </VListItemTitle>
+                    </VListItem>
+                  </div>
+                </template>
+                <span>Cancellation is not allowed 72 hours before the booking date</span>
+              </VTooltip>
+              <VListItem v-else @click="handleClickCancel">
+                <template #prepend>
+                  <VIcon icon="mdi-close" color="red" />
+                </template>
+                <VListItemTitle color="red">
+                  Cancel Booking
+                </VListItemTitle>
+              </VListItem>
+            </template>
             <VListItem @click="handleClickInvoice">
               <template #prepend>
                 <VIcon icon="mdi-invoice-text-outline" />
