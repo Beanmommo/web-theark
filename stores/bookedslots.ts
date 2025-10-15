@@ -82,6 +82,18 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
   };
 
   const addAutomateSlots = async (automateSlots: AutomateSlot[]) => {
+    // Check environment - only run in production
+    const config = useRuntimeConfig();
+    const isProduction = config.public.env === "prod";
+
+    if (!isProduction) {
+      console.log('🔧 [DEV] Skipping addAutomateSlots - not in production environment');
+      console.log('🔧 [DEV] Would have created automated slots for:', automateSlots.length, 'slots');
+      return []; // Return empty array to maintain function signature
+    }
+
+    console.log('✅ [PROD] Running addAutomateSlots for', automateSlots.length, 'slots');
+
     const groupByPitch = useGroupBy(automateSlots, "pitch");
 
     let promises: Promise<any>[] = [];
@@ -112,6 +124,9 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
       promises.push(slotPromise);
     });
     const responses = await Promise.all(promises);
+
+    console.log('✅ [PROD] Successfully created', responses.length, 'automated slots');
+
     return responses;
   };
 

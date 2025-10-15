@@ -114,6 +114,7 @@ export default defineNuxtConfig({
       stripeKey: process.env.STRIPE_PK,
       recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
       apiKey: process.env.NUXT_API_KEY,
+      env: process.env.ENV, // dev || prod
     },
   },
 
