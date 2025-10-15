@@ -2,6 +2,7 @@
 const locationsStore = useLocationsStore()
 const { locations } = storeToRefs(locationsStore)
 const sportsStore = useSportsStore()
+const configStore = useConfigStore()
 const route = useRoute()
 const sportSlug = route.params.sportSlug as string
 const sportVenues = computed(() => {
@@ -10,12 +11,8 @@ const sportVenues = computed(() => {
 })
 
 const pitchName = computed(() => {
-  if (sportSlug === 'futsal') {
-    return 'Pitch'
-  } else if (sportSlug === 'pickleball') {
-    return 'Court'
-  }
-  return 'Venue'
+  if (!sportSlug) return 'Venue'
+  return configStore.getSportTerminology(sportSlug, 'singular')
 })
 
 </script>

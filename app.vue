@@ -5,6 +5,9 @@ import { computed } from 'vue'
 const theme = useTheme()
 const themeKey = computed(() => theme.global.name.value)
 
+// Fetch config on app load for sport terminology
+const configStore = useConfigStore()
+await useAsyncData('config', () => configStore.fetchConfig())
 
 const route = useRoute()
 const sportsStore = useSportsStore()

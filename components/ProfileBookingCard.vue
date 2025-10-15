@@ -98,13 +98,10 @@ const isCancellable = computed(() => {
   return dayjs().tz('Asia/Singapore').isBefore(dayjs(props.booking.date).tz('Asia/Singapore').subtract(72, 'hours'))
 })
 
+const configStore = useConfigStore()
+
 const pitchName = computed(() => {
-  if (props.booking.typeOfSports === 'futsal') {
-    return 'Pitch'
-  } else if (props.booking.typeOfSports === 'pickleball') {
-    return 'Court'
-  }
-  return 'Pitch'
+  return configStore.getSportTerminology(props.booking.typeOfSports, 'singular')
 })
 
 const loading = ref(false)

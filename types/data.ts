@@ -350,7 +350,7 @@ export type PackageDetails = {
 export type Config = {
   imgSrc: string;
   popup: boolean;
-  sportTypes: SportType[]
+  sportsTypes: SportType[]
 };
 
 export type SportType = {

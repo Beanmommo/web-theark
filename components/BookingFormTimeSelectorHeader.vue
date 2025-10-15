@@ -14,14 +14,18 @@ const accentColor = computed(() => {
 const configStore = useConfigStore()
 
 function getPitchName(pitch: Pitch) {
-  if (!pitch.typeOfSports) return 'Pitch ' + pitch.name
-  if (pitch.typeOfSports.toLowerCase() === 'futsal') {
-    return 'Pitch ' + pitch.name
-  }
-  if (pitch.typeOfSports.toLowerCase() === 'pickleball') {
-    return 'Court ' + pitch.name
-  }
-  return 'Pitch ' + pitch.name
+  console.log('🔍 getPitchName called with pitch:', {
+    name: pitch.name,
+    typeOfSports: pitch.typeOfSports,
+    typeOfSportsType: typeof pitch.typeOfSports
+  })
+  console.log('📊 Config sportsTypes:', configStore.config?.sportsTypes)
+
+  const terminology = configStore.getSportTerminology(pitch.typeOfSports, 'singular')
+
+  console.log('✅ Terminology result:', terminology)
+
+  return `${terminology} ${pitch.name}`
 }
 </script>
 

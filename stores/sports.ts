@@ -44,7 +44,8 @@ export const useSportsStore = defineStore("sport", () => {
     return sports.value.find((sport) => sport.slug === slug);
   };
 
-  const getSportPitches = (sportSlug: string) => {
+  const getSportPitches = (sportSlug: string | null | undefined) => {
+    if (!sportSlug) return []
     const lowerCaseSlug = sportSlug.toLowerCase()
     const pitchesStore = usePitchesStore();
     return pitchesStore.pitches.filter(
@@ -56,7 +57,8 @@ export const useSportsStore = defineStore("sport", () => {
 
   // Get venues for a specific sport
   // This filters locations based on which pitches are available for the sport
-  const getSportVenues = (sportSlug: string) => {
+  const getSportVenues = (sportSlug: string | null | undefined) => {
+    if (!sportSlug) return []
     const lowerCaseSlug = sportSlug.toLowerCase()
     const locationsStore = useLocationsStore();
     const pitchesStore = usePitchesStore();

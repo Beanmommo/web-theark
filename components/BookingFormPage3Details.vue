@@ -13,16 +13,14 @@ const dayjs = useDayjs()
 const route = useRoute()
 const sport = computed(() => route.params.sportSlug)
 const venue = computed(() => route.query.venue)
+const configStore = useConfigStore()
 
 function formatDate(date: string) {
   return dayjs(date, 'YYYY-MM-DD').format('MMMM DD, YYYY')
 }
 
 function formatSlot(slot: BookingSlotDetails) {
-  let pitchName = 'Pitch'
-  if (sport.value === 'pickleball') {
-    pitchName = 'Court'
-  }
+  const pitchName = configStore.getSportTerminology(sport.value as string, 'singular')
   return `${pitchName} ${slot.pitch} : ${slot.start} - ${slot.end}`
 }
 

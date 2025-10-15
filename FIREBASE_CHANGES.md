@@ -31,3 +31,6 @@ packages:
 
 1.  Add typeOfSports: string, sport.slug
 2.  Add id: same as package image name in public/Images
+
+Check console for more firebase rules .indexOn
+"creditPackages" indexOn "userKey"
