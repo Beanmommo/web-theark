@@ -3,7 +3,6 @@ import { useBookedSlotsStore } from '~/stores/bookedslots'
 import { useHolidaysStore } from '~/stores/holidays';
 import { storeToRefs } from 'pinia';
 import type { Pitch, Timeslot, Holiday, SlotDetails, BookingSlotDetails, Venue } from '../types/data'
-import { type Dayjs } from 'dayjs'
 
 const props = defineProps({
   date: {
@@ -23,8 +22,8 @@ const props = defineProps({
     required: true
   },
   locationData: {
-    type : Object as PropType<Venue>,
-      required: true
+    type: Object as PropType<Venue>,
+    required: true
   },
   sport: {
     type: String,
@@ -46,15 +45,13 @@ watch(() => props.date, async () => reloadData())
 
 watch(() => props.location, () => reloadData())
 
-onMounted(async () =>
-{
+onMounted(async () => {
   reloadData()
 })
 
 const formattedDate = computed(() => dayjs(props.date).format("DD MMM YYYY"))
 
-async function reloadData()
-{
+async function reloadData() {
   loading.value = true
   initialiseTimeslots()
   if (props.location)
@@ -62,72 +59,116 @@ async function reloadData()
   loading.value = false
 }
 
-async function initialiseBookedSlots(date: string, location: string)
-{
+async function initialiseBookedSlots(date: string, location: string) {
   await bookedSlotsStore.fetchBookedSlotsByDate(date, location, props.sport)
 }
 
-function initialiseTimeslots()
-{
+function initialiseTimeslots() {
   timeSlots.value = []
-  let end = dayjs(`${props.date} 23:00`, "YYYY-MM-DD hh:mm");
-  if (props.locationData.tillMidnight)
-    end= dayjs(`${props.date}`, "YYYY-MM-DD").add(1, "day");
-  const start = dayjs(`${props.date} 08:00`, "YYYY-MM-DD hh:mm");
   const date = props.date
-  let current = dayjs()
-  if (current.isBefore(start))
-    current = start;
-
   const isHoliday = checkIsHoliday(date, holidays.value);
+  const normalizedSport = props.sport?.toLowerCase() || 'futsal';
 
-  while (current.isBefore(end))
-  {
-    const slotDetails = checkSlotDetail(current, date, isHoliday);
-    if (!slotDetails)
-    {
-      current = current.add(1, "hour");
-      continue;
+  // Get applicable timeslots for this date and sport
+  const applicableTimeslots = props.locationTimeslots.filter(timeslot => {
+    // Check if it's a holiday slot and we're on a holiday
+    if (isHoliday && timeslot.type === 'Holiday') {
+      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
+      return timeslotSport === normalizedSport;
     }
-    let addDuration = 1;
-    if (!slotDetails)
-    {
-      current = current.add(addDuration, "hour");
-      return;
-    }
-    if (slotDetails.timePerSlot !== "1")
-      addDuration = parseInt(slotDetails.timePerSlot);
 
+    // Check if it's a regular slot for the correct day and sport
+    if (!isHoliday && timeslot.type !== 'Holiday' && timeslot.days.includes(dayjs(date).format("ddd"))) {
+      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
+      if (timeslotSport !== normalizedSport) {
+        return false;
+      }
+
+      // Check if booking date is on or after the timeslot's startDate
+      if (timeslot.startDate) {
+        const startDate = dayjs(timeslot.startDate, "YYYY-MM-DD");
+        if (dayjs(date).isBefore(startDate, "day")) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    return false;
+  });
+
+  // Sort applicable timeslots by startTime to handle multiple instances (Peak/Off-Peak)
+  // When there are overlapping timeslots, we'll use the one with the earliest startTime
+  const sortedTimeslots = applicableTimeslots.sort((a, b) => {
+    const timeA = dayjs(`2000-01-01 ${a.startTime}`, "YYYY-MM-DD hh:mm");
+    const timeB = dayjs(`2000-01-01 ${b.startTime}`, "YYYY-MM-DD hh:mm");
+    return timeA.diff(timeB);
+  });
+
+  // Track which time periods have been covered to avoid overlaps
+  const coveredPeriods: Array<{ start: string; end: string }> = [];
+
+  // Generate timeslots based on each applicable timeslot's startTime and endTime
+  sortedTimeslots.forEach(slotDetails => {
+    let current = dayjs(`${date} ${slotDetails.startTime}`, "YYYY-MM-DD hh:mm");
     const slotEnd = dayjs(`${date} ${slotDetails.endTime}`, "YYYY-MM-DD hh:mm");
-    if (slotEnd.diff(current, "hours", true) % parseInt(slotDetails.timePerSlot) !== 0)
-      addDuration = 1
 
-    if (dayjs(current).add(addDuration, "h").isSameOrBefore(end) === false)
-      addDuration = 1
+    while (current.isBefore(slotEnd)) {
+      // Check if this time period is already covered by an earlier timeslot
+      const isCovered = coveredPeriods.some(period => {
+        const periodStart = dayjs(`${date} ${period.start}`, "YYYY-MM-DD hh:mm");
+        const periodEnd = dayjs(`${date} ${period.end}`, "YYYY-MM-DD hh:mm");
+        return current.isSameOrAfter(periodStart) && current.isBefore(periodEnd);
+      });
 
-    let rate = parseInt(slotDetails.rate) * addDuration;
-    if (slotDetails.newRate)
-    {
-      const dateToday = dayjs(date);
-      const startDate = dayjs(slotDetails.startDate, "YYYY-MM-DD");
-      if (dateToday.isSameOrAfter(startDate, "day"))
-        rate = parseInt(slotDetails.newRate) * addDuration;
+      if (isCovered) {
+        current = current.add(1, "hour");
+        continue;
+      }
+
+      let addDuration = 1;
+      if (slotDetails.timePerSlot !== "1")
+        addDuration = parseInt(slotDetails.timePerSlot);
+
+      // Check if the slot fits within the timeslot boundaries
+      if (slotEnd.diff(current, "hours", true) % parseInt(slotDetails.timePerSlot) !== 0)
+        addDuration = 1
+
+      // Check if adding the duration would exceed the slot end time
+      if (dayjs(current).add(addDuration, "h").isAfter(slotEnd))
+        break;
+
+      let rate = parseInt(slotDetails.rate) * addDuration;
+      if (slotDetails.newRate) {
+        const dateToday = dayjs(date);
+        const startDate = dayjs(slotDetails.startDate, "YYYY-MM-DD");
+        if (dateToday.isSameOrAfter(startDate, "day"))
+          rate = parseInt(slotDetails.newRate) * addDuration;
+      }
+
+      const timeSlot = {
+        start: dayjs(current).format("ha"),
+        end: dayjs(current).add(addDuration, "h").format("ha"),
+        rate,
+        duration: addDuration,
+        color: slotDetails.color ? slotDetails.color : null,
+        type: slotDetails.type,
+      };
+      timeSlots.value.push(timeSlot);
+
+      // Track this period as covered
+      coveredPeriods.push({
+        start: dayjs(current).format("HH:mm"),
+        end: dayjs(current).add(addDuration, "h").format("HH:mm"),
+      });
+
+      current = current.add(addDuration, "hour");
     }
-    const timeSlot = {
-      start: dayjs(current).format("ha"),
-      end: dayjs(current).add(addDuration, "h").format("ha"),
-      rate,
-      duration: addDuration,
-      color: slotDetails.color ? slotDetails.color : null,
-      type: slotDetails.type,
-    };
-    timeSlots.value.push(timeSlot);
-    current = current.add(addDuration, "hour");
-  }
+  });
 }
 
-function checkIsHoliday(dateSelected: string, holidayList: Holiday[])
-{
+function checkIsHoliday(dateSelected: string, holidayList: Holiday[]) {
   const date = dayjs(dateSelected, "YYYY-MM-DD").format('DD-MM-YYYY')
   return (
     holidayList &&
@@ -135,38 +176,7 @@ function checkIsHoliday(dateSelected: string, holidayList: Holiday[])
   );
 }
 
-function checkSlotDetail(currentTime: Dayjs, dateSelected: string, isHoliday: boolean)
-{
-  // Normalize sport slug to lowercase, default to "futsal" if null/undefined
-  const normalizedSport = props.sport?.toLowerCase() || 'futsal';
-
-  if (isHoliday)
-    return props.locationTimeslots.find(timeslot => {
-      // Check typeOfSports match for holiday slots
-      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
-      return timeslot.type === 'Holiday' && timeslotSport === normalizedSport;
-    });
-
-  return props.locationTimeslots.find(timeslot =>
-  {
-    if (timeslot.days.includes(dayjs(dateSelected).format("ddd")) && timeslot.type !== "Holiday")
-    {
-      // Check typeOfSports match
-      const timeslotSport = timeslot.typeOfSports?.toLowerCase() || 'futsal';
-      if (timeslotSport !== normalizedSport) {
-        return false;
-      }
-
-      const start = dayjs(`${dateSelected} ${timeslot.startTime}`, "YYYY-MM-DD hh:mm");
-      const end = dayjs(`${dateSelected} ${timeslot.endTime}`, "YYYY-MM-DD hh:mm");
-      return currentTime.isSameOrAfter(start) && currentTime.isBefore(end);
-    }
-    return false;
-  });
-}
-
-function selectHandler(selectedTimeslots: BookingSlotDetails[])
-{
+function selectHandler(selectedTimeslots: BookingSlotDetails[]) {
   emit('select', selectedTimeslots)
 }
 </script>
