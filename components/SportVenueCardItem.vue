@@ -46,7 +46,7 @@ const sportColor = computed(() => {
                 <SportVenueItem :locationKey="props.venue.key" :sportSlug="props.sportSlug" />
                 <VenueAddress :color="sportColor">{{ props.venue.address }}</VenueAddress>
                 <div class="buttons__container">
-                    <VenueFromRates :locationKey="props.venue.key" :color="sportColor" />
+                    <VenueFromRates :locationKey="props.venue.key" :sportSlug="props.sportSlug" :color="sportColor" />
                     <Button @click="clickHandlerViewVenue">View Venue</Button>
                 </div>
             </div>

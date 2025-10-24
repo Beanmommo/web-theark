@@ -1,11 +1,13 @@
 <script setup lang="ts">
 const locationsStore = useLocationsStore()
 const pitchesStore = usePitchesStore()
+const timeslotsStore = useTimeslotsStore()
 
 // Fetch data needed for sport venues display
 await Promise.all([
   useAsyncData('locations', () => locationsStore.fetchLocations()),
   useAsyncData('pitches', () => pitchesStore.fetchPitches()),
+  useAsyncData('timeslots', () => timeslotsStore.fetchTimeslots()),
 ])
 
 const sportsStore = useSportsStore()

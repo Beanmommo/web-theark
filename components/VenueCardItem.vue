@@ -29,7 +29,7 @@ function clickHandlerBookNow() {
         <VenuePitchesItem :locationKey="props.venue.key" :sportSlug="activeSport?.name ?? ''" />
         <VenueAddress>{{ props.venue.address }}</VenueAddress>
         <div class="buttons__container">
-          <VenueFromRates :locationKey="props.venue.key" />
+          <VenueFromRates :locationKey="props.venue.key" :sportSlug="activeSport?.slug ?? ''" />
           <Button @click="clickHandlerBookNow">Book Now</Button>
         </div>
       </div>
