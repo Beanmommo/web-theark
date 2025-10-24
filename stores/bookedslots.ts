@@ -76,7 +76,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
         email,
         submittedDate,
         color: null,
-        typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal',
+        typeOfSports: slot.typeOfSports?.toLowerCase() || "futsal",
       });
     });
     await Promise.all(promises);
@@ -89,12 +89,22 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
     const isProduction = config.public.env === "prod";
 
     if (!isProduction) {
-      console.log('🔧 [DEV] Skipping addAutomateSlots - not in production environment');
-      console.log('🔧 [DEV] Would have created automated slots for:', automateSlots.length, 'slots');
+      console.log(
+        "🔧 [DEV] Skipping addAutomateSlots - not in production environment"
+      );
+      console.log(
+        "🔧 [DEV] Would have created automated slots for:",
+        automateSlots.length,
+        "slots"
+      );
       return []; // Return empty array to maintain function signature
     }
 
-    console.log('✅ [PROD] Running addAutomateSlots for', automateSlots.length, 'slots');
+    console.log(
+      "✅ [PROD] Running addAutomateSlots for",
+      automateSlots.length,
+      "slots"
+    );
 
     const groupByPitch = useGroupBy(automateSlots, "pitch");
 
@@ -118,7 +128,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
         start: startSlot.start,
         status: "Paid",
         submittedDate: startSlot.submittedDate,
-        typeOfSports: startSlot.typeOfSports?.toLowerCase() || 'futsal',
+        typeOfSports: startSlot.typeOfSports?.toLowerCase() || "futsal",
       };
       const slotPromise = $fetch(`/api/automate`, {
         method: "POST",
@@ -128,7 +138,59 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
     });
     const responses = await Promise.all(promises);
 
-    console.log('✅ [PROD] Successfully created', responses.length, 'automated slots');
+    console.log(
+      "✅ [PROD] Successfully created",
+      responses.length,
+      "automated slots"
+    );
+
+    return responses;
+  };
+
+  const deleteAutomateSlots = async (automateSlots: AutomateSlot[]) => {
+    // Check environment - only run in production
+    const config = useRuntimeConfig();
+    const isProduction = config.public.env === "prod";
+
+    if (!isProduction) {
+      console.log(
+        "🔧 [DEV] Skipping deleteAutomateSlots - not in production environment"
+      );
+      console.log(
+        "🔧 [DEV] Would have deleted automated slots for:",
+        automateSlots.length,
+        "slots"
+      );
+      return []; // Return empty array to maintain function signature
+    }
+
+    console.log(
+      "✅ [PROD] Running deleteAutomateSlots for",
+      automateSlots.length,
+      "slots"
+    );
+
+    const groupByPitch = useGroupBy(automateSlots, "pitch");
+
+    let promises: Promise<any>[] = [];
+    Object.keys(groupByPitch).map(async (pitch) => {
+      const startSlot = groupByPitch[pitch][0];
+
+      const deletePromise = $fetch(`/api/automate.delete`, {
+        method: "POST",
+        body: JSON.stringify({
+          bookedSlotsKey: startSlot.slotKey,
+        }),
+      });
+      promises.push(deletePromise);
+    });
+
+    const responses = await Promise.all(promises);
+    console.log(
+      "✅ [PROD] Successfully deleted",
+      responses.length,
+      "automated slots"
+    );
 
     return responses;
   };
@@ -172,7 +234,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
           type: slot.type,
           paymentMethod: presale.paymentMethod,
           paymentStatus: presale.paymentStatus,
-          typeOfSports: slot.typeOfSports?.toLowerCase() || 'futsal',
+          typeOfSports: slot.typeOfSports?.toLowerCase() || "futsal",
         });
       });
     });
@@ -180,7 +242,11 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
     return bookedslots;
   }
 
-  const fetchBookedSlotsByDate = async (date: string, location: string, sport?: string) => {
+  const fetchBookedSlotsByDate = async (
+    date: string,
+    location: string,
+    sport?: string
+  ) => {
     const formattedDate = dayjs(date).format("YYYY-MM-DD");
     const bookedSlots = await $fetch<BookedSlotData>(
       `/api/bookedslots/date/${formattedDate}`
@@ -212,7 +278,7 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
       // Filter by typeOfSports
       if (sport) {
         const normalizedSport = sport.toLowerCase();
-        const slotSport = slot.typeOfSports?.toLowerCase() || 'futsal';
+        const slotSport = slot.typeOfSports?.toLowerCase() || "futsal";
         if (slotSport !== normalizedSport) {
           return;
         }
@@ -236,5 +302,6 @@ export const useBookedSlotsStore = defineStore("bookedslots", () => {
     updateBookedSlots,
     addPendingBookedSlots,
     addAutomateSlots,
+    deleteAutomateSlots,
   };
 });

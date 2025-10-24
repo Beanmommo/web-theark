@@ -8,6 +8,7 @@ import type {
   PackageDetails,
   PaymentMethods,
   InvoiceType,
+  AutomateSlot,
 } from "@/types/data";
 import { useCreditsStore } from "./credits";
 
@@ -100,6 +101,7 @@ export const useBookingsStore = defineStore("bookings", () => {
       // ============================================
       // 4. FETCH AND MOVE ALL BOOKED SLOTS
       // ============================================
+      const slotsData: BookedSlot[] = [];
       const slotPromises = booking.slots.map(async (slotKey) => {
         try {
           // Fetch the slot data
@@ -111,6 +113,9 @@ export const useBookingsStore = defineStore("bookings", () => {
             console.warn(`Slot ${slotKey} not found, skipping`);
             return;
           }
+
+          // Store slot data for automate deletion
+          slotsData.push({ ...slotData, key: slotKey });
 
           // Add cancelledDate to slot
           const cancelledSlotData = {
@@ -139,6 +144,31 @@ export const useBookingsStore = defineStore("bookings", () => {
       });
 
       await Promise.all(slotPromises);
+
+      // ============================================
+      // 4.5. DELETE AUTOMATE SLOTS
+      // ============================================
+      const bookedSlotsStore = useBookedSlotsStore();
+      const automateSlots: AutomateSlot[] = slotsData.map((slot) => ({
+        slotKey: slot.key || "",
+        bookingKey,
+        name: booking.name,
+        email: booking.email,
+        submittedDate: booking.submittedDate,
+        location: booking.location,
+        pitch: slot.pitch,
+        date: slot.date,
+        start: slot.start,
+        end: slot.end,
+        rate: slot.rate,
+        duration: slot.duration,
+        type: slot.type,
+        color: null,
+        typeOfSports: slot.typeOfSports?.toLowerCase() || "futsal",
+      }));
+
+      await bookedSlotsStore.deleteAutomateSlots(automateSlots);
+      console.log(`Deleted ${automateSlots.length} automate slots`);
 
       // ============================================
       // 5. DELETE ORIGINAL BOOKING
