@@ -11,14 +11,27 @@ const sportSlug = computed(() =>
   return typeof slug === 'string' ? slug.toLowerCase() : undefined
 })
 
+const currentRoutePath = computed(() => route.path?.toLowerCase() ?? '')
+
 const popupConfigs = computed(() => config.value?.popup ?? [])
 
 const activePopup = computed(() =>
 {
   const slug = sportSlug.value
+  const path = currentRoutePath.value
+
+  const routeMatch = popupConfigs.value.find((popup) =>
+  {
+    const popupRoute = popup.route?.toLowerCase()
+    return popupRoute ? popupRoute === path : false
+  })
+
+  if (routeMatch) return routeMatch
+
   return popupConfigs.value.find((popup) =>
   {
-    const popupSport = popup.typeOfSports.toLowerCase()
+    const popupSport = popup.typeOfSports?.toLowerCase()
+    if (!popupSport) return false
     if (popupSport === 'all') return true
     if (!slug) return false
     return popupSport === slug

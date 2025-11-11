@@ -361,6 +361,7 @@ export type Config = {
 export type ConfigPopup = {
   typeOfSports: string;
   imgSrc: string;
+  route: string;
   popup: boolean;
 };
 

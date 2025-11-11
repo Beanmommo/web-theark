@@ -1,8 +1,5 @@
 <template>
     <!-- TODO: Connect this with firebase later -->
-    <ClientOnly>
-        <PromotionDialog />
-    </ClientOnly>
     <SectionQuickBooking />
     <SectionSportVenues :sport-slug="sportSlug" />
 </template>

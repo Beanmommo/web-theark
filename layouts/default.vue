@@ -1,4 +1,7 @@
 <template>
+  <ClientOnly>
+    <PromotionDialog />
+  </ClientOnly>
   <LayoutBase>
     <template #header>
       <ClientOnly>
