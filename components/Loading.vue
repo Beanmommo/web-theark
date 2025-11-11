@@ -1,12 +1,22 @@
 <script>
 export default {
   props: ["message"],
-  data()
-  {
+  data() {
     return {
-      dialog: true
+      dialog: true,
     };
-  }
+  },
+  computed: {
+    isPickleball() {
+      return this.$route.path.includes("/pickleball");
+    },
+    spinnerColor() {
+      return this.isPickleball ? "#2282d6" : "#00c853";
+    },
+    circleColor() {
+      return this.isPickleball ? "#5ca3e8" : "#76ff03";
+    },
+  },
 };
 </script>
 
@@ -16,7 +26,13 @@ export default {
       <v-row wrap>
         <v-col cols="12">
           <div class="d-flex justify-center">
-            <div class="fulfilling-bouncing-circle-spinner">
+            <div
+              class="fulfilling-bouncing-circle-spinner"
+              :style="{
+                '--spinner-color': spinnerColor,
+                '--circle-color': circleColor,
+              }"
+            >
               <div class="circle"></div>
               <div class="orbit"></div>
             </div>
@@ -29,8 +45,6 @@ export default {
     </v-card>
   </v-dialog>
 </template>
-
-
 
 <style>
 .fulfilling-bouncing-circle-spinner,
@@ -52,19 +66,21 @@ export default {
   top: 0;
   left: 0;
   border-radius: 50%;
-  border: calc(60px * 0.03) solid #00c853;
-  animation: fulfilling-bouncing-circle-spinner-orbit-animation infinite 4000ms ease;
+  border: calc(60px * 0.03) solid var(--spinner-color, #00c853);
+  animation: fulfilling-bouncing-circle-spinner-orbit-animation infinite 4000ms
+    ease;
 }
 
 .fulfilling-bouncing-circle-spinner .circle {
   height: 60px;
   width: 60px;
-  color: #76ff03;
+  color: var(--circle-color, #76ff03);
   display: block;
   border-radius: 50%;
   position: relative;
-  border: calc(60px * 0.1) solid #76ff03;
-  animation: fulfilling-bouncing-circle-spinner-circle-animation infinite 4000ms ease;
+  border: calc(60px * 0.1) solid var(--circle-color, #76ff03);
+  animation: fulfilling-bouncing-circle-spinner-circle-animation infinite 4000ms
+    ease;
   transform: rotate(0deg) scale(1);
 }
 
@@ -150,4 +166,5 @@ export default {
     border-top-color: inherit;
     transform: scale(1);
   }
-}</style>
+}
+</style>
