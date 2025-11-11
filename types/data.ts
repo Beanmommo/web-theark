@@ -354,9 +354,14 @@ export type PackageDetails = {
 };
 
 export type Config = {
+  popup: ConfigPopup[];
+  sportsTypes: SportType[];
+};
+
+export type ConfigPopup = {
+  typeOfSports: string;
   imgSrc: string;
   popup: boolean;
-  sportsTypes: SportType[]
 };
 
 export type SportType = {
@@ -365,8 +370,8 @@ export type SportType = {
   terminology: {
     plural: string;
     singular: string;
-  }
-}
+  };
+};
 
 export type Page = {
   content: string;

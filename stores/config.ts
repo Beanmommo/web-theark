@@ -12,7 +12,7 @@ export const useConfigStore = defineStore('config', () =>
     const { data } = await useFetch('/api/config')
     if (!data.value) return;
     config.value = data.value as Config
-    showPopup.value = config.value.popup ? config.value.popup : false
+    showPopup.value = config.value?.popup?.some(item => item.popup) ?? false
     return config.value
   }
 

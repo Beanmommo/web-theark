@@ -1,6 +1,6 @@
 <template>
     <!-- TODO: Connect this with firebase later -->
-    <ClientOnly v-if="sportSlug === 'futsal'">
+    <ClientOnly>
         <PromotionDialog />
     </ClientOnly>
     <SectionQuickBooking />
