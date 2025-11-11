@@ -26,7 +26,7 @@ function clickHandlerBookNow() {
       <CldImage :src="`website/${props.venue.publicId}`" width="800" height="600" :alt="props.venue.name" />
       <div class="item__content">
         <h3>{{ props.venue.name }} Pitch</h3>
-        <VenuePitchesItem :locationKey="props.venue.key" :sportSlug="activeSport?.name ?? ''" />
+        <VenuePitchesItem :locationKey="props.venue.key" :sportSlug="activeSport?.slug ?? ''" />
         <VenueAddress>{{ props.venue.address }}</VenueAddress>
         <div class="buttons__container">
           <VenueFromRates :locationKey="props.venue.key" :sportSlug="activeSport?.slug ?? ''" />

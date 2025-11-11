@@ -1,99 +1,143 @@
 <script setup lang="ts">
 import { usePitchesStore } from '~/stores/pitches'
 import { storeToRefs } from 'pinia'
-// import { useTheme } from 'vuetify'
 import type { Pitch } from '~/types/data'
-const pitchesStore = usePitchesStore()
-const { pitches } = storeToRefs(pitchesStore)
+
+type VenuePitchItem = {
+  icon: string;
+  label: string;
+}
+
+type VenuePitchDisplay = {
+  borderColor: string;
+  itemBackgroundColor: string;
+  items: VenuePitchItem[];
+}
+
+type VenuePitchBuilderContext = {
+  pitches: Pitch[];
+}
+
+type VenuePitchConfig = {
+  borderColor: string;
+  itemBackgroundColor: string;
+  buildItems: (context: VenuePitchBuilderContext) => VenuePitchItem[];
+}
 
 const props = defineProps({
-  locationKey: String,
-  sportSlug: {
+  locationKey: {
     type: String,
     required: true
+  },
+  sportSlug: {
+    type: String,
+    default: 'futsal'
   }
 })
 
-// const futsalPitchBySize = computed(() => {
-//   const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey })
-//   const groupedPitches = useGroupBy(pitchInLocation, 'size')
-//   return groupedPitches
-// })
+const pitchesStore = usePitchesStore()
+const { pitches } = storeToRefs(pitchesStore)
 
+const normalizedSportSlug = computed(() => props.sportSlug?.toLowerCase() || 'futsal')
 
-const venueItem = {
-  "futsalTheme": {
-    item: [
-      {
-        icon: "/Icon/pitch_green_icon1.svg",
-        label: "Field"
-      }, {
-        icon: "/Icon/pitch_green_icon2.svg",
-        label: "Astro Turf"
-      }, {
-        icon: "/Icon/pitch_green_icon3.svg",
-        label: "Aside"
-      }
-    ],
-    borderColor: "#0A8900",
-    itemBackgroundColor: "#F7FFF4"
-  },
-  "pickleBallTheme": {
-    item: [
-      {
-        icon: "/Icon/pitch_blue_icon1.svg",
-        label: "Court"
-      }
-    ],
-    borderColor: "#2282d6",
-    itemBackgroundColor: "#E5F3FF"
-  }
-}
+const pitchesForVenue = computed(() => {
+  if (!pitches.value) return []
+  return pitches.value.filter((pitch: Pitch) => pitch.locationKey === props.locationKey)
+})
 
-const sportVenueItem = ref({} as any)
+const pitchesBySport = computed(() => {
+  return pitchesForVenue.value.reduce((acc, pitch) => {
+    const sport = (pitch.typeOfSports || 'futsal').toLowerCase()
+    if (!acc[sport]) {
+      acc[sport] = []
+    }
+    acc[sport].push(pitch)
+    return acc
+  }, {} as Record<string, Pitch[]>)
+})
 
-watch(() => props.sportSlug, (newVal) => {
-  if (newVal === 'futsal') {
-    initialiseFutsalItem()
-  } else if (newVal === 'pickleball') {
-    initialisePickleballItem()
-  }
-  console.log(sportVenueItem.value)
-}, { immediate: true })
+const selectedSportPitches = computed(() => {
+  return pitchesBySport.value[normalizedSportSlug.value] ?? []
+})
 
-function initialiseFutsalItem() {
-  sportVenueItem.value = venueItem.futsalTheme
-  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'futsal' })
-  const groupedPitches = useGroupBy(pitchInLocation, 'size')
-  sportVenueItem.value.item = []
-  for (const [key, value] of Object.entries(groupedPitches)) {
-    sportVenueItem.value.item.push({
-      icon: "/Icon/pitch_green_icon1.svg",
-      label: `Field${(value as Pitch[]).length > 1 ? "s" : ""}, ${key} Aside`
+const buildFutsalItems = () => {
+  const pitches = selectedSportPitches.value
+  console.log('pitches', pitches)
+  const entries: VenuePitchItem[] = [
+    {
+      icon: '/Icon/pitch_green_icon2.svg',
+      label: 'Astro Turf'
+    }
+  ]
+  const groupedBySize = useGroupBy(pitches, 'size')
+  for (const [key, value] of Object.entries(groupedBySize)) {
+    if (key === 'unknown') continue
+    entries.push({
+      icon: '/Icon/pitch_green_icon3.svg',
+      label: `Field ${key} Aside`
     })
   }
-  sportVenueItem.value.item.push({
-    icon: "/Icon/pitch_green_icon2.svg",
-    label: "Astro Turf"
+  entries.push({
+    icon: '/Icon/pitch_green_icon1.svg',
+    label: `${pitches.length} Field${pitches.length > 1 ? 's' : ''}`
   })
+  return entries
 }
 
-function initialisePickleballItem() {
-  sportVenueItem.value = venueItem.pickleBallTheme
-  const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey, typeOfSports: 'pickleball' })
-  sportVenueItem.value.item = []
-  sportVenueItem.value.item.push({
-    icon: "/Icon/pitch_blue_icon1.svg",
-    label: `${pitchInLocation.length} Court${pitchInLocation.length > 1 ? "s" : ""}`
-  })
+const buildPickleballItems = ({ pitches }: VenuePitchBuilderContext): VenuePitchItem[] => {
+  const count = pitches.length
+  return [
+    {
+      icon: '/Icon/pitch_blue_icon1.svg',
+      label: `${count} Court${count === 1 ? '' : 's'}`
+    }
+  ]
 }
 
+const sportConfigs: Record<string, VenuePitchConfig> = {
+  futsal: {
+    borderColor: '#0A8900',
+    itemBackgroundColor: '#F7FFF4',
+    buildItems: () => buildFutsalItems()
+  },
+  pickleball: {
+    borderColor: '#2282d6',
+    itemBackgroundColor: '#E5F3FF',
+    buildItems: buildPickleballItems
+  }
+}
+
+const sportVenueItem = computed<VenuePitchDisplay | null>(() => {
+  const config = sportConfigs[normalizedSportSlug.value]
+  if (!config) return null
+
+  const pitchesStore = usePitchesStore()
+  const { pitches } = storeToRefs(pitchesStore)
+  const selectedSportPitches = computed(() => {
+    return pitches.value.filter((pitch: Pitch) => pitch.locationKey === props.locationKey && pitch.typeOfSports === normalizedSportSlug.value)
+  })
+
+  const items = config.buildItems({
+    pitches: selectedSportPitches.value
+  })
+
+  if (!items.length) return null
+
+  return {
+    borderColor: config.borderColor,
+    itemBackgroundColor: config.itemBackgroundColor,
+    items
+  }
+})
+
+onMounted(() => {
+  console.log('sportVenueItem', sportVenueItem.value)
+})
 </script>
 
 <template>
-  <div class="pitchesItem">
-
-    <div class="icon__item" v-for="item in sportVenueItem.item" :style="{
+  <div v-if="sportVenueItem" class="pitchesItem">
+    <div class="icon__item" v-for="item in sportVenueItem.items" :key="item.label" :style="{
       border: sportVenueItem.borderColor,
       background: sportVenueItem.itemBackgroundColor,
     }">

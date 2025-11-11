@@ -1,12 +1,7 @@
 <script setup lang="ts">
-type VenueItem = {
-    item: {
-        icon: string;
-        label: string;
-    }[];
-    borderColor: string;
-    itemBackgroundColor: string;
-}
+import type { Pitch } from '~/types/data'
+
+// Props
 const props = defineProps({
     locationKey: {
         type: String,
@@ -18,81 +13,141 @@ const props = defineProps({
     }
 })
 
-import type { Pitch } from '~/types/data'
+// Store
 const pitchesStore = usePitchesStore()
 const { pitches } = storeToRefs(pitchesStore)
 
-const pitchInLocation = useFilter(pitches.value, { locationKey: props.locationKey })
-const sportPitches = useFilter(pitchInLocation, { typeOfSports: props.sportSlug })
+// Types
+type VenueItem = {
+    item: {
+        icon: string;
+        label: string;
+    }[];
+    borderColor: string;
+    itemBackgroundColor: string;
+}
 
-const sportVenueItem = ref({} as VenueItem)
+type VenuePitchItem = { icon: string; label: string }
+type VenuePitchBuilderContext = { groupedBySize: Record<string, Pitch[]>; pitches: Pitch[] }
+type VenuePitchConfig = {
+    borderColor: string;
+    itemBackgroundColor: string;
+    buildItems: (ctx: VenuePitchBuilderContext) => VenuePitchItem[];
+}
 
-const sportColors: Record<"futsal" | "pickleball", { borderColor: string; itemBackgroundColor: string }> = {
-    "futsal": {
-        borderColor: "#0A8900",
-        itemBackgroundColor: "#F7FFF4"
+// Derived data
+const normalizedSportSlug = computed(() => props.sportSlug?.toLowerCase() || 'futsal')
+
+const pitchesForVenue = computed(() =>
+    (pitches.value || []).filter((p: Pitch) => p.locationKey === props.locationKey)
+)
+
+const selectedSportPitches = computed(() =>
+    pitchesForVenue.value.filter((p: Pitch) => (p.typeOfSports || 'futsal').toLowerCase() === normalizedSportSlug.value)
+)
+
+const groupPitchesBySize = (pitchList: Pitch[]) =>
+    pitchList.reduce((acc, p) => {
+        const sizeKey = p.size ? String(p.size) : 'unknown'
+        if (!acc[sizeKey]) acc[sizeKey] = []
+        acc[sizeKey].push(p)
+        return acc
+    }, {} as Record<string, Pitch[]>)
+
+// Builders per sport
+const buildFutsalItems = ({ groupedBySize }: VenuePitchBuilderContext): VenuePitchItem[] => {
+    const entries: VenuePitchItem[] = [
+        { icon: '/Icon/pitch_green_icon2.svg', label: 'Astro Turf' }
+    ]
+
+    const sizeDetails = Object.entries(groupedBySize)
+        .map(([sizeKey, pitchList]) => ({ sizeKey, pitchList: pitchList ?? [] }))
+        .filter(({ pitchList }) => pitchList.length > 0)
+        .sort((a, b) => {
+            const aNum = Number(a.sizeKey); const bNum = Number(b.sizeKey)
+            const A = Number.isFinite(aNum) ? aNum : Number.MAX_SAFE_INTEGER
+            const B = Number.isFinite(bNum) ? bNum : Number.MAX_SAFE_INTEGER
+            return A - B
+        })
+
+    sizeDetails.forEach(({ sizeKey, pitchList }) => {
+        const numericSize = Number(sizeKey)
+        if (Number.isFinite(numericSize)) {
+            entries.push({ icon: '/Icon/pitch_green_icon3.svg', label: `${numericSize} Aside` })
+        }
+        const count = pitchList.length
+        entries.push({ icon: '/Icon/pitch_green_icon1.svg', label: `${count} Field${count > 1 ? 's' : ''}` })
+    })
+
+    return entries
+}
+
+const buildPickleballItems = ({ groupedBySize, pitches }: VenuePitchBuilderContext): VenuePitchItem[] => {
+    const entries: VenuePitchItem[] = []
+
+    const sizeDetails = Object.entries(groupedBySize)
+        .map(([sizeKey, pitchList]) => ({ sizeKey, pitchList: pitchList ?? [] }))
+        .filter(({ pitchList }) => pitchList.length > 0)
+        .sort((a, b) => {
+            const aNum = Number(a.sizeKey); const bNum = Number(b.sizeKey)
+            const A = Number.isFinite(aNum) ? aNum : Number.MAX_SAFE_INTEGER
+            const B = Number.isFinite(bNum) ? bNum : Number.MAX_SAFE_INTEGER
+            return A - B
+        })
+
+    sizeDetails.forEach(({ sizeKey, pitchList }) => {
+        const count = pitchList.length
+        entries.push({ icon: '/Icon/court_blue_icon1.svg', label: `${count} Court${count > 1 ? 's' : ''}` })
+        const numericSize = Number(sizeKey)
+        if (Number.isFinite(numericSize)) {
+            entries.push({ icon: '/Icon/court_blue_icon3.svg', label: `${numericSize} Aside` })
+        }
+    })
+
+    // If no size groups, still show total courts
+    if (!entries.length && pitches.length) {
+        entries.push({ icon: '/Icon/court_blue_icon1.svg', label: `${pitches.length} Court${pitches.length > 1 ? 's' : ''}` })
+    }
+
+    return entries
+}
+
+// Configs
+const sportConfigs: Record<string, VenuePitchConfig> = {
+    futsal: {
+        borderColor: '#0A8900',
+        itemBackgroundColor: '#F7FFF4',
+        buildItems: buildFutsalItems
     },
-    "pickleball": {
-        borderColor: "#2282d6",
-        itemBackgroundColor: "#E5F3FF"
+    pickleball: {
+        borderColor: '#2282d6',
+        itemBackgroundColor: '#E5F3FF',
+        buildItems: buildPickleballItems
     }
 }
 
-onMounted(() => {
-    if (props.sportSlug === 'futsal') {
-        initialiseFutsalItem()
-    } else if (props.sportSlug === 'pickleball') {
-        initialisePickleballItem()
+// Final computed display
+const sportVenueItem = computed<VenueItem | null>(() => {
+    const cfg = sportConfigs[normalizedSportSlug.value]
+    if (!cfg) return null
+
+    const sportPitches = selectedSportPitches.value
+    if (!sportPitches.length) return null
+
+    const groupedBySize = groupPitchesBySize(sportPitches)
+    const items = cfg.buildItems({ groupedBySize, pitches: sportPitches })
+    if (!items.length) return null
+
+    return {
+        borderColor: cfg.borderColor,
+        itemBackgroundColor: cfg.itemBackgroundColor,
+        item: items
     }
 })
-
-function initialiseFutsalItem() {
-    if (props.sportSlug in sportColors) {
-        const colors = sportColors[props.sportSlug as "futsal" | "pickleball"];
-        sportVenueItem.value.borderColor = colors.borderColor;
-        sportVenueItem.value.itemBackgroundColor = colors.itemBackgroundColor;
-        sportVenueItem.value.item = []
-        const groupedPitches = useGroupBy(sportPitches, 'size')
-        for (const [key, value] of Object.entries(groupedPitches)) {
-            sportVenueItem.value.item.push({
-                icon: "/Icon/pitch_green_icon1.svg",
-                label: `${(value as Pitch[]).length} Field${(value as Pitch[]).length > 1 ? "s" : ""}`
-            })
-            sportVenueItem.value.item.push({
-                icon: "/Icon/pitch_green_icon3.svg",
-                label: `${key} Aside`
-            })
-        }
-        sportVenueItem.value.item.push({
-            icon: "/Icon/pitch_green_icon2.svg",
-            label: "Astro Turf"
-        })
-    }
-}
-
-function initialisePickleballItem() {
-    if (props.sportSlug in sportColors) {
-        const colors = sportColors[props.sportSlug as "futsal" | "pickleball"];
-        sportVenueItem.value.borderColor = colors.borderColor;
-        sportVenueItem.value.itemBackgroundColor = colors.itemBackgroundColor;
-        sportVenueItem.value.item = []
-        const groupedPitches = useGroupBy(sportPitches, 'size')
-        for (const [key, value] of Object.entries(groupedPitches)) {
-            sportVenueItem.value.item.push({
-                icon: "/Icon/court_blue_icon1.svg",
-                label: `${(value as Pitch[]).length} Court${(value as Pitch[]).length > 1 ? "s" : ""}`
-            })
-            sportVenueItem.value.item.push({
-                icon: "/Icon/court_blue_icon3.svg",
-                label: `${key} Aside`
-            })
-        }
-    }
-}
 </script>
 
 <template>
-    <div class="venueItem">
+    <div v-if="sportVenueItem" class="venueItem">
         <div class="icon__item" v-for="item in sportVenueItem.item" :style="{
             border: sportVenueItem.borderColor,
             background: sportVenueItem.itemBackgroundColor,
