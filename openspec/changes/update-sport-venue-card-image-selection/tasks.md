@@ -14,10 +14,10 @@
 
 ## 3. Component Updates - VenuePage
 
-- [ ] 3.1 Add computed property in `VenuePage.vue` to determine sport-specific gallery images
-- [ ] 3.2 Update `carouselImages` computed to use sport-specific gallery when available
-- [ ] 3.3 Maintain fallback logic to legacy `publicId` and `gallery` fields
-- [ ] 3.4 Ensure proper Cloudinary URL construction for sport-specific images
+- [x] 3.1 Add computed property in `VenuePage.vue` to determine sport-specific gallery images
+- [x] 3.2 Update `carouselImages` computed to use sport-specific gallery when available
+- [x] 3.3 Maintain fallback logic to legacy `publicId` and `gallery` fields
+- [x] 3.4 Ensure proper Cloudinary URL construction for sport-specific images
 
 ## 4. Testing
 
