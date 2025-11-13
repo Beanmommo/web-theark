@@ -21,18 +21,18 @@
 
 ## 4. Testing
 
-- [ ] 4.1 Test SportVenueCardItem with venue that has `sportsGalleries` data (Orchid Country Club)
-- [ ] 4.2 Test SportVenueCardItem with venue that only has legacy `publicId` (backward compatibility)
-- [ ] 4.3 Test VenuePage carousel with venue that has `sportsGalleries` data
-- [ ] 4.4 Test VenuePage carousel with venue that only has legacy `gallery` array
-- [ ] 4.5 Verify Futsal venues show Futsal-specific images in both card and carousel
-- [ ] 4.6 Verify Pickleball venues show Pickleball-specific images in both card and carousel
-- [ ] 4.7 Test on both `/futsal/venue` and `/pickleball/venue` listing pages
-- [ ] 4.8 Test on individual venue pages `/futsal/venue/[key]` and `/pickleball/venue/[key]`
-- [ ] 4.9 Verify carousel shows multiple images from sport-specific gallery array
+- [x] 4.1 Test SportVenueCardItem with venue that has `sportsGalleries` data (Orchid Country Club)
+- [x] 4.2 Test SportVenueCardItem with venue that only has legacy `publicId` (backward compatibility)
+- [x] 4.3 Test VenuePage carousel with venue that has `sportsGalleries` data
+- [x] 4.4 Test VenuePage carousel with venue that only has legacy `gallery` array
+- [x] 4.5 Verify Futsal venues show Futsal-specific images in both card and carousel
+- [x] 4.6 Verify Pickleball venues show Pickleball-specific images in both card and carousel
+- [x] 4.7 Test on both `/futsal/venue` and `/pickleball/venue` listing pages
+- [x] 4.8 Test on individual venue pages `/futsal/venue/[key]` and `/pickleball/venue/[key]`
+- [x] 4.9 Verify carousel shows multiple images from sport-specific gallery array
 
 ## 5. Documentation
 
-- [ ] 5.1 Add code comments in SportVenueCardItem explaining the fallback logic
-- [ ] 5.2 Add code comments in VenuePage explaining the carousel image selection
-- [ ] 5.3 Document the expected data structure in comments
+- [x] 5.1 Add code comments in SportVenueCardItem explaining the fallback logic
+- [x] 5.2 Add code comments in VenuePage explaining the carousel image selection
+- [x] 5.3 Document the expected data structure in comments
