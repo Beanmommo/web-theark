@@ -8,9 +8,9 @@
 
 ## 2. Component Updates - SportVenueCardItem
 
-- [ ] 2.1 Add computed property in `SportVenueCardItem.vue` to determine sport-specific image source
-- [ ] 2.2 Update `CldImage` src binding to use the new computed property
-- [ ] 2.3 Add helper function to capitalize sport name for gallery lookup
+- [x] 2.1 Add computed property in `SportVenueCardItem.vue` to determine sport-specific image source
+- [x] 2.2 Update `CldImage` src binding to use the new computed property
+- [x] 2.3 Add helper function to capitalize sport name for gallery lookup
 
 ## 3. Component Updates - VenuePage
 
