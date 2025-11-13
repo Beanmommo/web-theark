@@ -1,3 +1,12 @@
+// Sport-specific gallery data structure
+export interface SportsGallery {
+  gallery: string[];
+  public_id: string;
+}
+
+// Record of sport names to their galleries (e.g., "Futsal", "Pickleball")
+export type SportsGalleries = Record<string, SportsGallery>;
+
 export interface Venue {
   active: boolean;
   address: string;
@@ -12,6 +21,7 @@ export interface Venue {
   name: string;
   publicId: string;
   tillMidnight: string;
+  sportsGalleries?: SportsGalleries; // Optional: sport-specific image galleries
 }
 
 export interface VenuesData {
