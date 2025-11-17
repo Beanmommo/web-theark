@@ -143,8 +143,7 @@ async function handleCreditCardPayment(
   const result = await paymentsStore.confirmCardPayment(
     newInvoiceData.presaleId,
     newInvoiceData.totalPayable,
-    customerData.value,
-    newInvoiceData.databaseVersion
+    customerData.value
   );
   if (result.status === "succeeded") {
     return {

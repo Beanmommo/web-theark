@@ -25,27 +25,23 @@ export const usePaymentsStore = defineStore('payments', () =>
     customer.value = stripeCustomer
   }
 
-  const setupClientSecret = async (presaleId: string, amount: number, customer: Stripe.Customer, databaseVersion?: string) =>
+  const setupClientSecret = async (presaleId: string, amount: number, customer: Stripe.Customer) =>
   {
     const stripeAmount = parseInt((amount * 100).toFixed(0))
-    const body: any = { amount: stripeAmount, presaleId, customer: customer.id }
-    if (databaseVersion) {
-      body.databaseVersion = databaseVersion
-    }
     const stripeSecret = await $fetch('/api/stripe/secret', {
       method: "POST",
-      body
+      body: { amount: stripeAmount, presaleId, customer: customer.id }
     })
     if (!stripeSecret) return;
     stripeClientSecret.value = stripeSecret
   }
 
-  const confirmCardPayment = (presaleId: string, amount: number, customerData: Partial<CustomerDetails>, databaseVersion?: string) =>
+  const confirmCardPayment = (presaleId: string, amount: number, customerData: Partial<CustomerDetails>) =>
   {
     return new Promise<Stripe.PaymentIntent>(async (resolve, reject) =>
     {
       await setupCustomer(customerData)
-      await setupClientSecret(presaleId, amount, customer.value, databaseVersion)
+      await setupClientSecret(presaleId, amount, customer.value)
       if (!stripeClientSecret.value || !stripeRef.value) return;
       stripeRef.value.confirmCardPayment(stripeClientSecret.value, {
         payment_method: {
