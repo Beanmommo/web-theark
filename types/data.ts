@@ -224,6 +224,8 @@ export enum InvoiceType {
   BOOKING = "Booking",
 }
 
+export type DatabaseVersion = 'rtdb' | 'firestore';
+
 export type Invoice = TotalCostData &
   CustomerDetails &
   PaymentData & {
@@ -240,6 +242,7 @@ export type Invoice = TotalCostData &
     creditRefundKey?: string;
     originalBookingKey?: string;
     typeOfSports?: string;
+    databaseVersion?: DatabaseVersion;
   };
 
 export type InvoiceSlot = {
@@ -263,6 +266,7 @@ export type Presale = TotalCostData &
     submittedDate: string;
     invoiceType: InvoiceType;
     typeOfSports?: string;
+    databaseVersion?: DatabaseVersion;
   };
 
 export type PresaleBooking = Presale & BookingDetails;
