@@ -28,13 +28,24 @@ export interface VenuesData {
   [key: string]: Venue;
 }
 
-export interface Pitch {
+export type Pitch = {
   key: string;
+  locationKey: string;
   name: string;
   size: number;
-  locationKey: string;
+  id?: string;
   typeOfSports: string;
-}
+  startDate: string;
+  endDate: string;
+  active: boolean;
+  websiteActive?: boolean;
+  websiteStartDate?: string;
+  websiteEndDate?: string;
+  backendActive?: boolean;
+  backendStartDate?: string;
+  backendEndDate?: string;
+  automatePitchId?: string;
+};
 
 export type Timeslot = {
   days: string[];
@@ -96,6 +107,7 @@ export type BookingSlotDetails = SlotDetails & {
   date: string;
   pitch: number | string;
   typeOfSports: string;
+  automatePitchId?: string;
 };
 
 export type GroupedTimeslots = {
@@ -254,6 +266,7 @@ export type InvoiceSlot = {
   type: string;
   date: string;
   typeOfSports: string;
+  automatePitchId?: string;
 };
 
 export type InvoiceBooking = Invoice & BookingDetails;

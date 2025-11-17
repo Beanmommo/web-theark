@@ -1,68 +1,88 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
-import type { Pitch, BookedSlot, SlotDetails, BookingSlotDetails } from '../types/data'
+import { useTheme } from "vuetify";
+import type {
+  Pitch,
+  BookedSlot,
+  SlotDetails,
+  BookingSlotDetails,
+} from "../types/data";
 
-const dayjs = useDayjs()
-const selectedTimeslots = ref([] as BookingSlotDetails[])
+const dayjs = useDayjs();
+const selectedTimeslots = ref([] as BookingSlotDetails[]);
 
 const props = defineProps({
   locationPitches: {
     type: Array<Pitch>,
-    required: true
+    required: true,
   },
   timeSlots: Array<SlotDetails>,
   location: { type: String, required: true },
   date: { type: String, required: true },
-  bookedSlots: { type: Array<BookedSlot>, required: true }
-})
+  bookedSlots: { type: Array<BookedSlot>, required: true },
+});
 
-const emit = defineEmits(['select'])
+const emit = defineEmits(["select"]);
 
-watch(() => props.date, async () => reloadData())
+watch(
+  () => props.date,
+  async () => reloadData()
+);
 
-watch(() => props.location, () => reloadData())
+watch(
+  () => props.location,
+  () => reloadData()
+);
 
 function reloadData() {
-  selectedTimeslots.value = []
+  selectedTimeslots.value = [];
 }
 
 function checkBookedSlot(date: string, timeslot: SlotDetails, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
-  const found = props.bookedSlots.find(slot =>
-    slot.pitch === pitch.name &&
-    (slot.start === timeslot.start || slot.end === timeslot.end) &&
-    dayjs(slot.date).isSame(formattedDate, "day")
+  const found = props.bookedSlots.find(
+    (slot) =>
+      slot.pitch === pitch.name &&
+      (slot.start === timeslot.start || slot.end === timeslot.end) &&
+      dayjs(slot.date).isSame(formattedDate, "day")
   );
-  if (found !== undefined)
-    console.log(found)
-  return found !== undefined
+  if (found !== undefined) console.log(found);
+  return found !== undefined;
 }
 
 function checkSlot(date: string, start: string, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   return (
     selectedTimeslots.value &&
-    selectedTimeslots.value.findIndex((slot) => slot.start === start && slot.pitch === pitch.name && dayjs(slot.date).isSame(formattedDate, "day")) !== -1
+    selectedTimeslots.value.findIndex(
+      (slot) =>
+        slot.start === start &&
+        slot.pitch === pitch.name &&
+        dayjs(slot.date).isSame(formattedDate, "day")
+    ) !== -1
   );
 }
 
 function selectTimeslot(timeslot: SlotDetails, pitch: Pitch) {
   const { start } = timeslot;
-  const dateSelected = props.date
-  let newTimeSlots = selectedTimeslots.value ? [...selectedTimeslots.value] : [];
-  const found = newTimeSlots.findIndex(slot =>
-    slot.start === start &&
-    slot.pitch === pitch.name &&
-    slot.date === dateSelected);
+  const dateSelected = props.date;
+  let newTimeSlots = selectedTimeslots.value
+    ? [...selectedTimeslots.value]
+    : [];
+  const found = newTimeSlots.findIndex(
+    (slot) =>
+      slot.start === start &&
+      slot.pitch === pitch.name &&
+      slot.date === dateSelected
+  );
 
-  if (found !== -1)
-    newTimeSlots.splice(found, 1);
+  if (found !== -1) newTimeSlots.splice(found, 1);
   else
     newTimeSlots.push({
       ...timeslot,
       pitch: pitch.name,
       date: dateSelected,
-      typeOfSports: pitch.typeOfSports
+      typeOfSports: pitch.typeOfSports,
+      automatePitchId: pitch.automatePitchId,
     });
   selectedTimeslots.value = useOrderBy(
     newTimeSlots,
@@ -78,13 +98,13 @@ function selectTimeslot(timeslot: SlotDetails, pitch: Pitch) {
     ["asc", "asc"]
   );
 
-  emit('select', selectedTimeslots.value)
+  emit("select", selectedTimeslots.value);
 }
 
-const theme = useTheme()
+const theme = useTheme();
 const accentColor = computed(() => {
-  return theme.current.value.colors.accent
-})
+  return theme.current.value.colors.accent;
+});
 </script>
 
 <template>
@@ -97,9 +117,12 @@ const accentColor = computed(() => {
         </div>
       </v-col>
       <v-col cols="3" md="2">
-        <div class="time__slot" :style="{
-          color: timeSlot.color ? timeSlot.color : '#000',
-        }">
+        <div
+          class="time__slot"
+          :style="{
+            color: timeSlot.color ? timeSlot.color : '#000',
+          }"
+        >
           ${{ (timeSlot.rate * 1.09).toFixed(2) }}
         </div>
       </v-col>
@@ -107,11 +130,22 @@ const accentColor = computed(() => {
         <div class="d-flex flex-row justify-center align-center">
           <template v-for="pitch in locationPitches" :key="pitch.key">
             <div class="flex-grow-1">
-              <div class="time__slot time__slot--button" v-if="checkBookedSlot(date, timeSlot, pitch)">
+              <div
+                class="time__slot time__slot--button"
+                v-if="checkBookedSlot(date, timeSlot, pitch)"
+              >
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
-              <div class="time__slot time__slot--button" @click.prevent="selectTimeslot(timeSlot, pitch)" v-else>
-                <v-icon :color="accentColor" v-if="checkSlot(date, timeSlot.start, pitch)">mdi-check-circle</v-icon>
+              <div
+                class="time__slot time__slot--button"
+                @click.prevent="selectTimeslot(timeSlot, pitch)"
+                v-else
+              >
+                <v-icon
+                  :color="accentColor"
+                  v-if="checkSlot(date, timeSlot.start, pitch)"
+                  >mdi-check-circle</v-icon
+                >
                 <v-icon color="#c9c9c9" v-else>mdi-check-circle</v-icon>
               </div>
             </div>
@@ -148,7 +182,6 @@ const accentColor = computed(() => {
 
   &:last-child {
     border-bottom: 1px solid #ebebeb;
-
   }
 }
 </style>
