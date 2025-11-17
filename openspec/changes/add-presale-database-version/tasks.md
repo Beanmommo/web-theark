@@ -8,9 +8,9 @@
 
 ## 2. Presale Store Updates
 
-- [ ] 2.1 Update `addPresale()` function in `stores/presales.ts` to include `databaseVersion: 'firestore'`
-- [ ] 2.2 Update `addPackagePresale()` function in `stores/presales.ts` to include `databaseVersion: 'firestore'`
-- [ ] 2.3 Verify presale data includes `databaseVersion` in computed properties
+- [x] 2.1 Update `addPresale()` function in `stores/presales.ts` to include `databaseVersion: 'firestore'`
+- [x] 2.2 Update `addPackagePresale()` function in `stores/presales.ts` to include `databaseVersion: 'firestore'`
+- [x] 2.3 Verify presale data includes `databaseVersion` in computed properties
 
 ## 3. API Updates
 
