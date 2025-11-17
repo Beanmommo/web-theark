@@ -14,9 +14,9 @@
 
 ## 3. API Updates
 
-- [ ] 3.1 Verify `server/api/presales/index.ts` persists `databaseVersion` field to Firestore
-- [ ] 3.2 Update `server/api/stripe/secret.post.ts` to include `databaseVersion` in payment intent metadata
-- [ ] 3.3 Add validation for `databaseVersion` field in request body validation
+- [x] 3.1 Verify `server/api/presales/index.ts` persists `databaseVersion` field to Firestore
+- [x] 3.2 Update `server/api/stripe/secret.post.ts` to include `databaseVersion` in payment intent metadata
+- [x] 3.3 Add validation for `databaseVersion` field in request body validation
 
 ## 4. Testing
 
