@@ -16,6 +16,29 @@ const props = defineProps({
 function clickHandlerViewVenue() {
   navigateTo(`/${props.sportSlug}/venue/${props.venue.key}`);
 }
+
+// Helper function to capitalize sport name for data lookup
+const capitalizeSportName = (slug: string): string => {
+  return slug.charAt(0).toUpperCase() + slug.slice(1).toLowerCase();
+};
+
+// Computed property to get sport-specific image or fallback to legacy publicId
+const venueImageSrc = computed(() => {
+  // Try to use sport-specific image first
+  if (props.venue.sportsGalleries && props.sportSlug) {
+    const sportName = capitalizeSportName(props.sportSlug);
+    const sportGallery = props.venue.sportsGalleries[sportName];
+
+    if (sportGallery?.public_id) {
+      // Sport-specific public_id already includes 'website/' prefix in the data
+      return sportGallery.public_id;
+    }
+  }
+
+  // Fallback to legacy publicId
+  return `website/${props.venue.publicId}`;
+});
+
 const courtName = computed(() => {
   if (props.sportSlug === "futsal") {
     return "Pitch";
@@ -39,7 +62,7 @@ const sportColor = computed(() => {
   <div class="venueCardItem">
     <template v-if="props.venue">
       <CldImage
-        :src="`website/${props.venue.publicId}`"
+        :src="venueImageSrc"
         width="800"
         height="600"
         :alt="props.venue.name"
