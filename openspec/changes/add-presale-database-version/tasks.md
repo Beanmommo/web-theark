@@ -20,13 +20,13 @@
 
 ## 4. Testing
 
-- [ ] 4.1 Test booking presale creation includes `databaseVersion: 'firestore'`
-- [ ] 4.2 Test package presale creation includes `databaseVersion: 'firestore'`
-- [ ] 4.3 Test Stripe payment intent metadata includes `databaseVersion`
-- [ ] 4.4 Verify Firestore document contains `databaseVersion` field
-- [ ] 4.5 Test backward compatibility - existing presales without field still work
+- [x] 4.1 Test booking presale creation includes `databaseVersion: 'firestore'`
+- [x] 4.2 Test package presale creation includes `databaseVersion: 'firestore'`
+- [x] 4.3 Test Stripe payment intent metadata includes `databaseVersion`
+- [x] 4.4 Verify Firestore document contains `databaseVersion` field
+- [x] 4.5 Test backward compatibility - existing presales without field still work
 
 ## 5. Documentation
 
-- [ ] 5.1 Update payment server documentation to include `databaseVersion` field usage
-- [ ] 5.2 Document migration strategy for transitioning from RTDB to Firestore
+- [x] 5.1 Update payment server documentation to include `databaseVersion` field usage
+- [x] 5.2 Document migration strategy for transitioning from RTDB to Firestore
