@@ -15,18 +15,21 @@
 ## 3. API Updates
 
 - [x] 3.1 Verify `server/api/presales/index.ts` persists `databaseVersion` field to Firestore
-- [x] 3.2 Update `server/api/stripe/secret.post.ts` to include `databaseVersion` in payment intent metadata
-- [x] 3.3 Add validation for `databaseVersion` field in request body validation
 
 ## 4. Testing
 
 - [x] 4.1 Test booking presale creation includes `databaseVersion: 'firestore'`
 - [x] 4.2 Test package presale creation includes `databaseVersion: 'firestore'`
-- [x] 4.3 Test Stripe payment intent metadata includes `databaseVersion`
-- [x] 4.4 Verify Firestore document contains `databaseVersion` field
-- [x] 4.5 Test backward compatibility - existing presales without field still work
+- [x] 4.3 Verify Firestore document contains `databaseVersion` field
+- [x] 4.4 Test backward compatibility - existing presales without field still work
 
 ## 5. Documentation
 
-- [x] 5.1 Update payment server documentation to include `databaseVersion` field usage
+- [x] 5.1 Update payment server documentation to include `databaseVersion` field usage (for PayNow payments only)
 - [x] 5.2 Document migration strategy for transitioning from RTDB to Firestore
+
+## Notes
+
+- The `databaseVersion` field is only relevant for PayNow payments processed by the external payment server
+- Stripe credit card payments are handled entirely within this application and do not require this field
+- The payment server will read the `databaseVersion` field from the presale document in Firestore when processing PayNow payments

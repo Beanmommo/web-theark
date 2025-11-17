@@ -8,18 +8,19 @@ The payment server needs to know which database to retrieve and update when proc
 
 - Add a new `databaseVersion` field to the `Presale` type with possible values: `'rtdb'` or `'firestore'`
 - Update presale creation logic to include the `databaseVersion` field
-- Ensure the field is passed to the payment server via Stripe metadata or presale data
+- The field is stored in Firestore and can be read by the payment server when processing PayNow payments
 - Maintain backward compatibility with existing presales that don't have this field
+
+**Note**: This field is only relevant for PayNow payments processed by the external payment server. Stripe credit card payments are handled entirely within this application and do not require this field.
 
 ## Impact
 
 - **Affected specs**: `payment-processing` (new capability)
 - **Affected code**:
-  - `types/data.ts` - Add `databaseVersion` field to `Presale` type
-  - `stores/presales.ts` - Include `databaseVersion` when creating presales
+  - `types/data.ts` - Add `databaseVersion` field to `Presale` and `Invoice` types
+  - `stores/presales.ts` - Include `databaseVersion: 'firestore'` when creating presales
   - `server/api/presales/index.ts` - Ensure field is persisted to Firestore
-  - `server/api/stripe/secret.post.ts` - Pass `databaseVersion` in payment intent metadata
-  - Payment server (external) - Will use this field to determine database source
+  - Payment server (external) - Will read this field from Firestore to determine database source for PayNow payments
 
 ## Migration Strategy
 
@@ -27,4 +28,3 @@ The payment server needs to know which database to retrieve and update when proc
 - **Phase 2**: Update presale creation to set `databaseVersion: 'firestore'` for new presales
 - **Phase 3**: Payment server updated to check `databaseVersion` field and default to RTDB if not present (backward compatibility)
 - **Phase 4**: After full migration, make field required and remove RTDB fallback
-
