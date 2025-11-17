@@ -50,7 +50,7 @@ export const usePresalesStore = defineStore('presales', () =>
     return presaleId
   }
 
-  const addPresale = async (): Promise<Presale> => 
+  const addPresale = async (): Promise<Presale> =>
   {
     const newPresaleId = await fetchNewPresaleId()
     if (!newPresaleId) return {} as Invoice;
@@ -58,7 +58,8 @@ export const usePresalesStore = defineStore('presales', () =>
       ...presaleData.value,
       id: newPresaleId,
       submittedDate: dayjs().format(),
-      invoiceType: InvoiceType.BOOKING
+      invoiceType: InvoiceType.BOOKING,
+      databaseVersion: 'firestore' as const
     }
     const presaleSubmittedData = await $fetch(`/api/presales`, {
       method: 'POST',
@@ -81,7 +82,7 @@ export const usePresalesStore = defineStore('presales', () =>
     return data
   }
 
-  const addPackagePresale = async (): Promise<Presale> => 
+  const addPackagePresale = async (): Promise<Presale> =>
   {
     const newPresaleId = await fetchNewPresaleId()
     if (!newPresaleId) return {} as Invoice;
@@ -89,7 +90,8 @@ export const usePresalesStore = defineStore('presales', () =>
       ...presalePackageData.value,
       id: newPresaleId,
       invoiceType: InvoiceType.CREDITPACKAGE,
-      submittedDate: dayjs().format()
+      submittedDate: dayjs().format(),
+      databaseVersion: 'firestore' as const
     }
     const presaleSubmittedData = await $fetch(`/api/presales`, {
       method: 'POST',
