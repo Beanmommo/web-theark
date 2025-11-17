@@ -10,6 +10,12 @@ const validateRequestBody = (body: any) => {
   if (!body.customer || typeof body.customer !== "string") {
     throw createError({ statusCode: 400, message: "Invalid customer ID" });
   }
+  if (body.databaseVersion && typeof body.databaseVersion !== "string") {
+    throw createError({ statusCode: 400, message: "Invalid databaseVersion" });
+  }
+  if (body.databaseVersion && !["rtdb", "firestore"].includes(body.databaseVersion)) {
+    throw createError({ statusCode: 400, message: "databaseVersion must be 'rtdb' or 'firestore'" });
+  }
 };
 
 export default defineEventHandler(async (event) => {
@@ -43,15 +49,22 @@ export default defineEventHandler(async (event) => {
   validateRequestBody(body);
 
   const stripe = new Stripe(config.stripeServerKey);
+  const metadata: Record<string, string> = {
+    presaleId: body.presaleId,
+  };
+
+  // Include databaseVersion in metadata if provided
+  if (body.databaseVersion) {
+    metadata.databaseVersion = body.databaseVersion;
+  }
+
   const paymentIntent = await stripe.paymentIntents.create({
     amount: body.amount,
     currency: "sgd",
     automatic_payment_methods: {
       enabled: true,
     },
-    metadata: {
-      presaleId: body.presaleId,
-    },
+    metadata,
     customer: body.customer,
   });
   return paymentIntent.client_secret;
