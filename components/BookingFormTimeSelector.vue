@@ -84,7 +84,10 @@ function initialiseTimeslots() {
   // Get current Singapore time and check if selected date is today
   // This is used to filter out slots that are less than 1 hour from now
   const nowSingapore = dayjs().tz("Asia/Singapore");
-  const selectedDateSingapore = dayjs(date).tz("Asia/Singapore");
+
+  // Parse the date string in Singapore timezone to avoid timezone conversion issues
+  // The date comes in YYYY-MM-DD format from the calendar
+  const selectedDateSingapore = dayjs.tz(date, "YYYY-MM-DD", "Asia/Singapore");
   const isToday = selectedDateSingapore.isSame(nowSingapore, "day");
 
   // Calculate minimum bookable time (1 hour from current Singapore time)
@@ -137,8 +140,17 @@ function initialiseTimeslots() {
 
   // Generate timeslots based on each applicable timeslot's startTime and endTime
   sortedTimeslots.forEach((slotDetails) => {
-    let current = dayjs(`${date} ${slotDetails.startTime}`, "YYYY-MM-DD hh:mm");
-    const slotEnd = dayjs(`${date} ${slotDetails.endTime}`, "YYYY-MM-DD hh:mm");
+    // Parse times in Singapore timezone to ensure correct comparison with minBookableTime
+    let current = dayjs.tz(
+      `${date} ${slotDetails.startTime}`,
+      "YYYY-MM-DD hh:mm",
+      "Asia/Singapore"
+    );
+    const slotEnd = dayjs.tz(
+      `${date} ${slotDetails.endTime}`,
+      "YYYY-MM-DD hh:mm",
+      "Asia/Singapore"
+    );
 
     while (current.isBefore(slotEnd)) {
       // Check if this time period is already covered by an earlier timeslot
