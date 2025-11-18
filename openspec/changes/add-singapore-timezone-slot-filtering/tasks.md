@@ -10,15 +10,15 @@
 
 ## 2. Testing Scenarios
 
-- [ ] 2.1 Verify slots are filtered correctly when booking for today
-- [ ] 2.2 Verify all slots show for future dates
-- [ ] 2.3 Verify filtering works correctly across midnight boundary
-- [ ] 2.4 Verify filtering works for users in different timezones (simulate Australia, US, Europe)
-- [ ] 2.5 Verify holiday slots are still filtered correctly
-- [ ] 2.6 Verify sport-specific filtering still works
-- [ ] 2.7 Verify multi-hour slots (2-hour slots) are filtered correctly
+- [x] 2.1 Verify slots are filtered correctly when booking for today
+- [x] 2.2 Verify all slots show for future dates
+- [x] 2.3 Verify filtering works correctly across midnight boundary
+- [x] 2.4 Verify filtering works for users in different timezones (simulate Australia, US, Europe)
+- [x] 2.5 Verify holiday slots are still filtered correctly
+- [x] 2.6 Verify sport-specific filtering still works
+- [x] 2.7 Verify multi-hour slots (2-hour slots) are filtered correctly
 
 ## 3. Documentation
 
-- [ ] 3.1 Add inline comments explaining the timezone filtering logic
-- [ ] 3.2 Document the 1-hour buffer requirement in code comments
+- [x] 3.1 Add inline comments explaining the timezone filtering logic
+- [x] 3.2 Document the 1-hour buffer requirement in code comments
