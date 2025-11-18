@@ -247,7 +247,7 @@ async function clickHandlerSubmit() {
   paymentError.value = false;
   paymentErrorMessage.value = "";
 
-  // Check Recaptcha - TODO: re-enable later when .env RECAPTCHA_SECRET_KEY is added
+  // Check Recaptcha
   const recaptchaResult = await verifyRecaptcha("submit_form");
   if (!recaptchaResult.success) {
     alert(recaptchaResult.error);
@@ -397,7 +397,6 @@ async function clickHandlerSubmit() {
       </template>
       <BookingFormPage3PaymentSummary />
       <BookingFormPage3CheckList @update="updateHandlerCheckList" />
-      <ButtonRecaptcha />
     </template>
     <AlertError v-if="paymentError">{{ paymentErrorMessage }}</AlertError>
     <AlertError v-if="slotsBooked"
