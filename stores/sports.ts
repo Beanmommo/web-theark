@@ -48,26 +48,30 @@ export const useSportsStore = defineStore("sport", () => {
     if (!sportSlug) return []
     const lowerCaseSlug = sportSlug.toLowerCase()
     const pitchesStore = usePitchesStore();
+    // Filter pitches by sport type AND active status
     return pitchesStore.pitches.filter(
       (pitch) =>
-      (pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
-      (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug)
+      (pitch.active || pitch.websiteActive) && // Only include active pitches
+      ((pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
+      (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug))
     );
   };
 
   // Get venues for a specific sport
   // This filters locations based on which pitches are available for the sport
+  // Only includes venues that have at least one active pitch for the sport
   const getSportVenues = (sportSlug: string | null | undefined) => {
     if (!sportSlug) return []
     const lowerCaseSlug = sportSlug.toLowerCase()
     const locationsStore = useLocationsStore();
     const pitchesStore = usePitchesStore();
 
-    // Filter pitches by sport type
+    // Filter pitches by sport type AND active status
     const sportPitches = pitchesStore.pitches.filter(
       (pitch) =>
-      (pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
-      (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug)
+      (pitch.active || pitch.websiteActive) && // Only include active pitches
+      ((pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
+      (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug))
     );
 
     // Get unique location keys from those pitches
