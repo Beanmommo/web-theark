@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useReCaptcha } from "vue-recaptcha-v3";
+import { useReCaptchaHandler } from "~/composables/useRecaptchaHandler";
 
 type Contact = {
   firstName: string;
@@ -12,21 +12,7 @@ type Contact = {
 const formRef = ref();
 const contact = ref({} as Contact);
 const loading = ref(false);
-const recaptchaReady = ref(false);
-
-// Wait for reCAPTCHA to be ready
-onMounted(async () => {
-  try {
-    const captcha = useReCaptcha();
-    if (captcha) {
-      const { recaptchaLoaded } = captcha;
-      await recaptchaLoaded();
-      recaptchaReady.value = true;
-    }
-  } catch (error) {
-    console.error("Failed to load reCAPTCHA:", error);
-  }
-});
+const { verifyRecaptcha } = useReCaptchaHandler();
 
 async function submitHandler() {
   const { valid } = await formRef.value.validate();
@@ -34,44 +20,10 @@ async function submitHandler() {
 
   loading.value = true;
 
-  // Check if reCAPTCHA is ready
-  if (!recaptchaReady.value) {
-    alert("reCAPTCHA is still loading. Please try again in a moment.");
-    loading.value = false;
-    return;
-  }
-
   // Check Recaptcha
-  try {
-    const captcha = useReCaptcha();
-    if (!captcha) {
-      throw new Error("reCAPTCHA not loaded");
-    }
-    const { executeRecaptcha } = captcha;
-
-    // Execute reCAPTCHA to get the token
-    const token = await executeRecaptcha("submit_form");
-
-    // Send the token to the server for verification
-    const response = await $fetch<{
-      success: boolean;
-      score?: number;
-      "error-codes"?: string[];
-    }>("/api/recaptcha", {
-      method: "POST",
-      body: { token },
-    });
-
-    if (!response.success) {
-      const error =
-        response["error-codes"]?.join(", ") || "Failed reCAPTCHA verification";
-      alert(error);
-      loading.value = false;
-      return;
-    }
-  } catch (error) {
-    console.error("Error verifying reCAPTCHA:", error);
-    alert("Error verifying reCAPTCHA.");
+  const recaptchaResult = await verifyRecaptcha("submit_form");
+  if (!recaptchaResult.success) {
+    alert(recaptchaResult.error);
     loading.value = false;
     return;
   }
