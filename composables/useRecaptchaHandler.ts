@@ -1,4 +1,3 @@
-import { useReCaptcha } from 'vue-recaptcha-v3';
 import { ref } from 'vue';
 
 interface ReCaptchaResult
@@ -18,19 +17,11 @@ export const useReCaptchaHandler = () =>
 
     try
     {
-      // Get reCAPTCHA instance
-      const captcha = useReCaptcha();
-      if (!captcha)
-      {
-        throw new Error('reCAPTCHA not loaded');
-      }
-      const { executeRecaptcha, recaptchaLoaded } = captcha;
+      // Use the Nuxt module's composable - action is passed when creating the composable
+      const { execute } = useChallengeV3(action);
 
-      // Wait for reCAPTCHA to be fully loaded
-      await recaptchaLoaded();
-
-      // Execute reCAPTCHA to get the token
-      const token = await executeRecaptcha(action);
+      // Execute reCAPTCHA to get the token (no parameters needed)
+      const token = await execute();
 
       // Send the token to the server for verification
       const response = await $fetch<{ success: boolean; score?: number; 'error-codes'?: string[] }>(
