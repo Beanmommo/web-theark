@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useReCaptchaHandler } from "~/composables/useRecaptchaHandler";
+import { useReCaptcha } from "vue-recaptcha-v3";
 
 type Contact = {
   firstName: string;
@@ -12,7 +12,6 @@ type Contact = {
 const formRef = ref();
 const contact = ref({} as Contact);
 const loading = ref(false);
-const { verifyRecaptcha } = useReCaptchaHandler();
 
 async function submitHandler() {
   const { valid } = await formRef.value.validate();
@@ -21,9 +20,39 @@ async function submitHandler() {
   loading.value = true;
 
   // Check Recaptcha
-  const recaptchaResult = await verifyRecaptcha("submit_form");
-  if (!recaptchaResult.success) {
-    alert(recaptchaResult.error);
+  try {
+    const captcha = useReCaptcha();
+    if (!captcha) {
+      throw new Error("reCAPTCHA not loaded");
+    }
+    const { executeRecaptcha, recaptchaLoaded } = captcha;
+
+    // Wait for reCAPTCHA to be fully loaded
+    await recaptchaLoaded();
+
+    // Execute reCAPTCHA to get the token
+    const token = await executeRecaptcha("submit_form");
+
+    // Send the token to the server for verification
+    const response = await $fetch<{
+      success: boolean;
+      score?: number;
+      "error-codes"?: string[];
+    }>("/api/recaptcha", {
+      method: "POST",
+      body: { token },
+    });
+
+    if (!response.success) {
+      const error =
+        response["error-codes"]?.join(", ") || "Failed reCAPTCHA verification";
+      alert(error);
+      loading.value = false;
+      return;
+    }
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    alert("Error verifying reCAPTCHA.");
     loading.value = false;
     return;
   }
