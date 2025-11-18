@@ -12,6 +12,21 @@ type Contact = {
 const formRef = ref();
 const contact = ref({} as Contact);
 const loading = ref(false);
+const recaptchaReady = ref(false);
+
+// Wait for reCAPTCHA to be ready
+onMounted(async () => {
+  try {
+    const captcha = useReCaptcha();
+    if (captcha) {
+      const { recaptchaLoaded } = captcha;
+      await recaptchaLoaded();
+      recaptchaReady.value = true;
+    }
+  } catch (error) {
+    console.error("Failed to load reCAPTCHA:", error);
+  }
+});
 
 async function submitHandler() {
   const { valid } = await formRef.value.validate();
@@ -19,16 +34,20 @@ async function submitHandler() {
 
   loading.value = true;
 
+  // Check if reCAPTCHA is ready
+  if (!recaptchaReady.value) {
+    alert("reCAPTCHA is still loading. Please try again in a moment.");
+    loading.value = false;
+    return;
+  }
+
   // Check Recaptcha
   try {
     const captcha = useReCaptcha();
     if (!captcha) {
       throw new Error("reCAPTCHA not loaded");
     }
-    const { executeRecaptcha, recaptchaLoaded } = captcha;
-
-    // Wait for reCAPTCHA to be fully loaded
-    await recaptchaLoaded();
+    const { executeRecaptcha } = captcha;
 
     // Execute reCAPTCHA to get the token
     const token = await executeRecaptcha("submit_form");
