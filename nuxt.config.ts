@@ -82,32 +82,7 @@ export default defineNuxtConfig({
     defaultTimezone: "Asia/Singapore",
   },
   security: {
-    headers: {
-      contentSecurityPolicy: {
-        "script-src": [
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'", // Required for reCAPTCHA
-          "https://www.google.com",
-          "https://www.gstatic.com",
-          "https://recaptcha.net",
-          "https://www.recaptcha.net",
-        ],
-        "frame-src": [
-          "'self'",
-          "https://www.google.com",
-          "https://recaptcha.net",
-          "https://www.recaptcha.net",
-        ],
-        "worker-src": [
-          "'self'",
-          "blob:",
-          "https://www.google.com",
-          "https://recaptcha.net",
-          "https://www.recaptcha.net",
-        ],
-      },
-    },
+    headers: false,
     corsHandler: {
       origin: "*",
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
