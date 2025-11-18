@@ -16,11 +16,11 @@
 
 ## 3. Testing
 
-- [ ] 3.1 Test `/futsal/contactus` page shows only venues with active futsal pitches
-- [ ] 3.2 Test `/pickleball/contactus` page shows only venues with active pickleball pitches
-- [ ] 3.3 Test `/contactus` page (without sport slug) shows all active venues
-- [ ] 3.4 Verify `SectionSportVenues` component still works correctly
-- [ ] 3.5 Verify booking flow still shows correct venues
+- [x] 3.1 Test `/futsal/contactus` page shows only venues with active futsal pitches
+- [x] 3.2 Test `/pickleball/contactus` page shows only venues with active pickleball pitches
+- [x] 3.3 Test `/contactus` page (without sport slug) shows all active venues
+- [x] 3.4 Verify `SectionSportVenues` component still works correctly
+- [x] 3.5 Verify booking flow still shows correct venues
 
 ## 4. Documentation
 
