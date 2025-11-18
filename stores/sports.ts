@@ -51,7 +51,7 @@ export const useSportsStore = defineStore("sport", () => {
     // Filter pitches by sport type AND active status
     return pitchesStore.pitches.filter(
       (pitch) =>
-      pitch.active && // Only include active pitches
+      (pitch.active || pitch.websiteActive) && // Only include active pitches
       ((pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
       (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug))
     );
@@ -69,7 +69,7 @@ export const useSportsStore = defineStore("sport", () => {
     // Filter pitches by sport type AND active status
     const sportPitches = pitchesStore.pitches.filter(
       (pitch) =>
-      pitch.active && // Only include active pitches
+      (pitch.active || pitch.websiteActive) && // Only include active pitches
       ((pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
       (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug))
     );
