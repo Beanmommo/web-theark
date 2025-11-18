@@ -25,15 +25,15 @@
 
 ## 4. Testing
 
-- [ ] 4.1 Test Contact Us form submission with valid reCAPTCHA
-- [ ] 4.2 Test Contact Us form submission with simulated reCAPTCHA failure
-- [ ] 4.3 Test all three forms in development environment
-- [ ] 4.4 Test all three forms in production environment (if applicable)
-- [ ] 4.5 Verify form submissions are blocked when reCAPTCHA fails
-- [ ] 4.6 Verify form submissions succeed when reCAPTCHA passes
+- [ ] 4.1 Test Contact Us form submission with valid reCAPTCHA (manual testing required)
+- [ ] 4.2 Test Contact Us form submission with simulated reCAPTCHA failure (manual testing required)
+- [ ] 4.3 Test all three forms in development environment (manual testing required)
+- [ ] 4.4 Test all three forms in production environment (manual testing required)
+- [ ] 4.5 Verify form submissions are blocked when reCAPTCHA fails (manual testing required)
+- [ ] 4.6 Verify form submissions succeed when reCAPTCHA passes (manual testing required)
 
 ## 5. Documentation
 
-- [ ] 5.1 Update project.md if needed to reflect reCAPTCHA implementation status
-- [ ] 5.2 Document reCAPTCHA action names used across forms
-- [ ] 5.3 Document expected reCAPTCHA score threshold and rationale
+- [x] 5.1 Update project.md if needed to reflect reCAPTCHA implementation status (no changes needed - already documented)
+- [x] 5.2 Document reCAPTCHA action names used across forms (all use "submit_form")
+- [x] 5.3 Document expected reCAPTCHA score threshold and rationale (0.5 threshold in design.md)
