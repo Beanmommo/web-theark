@@ -17,13 +17,7 @@ export default defineNuxtConfig({
         },
       ],
       link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
-      script: [
-        {
-          src: `https://www.google.com/recaptcha/api.js?render=${process.env.RECAPTCHA_SITE_KEY}`,
-          async: true,
-          defer: true,
-        },
-      ],
+      // reCAPTCHA script is now loaded automatically by vue-recaptcha/nuxt module
     },
   },
 
@@ -55,6 +49,7 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    'vue-recaptcha/nuxt',
     (_options, nuxt) => {
       nuxt.hooks.hook("vite:extendConfig", (config) => {
         // @ts-expect-error
@@ -113,6 +108,9 @@ export default defineNuxtConfig({
       },
       stripeKey: process.env.STRIPE_PK,
       recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      recaptcha: {
+        v3SiteKey: process.env.RECAPTCHA_SITE_KEY,
+      },
       apiKey: process.env.NUXT_API_KEY,
       env: process.env.ENV, // dev || prod
     },

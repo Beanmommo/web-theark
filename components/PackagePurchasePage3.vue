@@ -5,7 +5,6 @@ import {
   type Invoice,
   InvoiceType,
 } from "../types/data";
-import { useReCaptchaHandler } from "../composables/useRecaptchaHandler";
 
 const props = defineProps({
   packageItem: {
@@ -15,7 +14,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["back", "submit"]);
-const { verifyRecaptcha } = useReCaptchaHandler();
+
+// Initialize reCAPTCHA v3 - must be called in setup
+const { execute: executeRecaptcha } = useChallengeV3("submit_form");
 
 // Composables
 const {
@@ -110,9 +111,27 @@ async function clickHandlerSubmit() {
   message.value = "Submitting your purchase...";
 
   // Check Recaptcha
-  const recaptchaResult = await verifyRecaptcha("submit_form");
-  if (!recaptchaResult.success) {
-    alert(recaptchaResult.error);
+  try {
+    const token = await executeRecaptcha();
+    const response = await $fetch<{
+      success: boolean;
+      score?: number;
+      "error-codes"?: string[];
+    }>("/api/recaptcha", {
+      method: "POST",
+      body: { token },
+    });
+
+    if (!response.success) {
+      const error =
+        response["error-codes"]?.join(", ") || "Failed reCAPTCHA verification";
+      alert(error);
+      loading.value = false;
+      return;
+    }
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    alert("Error verifying reCAPTCHA. Please try again.");
     loading.value = false;
     return;
   }

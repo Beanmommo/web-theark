@@ -25,7 +25,6 @@
     "v-calendar": "^3.1.2",
     "vue-qr": "^4.0.9",
     "vue-recaptcha": "^3.0.0-alpha.6",
-    "vue-recaptcha-v3": "^2.0.1",
     "vue-use-stripe": "^0.1.1"
   },
   "devDependencies": {
