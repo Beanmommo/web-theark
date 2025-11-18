@@ -10,12 +10,6 @@ interface ReCaptchaResult
 
 export const useReCaptchaHandler = () =>
 {
-  const captcha = useReCaptcha();
-  if (!captcha)
-  {
-    throw new Error('reCAPTCHA not loaded');
-  }
-  const { executeRecaptcha } = captcha;
   const isVerifying = ref(false);
 
   const verifyRecaptcha = async (action: string): Promise<ReCaptchaResult> =>
@@ -24,6 +18,16 @@ export const useReCaptchaHandler = () =>
 
     try
     {
+      // Get reCAPTCHA instance
+      const captcha = useReCaptcha();
+      if (!captcha)
+      {
+        throw new Error('reCAPTCHA not loaded');
+      }
+      const { executeRecaptcha, recaptchaLoaded } = captcha;
+
+      // Wait for reCAPTCHA to be fully loaded
+      await recaptchaLoaded();
 
       // Execute reCAPTCHA to get the token
       const token = await executeRecaptcha(action);
