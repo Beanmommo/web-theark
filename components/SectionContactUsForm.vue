@@ -1,7 +1,5 @@
 <template>
   <SectionContainer>
-    <ClientOnly>
-      <FormContactUs />
-    </ClientOnly>
+    <FormContactUs />
   </SectionContainer>
 </template>
