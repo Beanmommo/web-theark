@@ -10,7 +10,6 @@ import {
 } from "~/types/data";
 import { usePayment } from "~/composables/payment";
 import { useGoTo } from "vuetify";
-import { useReCaptchaHandler } from "../composables/useRecaptchaHandler";
 
 const props = defineProps({
   groupedTimeslots: {
@@ -19,7 +18,10 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["back", "submit"]);
-const { verifyRecaptcha } = useReCaptchaHandler();
+
+// Initialize reCAPTCHA v3 - must be called in setup
+const { execute: executeRecaptcha } = useChallengeV3("submit_form");
+
 const route = useRoute();
 const sport = route.params.sportSlug as string;
 
@@ -248,9 +250,27 @@ async function clickHandlerSubmit() {
   paymentErrorMessage.value = "";
 
   // Check Recaptcha
-  const recaptchaResult = await verifyRecaptcha("submit_form");
-  if (!recaptchaResult.success) {
-    alert(recaptchaResult.error);
+  try {
+    const token = await executeRecaptcha();
+    const response = await $fetch<{
+      success: boolean;
+      score?: number;
+      "error-codes"?: string[];
+    }>("/api/recaptcha", {
+      method: "POST",
+      body: { token },
+    });
+
+    if (!response.success) {
+      const error =
+        response["error-codes"]?.join(", ") || "Failed reCAPTCHA verification";
+      alert(error);
+      loading.value = false;
+      return;
+    }
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    alert("Error verifying reCAPTCHA. Please try again.");
     loading.value = false;
     return;
   }

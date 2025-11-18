@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useReCaptchaHandler } from "~/composables/useRecaptchaHandler";
-
 type Contact = {
   firstName: string;
   lastName: string;
@@ -12,7 +10,9 @@ type Contact = {
 const formRef = ref();
 const contact = ref({} as Contact);
 const loading = ref(false);
-const { verifyRecaptcha } = useReCaptchaHandler();
+
+// Initialize reCAPTCHA v3 - must be called in setup
+const { execute } = useChallengeV3("submit_form");
 
 async function submitHandler() {
   const { valid } = await formRef.value.validate();
@@ -20,20 +20,40 @@ async function submitHandler() {
 
   loading.value = true;
 
-  // Check Recaptcha
-  const recaptchaResult = await verifyRecaptcha("submit_form");
-  if (!recaptchaResult.success) {
-    alert(recaptchaResult.error);
-    loading.value = false;
-    return;
-  }
+  try {
+    // Execute reCAPTCHA to get token
+    const token = await execute();
 
-  await $fetch("/api/contactUs", {
-    method: "post",
-    body: contact.value,
-  });
-  loading.value = false;
-  navigateTo("/contactus/thankyou");
+    // Verify token on server
+    const response = await $fetch<{
+      success: boolean;
+      score?: number;
+      "error-codes"?: string[];
+    }>("/api/recaptcha", {
+      method: "POST",
+      body: { token },
+    });
+
+    if (!response.success) {
+      const error =
+        response["error-codes"]?.join(", ") || "Failed reCAPTCHA verification";
+      alert(error);
+      loading.value = false;
+      return;
+    }
+
+    // Submit the form
+    await $fetch("/api/contactUs", {
+      method: "post",
+      body: contact.value,
+    });
+    loading.value = false;
+    navigateTo("/contactus/thankyou");
+  } catch (error) {
+    console.error("Error verifying reCAPTCHA:", error);
+    alert("Error verifying reCAPTCHA. Please try again.");
+    loading.value = false;
+  }
 }
 </script>
 
