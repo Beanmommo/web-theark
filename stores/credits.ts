@@ -1,9 +1,11 @@
 import { defineStore } from "pinia";
 import type {
+  Booking,
   CreditPackage,
   CreditPackageData,
   CreditRefund,
   CreditRefundData,
+  CreditReceipt,
   Invoice,
   PackageDetails,
   InvoiceBooking,
@@ -218,8 +220,8 @@ export const useCreditsStore = defineStore("credits", () => {
     return creditPackageKey;
   };
 
-  const fetchNewCreditReceiptId = async () => {
-    const creditReceiptId = await $fetch(`/api/creditReceipt/id`);
+  const fetchNewCreditReceiptId = async (): Promise<string> => {
+    const creditReceiptId = await $fetch<string>(`/api/creditReceipt/id`);
     return creditReceiptId;
   };
 
@@ -227,13 +229,13 @@ export const useCreditsStore = defineStore("credits", () => {
     invoiceData: InvoiceBooking,
     remainingCredits: number,
     creditPackageKeys: string[]
-  ) => {
+  ): Promise<string> => {
     const id = await fetchNewCreditReceiptId();
     const customerDetails = {
       name: invoiceData.name,
       contact: invoiceData.contact,
       email: invoiceData.email,
-      userKey: invoiceData.userId,
+      userKey: invoiceData.userId, // Map userId to userKey for CreditReceipt (database uses userKey)
     };
 
     const bookingDetails = {
@@ -257,24 +259,49 @@ export const useCreditsStore = defineStore("credits", () => {
       method: "POST",
       body: JSON.stringify(creditReceiptData),
     });
-    return creditReceiptData;
+    return id; // Return the credit receipt ID
   };
 
   const addCreditRefund = async (
-    refundInvoiceData: Invoice,
+    refundInvoiceData: Invoice | CreditReceipt | Booking,
     refundPackage: PackageDetails,
     originalBookingKey: string
   ) => {
+    // Handle both userId (Invoice/Booking) and userKey (CreditReceipt)
+    const userKey = 'userId' in refundInvoiceData
+      ? refundInvoiceData.userId
+      : refundInvoiceData.userKey;
+
     const customerDetails = {
       name: refundInvoiceData.name,
       contact: refundInvoiceData.contact,
       email: refundInvoiceData.email,
-      userKey: refundInvoiceData.userId,
+      userKey, // CreditRefund uses userKey in database
     };
 
     const expiryDate = dayjs()
       .add(refundPackage.expiryPeriod, "months")
       .format();
+
+    // Determine the type of data we received
+    // Booking has paymentMethod but no 'id' field (it has 'key' instead)
+    // Invoice has both paymentMethod and 'id'
+    // CreditReceipt has 'id' but no paymentMethod
+    const isBooking = "paymentMethod" in refundInvoiceData && !("id" in refundInvoiceData);
+    const isInvoice = "paymentMethod" in refundInvoiceData && "id" in refundInvoiceData;
+
+    const paymentMethod = isBooking || isInvoice
+      ? refundInvoiceData.paymentMethod
+      : "Credit" as any; // CreditReceipts are always paid with credits
+
+    const paymentStatus = isBooking || isInvoice
+      ? refundInvoiceData.paymentStatus
+      : "Paid"; // CreditReceipts are always paid
+
+    // For Booking objects, we don't have an invoice/receipt ID to link
+    const refundInvoiceKey = "id" in refundInvoiceData
+      ? refundInvoiceData.id
+      : undefined;
 
     const creditRefundData = {
       ...customerDetails,
@@ -283,10 +310,10 @@ export const useCreditsStore = defineStore("credits", () => {
       creditsLeft: parseInt(refundPackage.value),
       expiryDate,
       creditPackage: refundPackage,
-      paymentMethod: refundInvoiceData.paymentMethod,
-      paymentStatus: refundInvoiceData.paymentStatus,
+      paymentMethod,
+      paymentStatus,
       submittedDate: dayjs().format(),
-      refundInvoiceKey: refundInvoiceData.id,
+      refundInvoiceKey,
       originalBookingKey: originalBookingKey,
       cancelledDate: new Date().toISOString(),
       cancelledBy: "system",
@@ -317,6 +344,15 @@ export const useCreditsStore = defineStore("credits", () => {
     return result;
   };
 
+  const fetchCreditReceiptByKey = async (
+    creditReceiptKey: string
+  ): Promise<CreditReceipt> => {
+    const creditReceiptData = await $fetch<CreditReceipt>(
+      `/api/creditReceipt/${creditReceiptKey}`
+    );
+    return creditReceiptData;
+  };
+
   return {
     addCreditPackage,
     updateCreditPackage,
@@ -325,6 +361,7 @@ export const useCreditsStore = defineStore("credits", () => {
     purchasedCreditsLeft,
     totalCreditsLeft,
     addCreditReceipt,
+    fetchCreditReceiptByKey,
     // Refund credit functions
     addCreditRefund,
     updateCreditRefund,

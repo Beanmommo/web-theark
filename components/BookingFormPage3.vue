@@ -316,13 +316,18 @@ async function clickHandlerSubmit() {
     const remainingCredits =
       totalCreditsLeft.value - totalCostData.value.totalPayable;
     const creditPackageKeys = await handleMembershipCreditPayment();
-    await creditsStore.addCreditReceipt(
+    const creditReceiptId = await creditsStore.addCreditReceipt(
       creditPackageData,
       remainingCredits,
       creditPackageKeys
     );
+    // Add creditReceiptKey to the booking data
+    const bookingDataWithReceipt = {
+      ...creditPackageData,
+      creditReceiptKey: creditReceiptId,
+    };
     const bookingKey = await bookingsStore.addBooking(
-      creditPackageData,
+      bookingDataWithReceipt,
       slotKeys,
       sport
     );

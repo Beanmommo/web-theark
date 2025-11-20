@@ -2,14 +2,13 @@ import { defineStore } from "pinia";
 import type {
   Booking,
   Invoice,
+  CreditReceipt,
   BookingData,
   CancelledBooking,
   BookedSlot,
   PackageDetails,
-  PaymentMethods,
-  InvoiceType,
-  AutomateSlot,
 } from "@/types/data";
+import { PaymentMethods } from "@/types/data";
 import { useCreditsStore } from "./credits";
 
 export const useBookingsStore = defineStore("bookings", () => {
@@ -28,7 +27,7 @@ export const useBookingsStore = defineStore("bookings", () => {
   };
 
   const addBooking = async (
-    invoiceData: Invoice,
+    invoiceData: Invoice & { creditReceiptKey?: string },
     slotKeys: string[],
     sport: string
   ) => {
@@ -54,7 +53,10 @@ export const useBookingsStore = defineStore("bookings", () => {
       paymentMethod: invoiceData.paymentMethod,
       paymentStatus: invoiceData.paymentStatus,
       submittedDate: dayjs().format(),
-      invoiceKey: invoiceData.id,
+      // Only set invoiceKey for invoice-paid bookings, creditReceiptKey for credit-paid bookings
+      ...(invoiceData.creditReceiptKey
+        ? { creditReceiptKey: invoiceData.creditReceiptKey }
+        : { invoiceKey: invoiceData.id }),
       date: dayjs(invoiceData.date).format(),
       typeOfSports: sport,
       ...costDetails,
@@ -149,26 +151,9 @@ export const useBookingsStore = defineStore("bookings", () => {
       // 4.5. DELETE AUTOMATE SLOTS
       // ============================================
       const bookedSlotsStore = useBookedSlotsStore();
-      const automateSlots: AutomateSlot[] = slotsData.map((slot) => ({
-        slotKey: slot.key || "",
-        bookingKey,
-        name: booking.name,
-        email: booking.email,
-        submittedDate: booking.submittedDate,
-        location: booking.location,
-        pitch: slot.pitch,
-        date: slot.date,
-        start: slot.start,
-        end: slot.end,
-        rate: slot.rate,
-        duration: slot.duration,
-        type: slot.type,
-        color: null,
-        typeOfSports: slot.typeOfSports?.toLowerCase() || "futsal",
-      }));
 
-      await bookedSlotsStore.deleteAutomateSlots(automateSlots);
-      console.log(`Deleted ${automateSlots.length} automate slots`);
+      await bookedSlotsStore.deleteAutomateSlots(slotsData);
+      console.log(`Deleted ${slotsData.length} automate slots`);
 
       // ============================================
       // 5. DELETE ORIGINAL BOOKING
@@ -182,32 +167,17 @@ export const useBookingsStore = defineStore("bookings", () => {
       // ============================================
       // 6. UPDATE ORIGINAL INVOICE TO REFUND
       // ============================================
-      const invoicesStore = useInvoicesStore();
       const creditsStore = useCreditsStore();
       const refundAmount = booking.subtotal - booking.discount;
 
-      // Check if booking has an invoice
-      if (!booking.invoiceKey) {
-        throw new Error(
-          `Booking ${bookingKey} does not have an associated invoice`
-        );
-      }
 
-      // Update the original invoice's paymentMethod to "Refund"
-      await invoicesStore.updateInvoicePaymentMethod(
-        booking.invoiceKey,
-        "Refund"
-      );
-
-      console.log(
-        `Updated invoice ${booking.invoiceKey} paymentMethod to "Refund"`
-      );
 
       // ============================================
-      // 7. CREATE CREDIT REFUND (LINKED TO ORIGINAL INVOICE)
+      // 7. CREATE CREDIT REFUND (LINKED TO ORIGINAL INVOICE OR CREDIT RECEIPT)
       // ============================================
 
       // Create package details for the refund
+      const invoicesStore = useInvoicesStore();
       const refundPackage: PackageDetails = {
         title: `Refund - ${booking.location}`,
         amount: refundAmount.toString(),
@@ -219,18 +189,46 @@ export const useBookingsStore = defineStore("bookings", () => {
         typeOfSports: booking.typeOfSports,
       };
 
-      // Fetch the original invoice to pass to addCreditRefund
-      const originalInvoice = await invoicesStore.fetchInvoiceByKey(
-        booking.invoiceKey
-      );
+      // Check payment method to determine whether to fetch invoice or credit receipt
+      let originalPaymentData: Invoice | CreditReceipt | Booking;
 
-      if (!originalInvoice) {
-        throw new Error(`Invoice ${booking.invoiceKey} not found`);
+      if (booking.paymentMethod === PaymentMethods.MEMBERSHIP_CREDIT) {
+        // For credit-paid bookings, try to use creditReceiptKey if available
+        if (booking.creditReceiptKey) {
+          // New bookings with creditReceiptKey - fetch the credit receipt
+          const originalCreditReceipt = await creditsStore.fetchCreditReceiptByKey(
+            booking.creditReceiptKey
+          );
+          if (!originalCreditReceipt) {
+            throw new Error(`Credit receipt ${booking.creditReceiptKey} not found`);
+          }
+          originalPaymentData = originalCreditReceipt;
+          console.log(`Fetched credit receipt ${booking.creditReceiptKey} for refund`);
+        } else {
+          // Old bookings without creditReceiptKey - use booking data directly
+          // The booking object already has all customer details and payment info we need
+          originalPaymentData = booking;
+          console.log(`Using booking data directly for old credit-paid booking ${bookingKey}`);
+        }
+      } else {
+        // For invoice-paid bookings (PayNow or Credit Card), use invoiceKey
+        if (!booking.invoiceKey) {
+          throw new Error(`Booking ${bookingKey} does not have an associated invoice`);
+        }
+        // Fetch the original invoice
+        const originalInvoice = await invoicesStore.fetchInvoiceByKey(
+          booking.invoiceKey
+        );
+        if (!originalInvoice) {
+          throw new Error(`Invoice ${booking.invoiceKey} not found`);
+        }
+        originalPaymentData = originalInvoice;
+        console.log(`Fetched invoice ${booking.invoiceKey} for refund`);
       }
 
-      // Create credit refund linked to original invoice
+      // Create credit refund linked to original invoice or credit receipt
       const creditRefundKey = await creditsStore.addCreditRefund(
-        originalInvoice,
+        originalPaymentData,
         refundPackage,
         bookingKey
       );
@@ -238,9 +236,10 @@ export const useBookingsStore = defineStore("bookings", () => {
       console.log(`Created credit refund: ${creditRefundKey}`);
 
       // ============================================
-      // 8. LINK ORIGINAL INVOICE TO CREDIT REFUND
+      // 8. LINK ORIGINAL INVOICE TO CREDIT REFUND (ONLY FOR INVOICES)
       // ============================================
-      if (creditRefundKey) {
+      // Note: Credit receipts don't need to be updated with refund keys
+      if (creditRefundKey && booking.paymentMethod !== PaymentMethods.MEMBERSHIP_CREDIT && booking.invoiceKey) {
         await invoicesStore.updateInvoiceCreditRefundKey(
           booking.invoiceKey,
           creditRefundKey,

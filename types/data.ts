@@ -92,6 +92,7 @@ export type BookedSlot = {
   paymentMethod: string;
   paymentStatus: string;
   typeOfSports: string;
+  automatePitchId?: string;
 };
 
 export type SlotDetails = {
@@ -183,6 +184,7 @@ export type Booking = CustomerDetails &
     paymentStatus: string;
     submittedDate: string;
     invoiceKey?: string;
+    creditReceiptKey?: string;
     key?: string;
     date: string;
     amount?: string;
@@ -286,12 +288,16 @@ export type PresaleBooking = Presale & BookingDetails;
 export type PresalePackage = Presale & PackageDetails;
 
 export type CreditReceipt = BookingDetails & {
-  id: string;
-  submittedDate: string;
-  creditPackageKeys: string[];
-  remainingCredits: number;
-  total: number;
-};
+    id: string;
+    name: string;
+    contact: string;
+    email: string;
+    userKey: string; // Using userKey to match existing credit receipt data in database
+    submittedDate: string;
+    creditPackageKeys: string[];
+    remainingCredits: number;
+    total: number;
+  };
 
 export type PaymentData = {
   paymentMethod: PaymentMethods;
@@ -313,7 +319,7 @@ export type AutomateSlot = SlotDetails & {
   location: string;
   pitch: number | string;
   date: string;
-  typeOfSports: string;
+  automatePitchId?: string;
 };
 
 export type CreditPackage = {
