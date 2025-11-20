@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   // Check environment - only run in production
   const config = useRuntimeConfig();
-  const isProduction = config.public.env === "prod";
+  const isProduction = config.public.env === "production";
 
   if (!isProduction) {
     console.log(
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
       },
       url: `https://thearkautomate.et.r.appspot.com/booking/${bookedSlotsKey}`,
     };
-
+    console.log("axiosData:", axiosData);
     await axios(axiosData);
     console.log(
       `✅ [PROD] Successfully deleted automate slot: ${bookedSlotsKey}`
@@ -49,3 +49,4 @@ export default defineEventHandler(async (event) => {
     };
   }
 });
+
