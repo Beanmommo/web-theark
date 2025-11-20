@@ -1,6 +1,7 @@
 <template>
   <ClientOnly>
     <PromotionDialog />
+    <GlobalAlert />
   </ClientOnly>
   <LayoutBase>
     <template #header>

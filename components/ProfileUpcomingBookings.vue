@@ -1,45 +1,54 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useBookingsStore } from '../stores/bookings'
-import { useBookedSlotsStore } from '../stores/bookedslots'
+import { onMounted } from "vue";
+import { useBookingsStore } from "../stores/bookings";
+import { useBookedSlotsStore } from "../stores/bookedslots";
 
-const bookingsStore = useBookingsStore()
-const { myBookings } = storeToRefs(bookingsStore)
-const bookedslotsStore = useBookedSlotsStore()
-const { myBookedslots } = storeToRefs(bookedslotsStore)
-const isLoading = ref(true)
+const bookingsStore = useBookingsStore();
+const { myBookings } = storeToRefs(bookingsStore);
+const bookedslotsStore = useBookedSlotsStore();
+const { myBookedslots } = storeToRefs(bookedslotsStore);
+const isLoading = ref(true);
 
-const user = useAuthUser()
-const dayjs = useDayjs()
+const user = useAuthUser();
+const dayjs = useDayjs();
 
 onMounted(async () => {
-  isLoading.value = true
-  await initialiseData()
-  isLoading.value = false
-})
+  isLoading.value = true;
+  await initialiseData();
+  isLoading.value = false;
+});
 
 async function initialiseData() {
   if (user.value) {
     await bookingsStore.fetchMyBookings(user.value.email),
-      await bookedslotsStore.fetchMyBookedslots(user.value.email)
+      await bookedslotsStore.fetchMyBookedslots(user.value.email);
   }
 }
 
 // Filter for upcoming bookings (today and future)
 const upcomingBookings = computed(() => {
-  return myBookings.value.filter(booking => {
-    return dayjs(booking.date).tz('Asia/Singapore').isSameOrAfter(dayjs().tz('Asia/Singapore'), 'day')
-  })
-})
+  return myBookings.value.filter((booking) => {
+    return dayjs(booking.date)
+      .tz("Asia/Singapore")
+      .isSameOrAfter(dayjs().tz("Asia/Singapore"), "day");
+  });
+});
 </script>
 
 <template>
   <section class="profileUpcomingBookings">
-    <div v-if="isLoading && !myBookings.length && !Object.keys(myBookedslots).length"
-      style="display: flex; justify-content: center; align-items: center; min-height: 200px;">
+    <div
+      v-if="isLoading"
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+      "
+    >
       <VProgressCircular indeterminate color="#0A8A44" />
     </div>
-    <template v-if="!isLoading && Object.keys(myBookedslots).length > 0">
+    <template v-if="!isLoading">
       <h5>Upcoming Bookings</h5>
       <div v-if="upcomingBookings.length > 0" class="content">
         <template v-for="booking in upcomingBookings" :key="booking.key">
@@ -70,4 +79,3 @@ const upcomingBookings = computed(() => {
   }
 }
 </style>
-

@@ -1,29 +1,30 @@
 <script setup lang="ts">
-import { useCreditsStore } from '~/stores/credits'
+import { useCreditsStore } from "~/stores/credits";
 
 definePageMeta({
-  middleware: 'auth'
-})
+  middleware: "auth",
+});
 
-const user = useAuthUser()
-const creditsStore = useCreditsStore()
+const user = useAuthUser();
+const creditsStore = useCreditsStore();
 
 // Fetch credits once during SSR/hydration
 onMounted(async () => {
-  await creditsStore.fetchUserCreditsAndRefunds()
-})
+  await creditsStore.fetchUserCreditsAndRefunds();
+});
 
 // Toggle for showing past bookings
-const showPastBookings = ref(false)
+const showPastBookings = ref(false);
 
 function togglePastBookings() {
-  showPastBookings.value = !showPastBookings.value
+  showPastBookings.value = !showPastBookings.value;
 }
-
 </script>
 
 <template>
-  <PageBannerProfile>Hi {{ user?.displayName }}!</PageBannerProfile>
+  <PageBannerProfile>
+    <ClientOnly fallback="Hi!"> Hi {{ user?.displayName }}! </ClientOnly>
+  </PageBannerProfile>
   <SectionContainer>
     <ProfileUserDetails />
     <ProfileUpcomingBookings />
@@ -35,13 +36,12 @@ function togglePastBookings() {
         color="primary"
         prepend-icon="mdi-history"
       >
-        {{ showPastBookings ? 'Hide Past Bookings' : 'View Past Bookings' }}
+        {{ showPastBookings ? "Hide Past Bookings" : "View Past Bookings" }}
       </VBtn>
     </div>
 
     <ProfilePastBookings v-if="showPastBookings" />
   </SectionContainer>
-
 </template>
 
 <style scoped>
