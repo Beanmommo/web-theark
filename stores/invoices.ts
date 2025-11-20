@@ -46,8 +46,8 @@ export const useInvoicesStore = defineStore("invoices", () => {
     return data;
   };
 
-  const fetchInvoiceByKey = async (invoiceKey: string) => {
-    const invoiceData = await $fetch(`/api/invoices/${invoiceKey}`);
+  const fetchInvoiceByKey = async (invoiceKey: string): Promise<Invoice> => {
+    const invoiceData = await $fetch<Invoice>(`/api/invoices/${invoiceKey}`);
     return invoiceData;
   };
 
