@@ -406,7 +406,10 @@ async function clickHandlerSubmit() {
     <BookingFormPage3Details :groupedTimeslots="groupedTimeslots" />
     <BookingFormPage3UserDetails />
     <template v-if="userDetailsCompleted">
-      <BookingFormPage3PromoCode @update="updateHandlerPromoCode" />
+      <BookingFormPage3PromoCode
+        :groupedTimeslots="groupedTimeslots"
+        @update="updateHandlerPromoCode"
+      />
 
       <!-- Show credit packages when Membership Credit is available -->
       <BookingFormPage3CreditPackages v-if="totalCreditsLeft > 0" />
