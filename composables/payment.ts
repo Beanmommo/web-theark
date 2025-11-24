@@ -101,8 +101,19 @@ export const usePayment = () =>
 
   function getDiscount(groupedTimeslots: GroupedTimeslots, promocode: PromoCode)
   {
-    const { timeslotTypes, value, type, targetPitches, targetSpecificPitches, typeOfSports } = promocode;
+    const { timeslotTypes, value, type, targetPitches, targetSpecificPitches, typeOfSports, locations } = promocode;
     let discount = 0;
+
+    // Get pitches store to look up pitch keys
+    const pitchesStore = usePitchesStore();
+    const locationsStore = useLocationsStore();
+    const route = useRoute();
+
+    // Get venue ID from route
+    const venueName = route.query.venue as string;
+    const location = locationsStore.getLocation(venueName);
+    const venueId = location?.key || "";
+
     Object.keys(groupedTimeslots).forEach((key) =>
     {
       let timeslots = groupedTimeslots[key];
@@ -113,11 +124,34 @@ export const usePayment = () =>
 
         // Check pitch targeting (if enabled)
         if (targetSpecificPitches && targetPitches && targetPitches.length > 0) {
-          const pitchStr = String(timeslot.pitch);
-          const pitchMatches = targetPitches.some(targetPitch =>
-            pitchStr === targetPitch || pitchStr.includes(targetPitch)
+          // Find the pitch by location, name, and sport type to get its key
+          const pitch = pitchesStore.pitches.find(
+            (p) =>
+              p.locationKey === venueId &&
+              p.name === String(timeslot.pitch) &&
+              p.typeOfSports === timeslot.typeOfSports
           );
-          if (!pitchMatches) return;
+          const pitchKey = pitch?.key;
+          const pitchName = String(timeslot.pitch);
+          const automatePitchId = timeslot.automatePitchId;
+
+          console.log('💰 Discount calc - Timeslot pitch:', pitchName, 'key:', pitchKey);
+          console.log('💰 Discount calc - Target pitches:', targetPitches);
+
+          // Match by pitch key, pitch name, or automatePitchId
+          const pitchMatches = targetPitches.some(targetPitch =>
+            pitchKey === targetPitch ||
+            pitchName === targetPitch ||
+            automatePitchId === targetPitch ||
+            pitchName.includes(targetPitch)
+          );
+
+          console.log('💰 Discount calc - Pitch matches:', pitchMatches);
+
+          if (!pitchMatches) {
+            console.log('💰 Discount calc - Skipping timeslot (pitch does not match)');
+            return;
+          }
         }
 
         // Check sport type targeting (if configured)
@@ -130,16 +164,22 @@ export const usePayment = () =>
         }
 
         // Calculate discount for matching timeslots
+        console.log('💰 Discount calc - Applying discount to timeslot. Rate:', timeslot.rate, 'Type:', type, 'Value:', value);
+
         if (type === "Amount")
         {
           discount = parseInt(value);
         } else if (type === "Percentage")
         {
-          discount += (timeslot.rate * parseInt(value)) / 100;
+          const slotDiscount = (timeslot.rate * parseInt(value)) / 100;
+          console.log('💰 Discount calc - Slot discount:', slotDiscount);
+          discount += slotDiscount;
         } else if (type === "Session")
         {
           discount += parseInt(value);
         }
+
+        console.log('💰 Discount calc - Total discount so far:', discount);
       });
     });
     return discount;
