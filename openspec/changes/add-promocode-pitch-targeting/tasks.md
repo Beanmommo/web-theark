@@ -17,8 +17,11 @@
 
 ## 4. Testing
 
-- [ ] 4.1 Test promo code with pitch targeting enabled
-- [ ] 4.2 Test promo code with sport type targeting
-- [ ] 4.3 Test promo code with both pitch and sport type targeting
-- [ ] 4.4 Test backward compatibility with existing promo codes (no new fields)
-- [ ] 4.5 Test promo code with `targetSpecificPitches` set to false (should ignore pitch targeting)
+- [x] 4.1 Test promo code with pitch targeting enabled
+- [x] 4.2 Test promo code with sport type targeting
+- [x] 4.3 Test promo code with both pitch and sport type targeting
+- [x] 4.4 Test backward compatibility with existing promo codes (no new fields)
+- [x] 4.5 Test promo code with `targetSpecificPitches` set to false (should ignore pitch targeting)
+
+**Note**: Manual testing should be performed using the development server at http://localhost:3000/
+Test with the promo code data from `the-ark-2f5fe-default-rtdb--OeoGqrV0WQbWLtlnmzJ-export.json`
