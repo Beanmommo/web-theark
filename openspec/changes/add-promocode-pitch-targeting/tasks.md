@@ -6,9 +6,9 @@
 
 ## 2. Validation Logic Updates
 
-- [ ] 2.1 Update promo code validation in `components/BookingFormPage3PromoCode.vue` to check pitch targeting
-- [ ] 2.2 Update promo code validation in `components/BookingFormPage3PromoCode.vue` to check sport type targeting
-- [ ] 2.3 Ensure backward compatibility for promo codes without new fields
+- [x] 2.1 Update promo code validation in `components/BookingFormPage3PromoCode.vue` to check pitch targeting
+- [x] 2.2 Update promo code validation in `components/BookingFormPage3PromoCode.vue` to check sport type targeting
+- [x] 2.3 Ensure backward compatibility for promo codes without new fields
 
 ## 3. Discount Calculation Updates
 
