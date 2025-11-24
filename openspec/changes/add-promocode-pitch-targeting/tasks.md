@@ -12,8 +12,8 @@
 
 ## 3. Discount Calculation Updates
 
-- [ ] 3.1 Update `getDiscount` function in `composables/payment.ts` to respect pitch targeting when calculating discounts
-- [ ] 3.2 Update `getDiscount` function in `composables/payment.ts` to respect sport type targeting when calculating discounts
+- [x] 3.1 Update `getDiscount` function in `composables/payment.ts` to respect pitch targeting when calculating discounts
+- [x] 3.2 Update `getDiscount` function in `composables/payment.ts` to respect sport type targeting when calculating discounts
 
 ## 4. Testing
 

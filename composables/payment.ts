@@ -101,15 +101,35 @@ export const usePayment = () =>
 
   function getDiscount(groupedTimeslots: GroupedTimeslots, promocode: PromoCode)
   {
-    const { timeslotTypes, value, type } = promocode;
+    const { timeslotTypes, value, type, targetPitches, targetSpecificPitches, typeOfSports } = promocode;
     let discount = 0;
     Object.keys(groupedTimeslots).forEach((key) =>
     {
       let timeslots = groupedTimeslots[key];
       timeslots.forEach((timeslot) =>
       {
+        // Check timeslot type matching (existing logic)
         if (!timeslotTypes.includes(timeslot.type)) return;
 
+        // Check pitch targeting (if enabled)
+        if (targetSpecificPitches && targetPitches && targetPitches.length > 0) {
+          const pitchStr = String(timeslot.pitch);
+          const pitchMatches = targetPitches.some(targetPitch =>
+            pitchStr === targetPitch || pitchStr.includes(targetPitch)
+          );
+          if (!pitchMatches) return;
+        }
+
+        // Check sport type targeting (if configured)
+        if (typeOfSports && typeOfSports.length > 0) {
+          const slotSport = (timeslot.typeOfSports || 'futsal').toLowerCase();
+          const sportMatches = typeOfSports.some(targetSport =>
+            targetSport.toLowerCase() === slotSport
+          );
+          if (!sportMatches) return;
+        }
+
+        // Calculate discount for matching timeslots
         if (type === "Amount")
         {
           discount = parseInt(value);
