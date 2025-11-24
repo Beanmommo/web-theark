@@ -127,6 +127,9 @@ export type PromoCode = {
   value: string;
   publishEnd: string;
   publishStart: string;
+  targetPitches?: string[];
+  targetSpecificPitches?: boolean;
+  typeOfSports?: string[];
 };
 
 export type Blockout = {
