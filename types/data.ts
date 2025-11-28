@@ -1,3 +1,76 @@
+/**
+ * Credit Transaction Types - Main Ledger
+ */
+export type CreditTransactionType =
+  | "PURCHASE"    // Credit package purchased
+  | "USAGE"       // Credits used for booking
+  | "REFUND"      // Credits refunded (cancellation)
+  | "EXPIRY"      // Credits expired
+  | "ADJUSTMENT"; // Manual adjustment by admin
+
+export type CreditTransactionSlot = {
+  start: string;
+  end: string;
+  rate: number;
+  duration: number;
+  color?: string;
+  type: string;
+  pitch: string;
+  date: string;
+  typeOfSports: string;
+};
+
+export type CreditType = "PACKAGE" | "REFUND";
+
+export type CreditTransaction = {
+  id: string;
+  key?: string;
+  userKey: string;
+  email: string;
+  name: string;
+  contact: string;
+  type: CreditTransactionType;
+  creditType?: CreditType; // Which type of credit was used (for USAGE transactions)
+  timestamp: string;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  bookingKey?: string;
+  packageKey?: string;
+  description: string;
+  notes?: string;
+  createdBy?: string;
+  bookingDate?: string;
+  location?: string;
+  slots?: CreditTransactionSlot[];
+  slotKeys?: string[];
+};
+
+export type CreditTransactionData = {
+  [key: string]: CreditTransaction;
+};
+
+/**
+ * Package Allocation Types - Detail Ledger
+ */
+export type PackageAllocation = {
+  id: string;
+  key?: string;
+  transactionId: string;
+  packageKey: string;
+  collection: "creditPackages" | "creditRefunds"; // Which collection this credit is from
+  amount: number; // Negative for usage, positive for refund/purchase
+  packageBalanceBefore: number;
+  packageBalanceAfter: number;
+  timestamp: string;
+  userKey: string;
+  email: string;
+};
+
+export type PackageAllocationData = {
+  [key: string]: PackageAllocation;
+};
+
 // Sport-specific gallery data structure
 export interface SportsGallery {
   gallery: string[];
@@ -387,6 +460,7 @@ export type PackageDetails = {
   value: string;
   id: string;
   typeOfSports: string;
+  image?: string;
 };
 
 export type Config = {

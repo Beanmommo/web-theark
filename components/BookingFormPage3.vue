@@ -42,6 +42,7 @@ const user = useAuthUser();
 const dayjs = useDayjs();
 const router = useRouter();
 const goTo = useGoTo();
+const creditLedger = useCreditLedger();
 
 // Stores
 const creditsStore = useCreditsStore();
@@ -159,10 +160,23 @@ async function handleCreditCardPayment(
   }
 }
 
-async function handleMembershipCreditPayment() {
+// Type for credit allocation tracking
+type CreditAllocation = {
+  packageKey: string;
+  amount: number; // Negative for usage, positive for refund
+  packageBalanceBefore: number;
+  packageBalanceAfter: number;
+  collection: "creditPackages" | "creditRefunds";
+};
+
+async function handleMembershipCreditPayment(): Promise<{
+  keys: string[];
+  allocations: CreditAllocation[];
+}> {
   let remaining = totalCostData.value.totalPayable;
   let promises: Promise<any>[] = [];
   const creditPackageKeys: string[] = [];
+  const allocations: CreditAllocation[] = [];
 
   // Combine credits: refunds first (sorted by expiry), then purchased (sorted by expiry)
   const refunds = currentCreditRefunds.value
@@ -181,16 +195,28 @@ async function handleMembershipCreditPayment() {
 
     const creditsLeft = Number(item.creditsLeft) || Number(item.value);
     let creditPackageCreditsLeft = 0;
+    let amountUsed = 0;
 
     if (creditsLeft >= remaining) {
+      amountUsed = remaining;
       creditPackageCreditsLeft = creditsLeft - remaining;
       remaining = 0;
     } else if (creditsLeft < remaining) {
+      amountUsed = creditsLeft;
       remaining -= creditsLeft;
       creditPackageCreditsLeft = 0;
     }
 
-    if (item.key) {
+    if (item.key && amountUsed > 0) {
+      // Track allocation for ledger (negative amount = credits leaving)
+      allocations.push({
+        packageKey: item.key,
+        amount: -amountUsed, // Negative for usage
+        packageBalanceBefore: creditsLeft,
+        packageBalanceAfter: creditPackageCreditsLeft,
+        collection: item.isRefund ? "creditRefunds" : "creditPackages",
+      });
+
       // Check if it's a refund credit or purchased credit
       if (item.isRefund) {
         // Smart update: tries creditRefunds first, then creditPackages
@@ -214,7 +240,7 @@ async function handleMembershipCreditPayment() {
   });
 
   await Promise.all(promises);
-  return creditPackageKeys;
+  return { keys: creditPackageKeys, allocations };
 }
 
 async function checkBookingSlots() {
@@ -313,9 +339,11 @@ async function clickHandlerSubmit() {
         typeOfSports: slot.typeOfSports?.toLowerCase() || "futsal",
       })),
     };
+
     const remainingCredits =
       totalCreditsLeft.value - totalCostData.value.totalPayable;
-    const creditPackageKeys = await handleMembershipCreditPayment();
+    const { keys: creditPackageKeys, allocations } =
+      await handleMembershipCreditPayment();
     const creditReceiptId = await creditsStore.addCreditReceipt(
       creditPackageData,
       remainingCredits,
@@ -331,6 +359,31 @@ async function clickHandlerSubmit() {
       slotKeys,
       sport
     );
+
+    // Record in ledger AFTER booking is created (using pre-calculated allocations)
+    // Balance is calculated from allocations - shows only the credits that were used
+    if (bookingKey) {
+      try {
+        await creditLedger.recordUsage(
+          customerData.value.userId,
+          customerData.value.email,
+          customerData.value.name,
+          customerData.value.contact,
+          totalCostData.value.totalPayable,
+          currentUserPackages.value,
+          currentCreditRefunds.value,
+          bookingKey,
+          slotKeys,
+          presaleData.value.date,
+          presaleData.value.location,
+          presaleData.value.slots,
+          allocations // Pass pre-calculated allocations (balance calculated from these)
+        );
+      } catch (error: any) {
+        console.error("Failed to record usage in ledger:", error);
+        // Don't block the booking flow if ledger fails
+      }
+    }
     if (bookingKey) {
       const automateSlots = await bookedSlotsStore.updateBookedSlots(
         creditPackageData,
