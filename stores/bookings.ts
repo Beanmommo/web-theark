@@ -236,6 +236,29 @@ export const useBookingsStore = defineStore("bookings", () => {
       console.log(`Created credit refund: ${creditRefundKey}`);
 
       // ============================================
+      // 7.5. RECORD REFUND IN CREDIT LEDGER
+      // ============================================
+      if (creditRefundKey) {
+        try {
+          const creditLedger = useCreditLedger();
+          await creditLedger.recordRefund(
+            bookingKey,
+            booking.userId,
+            booking.email,
+            booking.name,
+            booking.contact,
+            refundAmount,
+            creditRefundKey,
+            "Booking cancelled by customer"
+          );
+          console.log(`Recorded refund in credit ledger for booking ${bookingKey}`);
+        } catch (error) {
+          console.error("Failed to record refund in ledger:", error);
+          // Don't block the cancellation flow if ledger recording fails
+        }
+      }
+
+      // ============================================
       // 8. LINK ORIGINAL INVOICE TO CREDIT REFUND (ONLY FOR INVOICES)
       // ============================================
       // Note: Credit receipts don't need to be updated with refund keys
