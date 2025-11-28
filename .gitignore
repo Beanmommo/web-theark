@@ -14,3 +14,6 @@ augment_summary
 
 # Test files
 pages/test-api.vue
+.vercel
+templates/
+templates

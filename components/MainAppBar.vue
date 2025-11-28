@@ -1,54 +1,78 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify/lib/composables/theme.mjs';
+import { useTheme } from "vuetify/lib/composables/theme.mjs";
 
 const router = useRouter();
-const route = useRoute()
-const sportSlug = route.params.sportSlug as string
+const route = useRoute();
+const sportSlug = route.params.sportSlug as string;
 
 // TODO: Make navItems dynamic
 const navItems = computed(() => {
-  if (sportSlug === 'futsal') {
-    return [{ title: "Pickleball", to: "/pickleball/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` }]
+  if (sportSlug === "futsal") {
+    return [
+      { title: "Pickleball", to: "/pickleball" },
+      { title: "Packages", to: `/${sportSlug}/packages` },
+      { title: "Contact Us", to: `/${sportSlug}/contactus` },
+    ];
   }
-  if (sportSlug === 'pickleball') {
-    return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` },]
+  if (sportSlug === "pickleball") {
+    return [
+      { title: "Futsal", to: "/futsal" },
+      { title: "Packages", to: `/${sportSlug}/packages` },
+      { title: "Contact Us", to: `/${sportSlug}/contactus` },
+    ];
   }
-  return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Pickelball", to: "/pickleball/venue" }, { title: "Contact Us", to: "/contactus" },]
-})
+  return [
+    { title: "Futsal", to: "/futsal" },
+    { title: "Pickelball", to: "/pickleball" },
+    { title: "Contact Us", to: "/contactus" },
+  ];
+});
 
 function clickHandler(link: string) {
-  router.push(link)
+  router.push(link);
 }
 
-const theme = useTheme()
+const theme = useTheme();
 const arkLogo = {
-  "thearkTheme": "/Logo/theark.png",
-  "futsalTheme": "/Logo/theark_futsal.svg",
-  "pickleBallTheme": "/Logo/theark_pickleball.png",
-}
+  thearkTheme: "/Logo/theark.png",
+  futsalTheme: "/Logo/theark_futsal.svg",
+  pickleBallTheme: "/Logo/theark_pickleball.png",
+};
 const themeLogo = computed(() => {
   const key = theme.global.name.value as keyof typeof arkLogo;
   return arkLogo[key] ?? arkLogo["thearkTheme"];
-})
+});
 
-watch(() => route.params.sportSlug, (newVal) => {
-
-})
-
+watch(
+  () => route.params.sportSlug,
+  (newVal) => {}
+);
 </script>
 
 <template>
   <div class="main-app-bar">
     <div class="main-app-bar-left">
-      <img class="imgLogo" :src="themeLogo" alt="The Ark Logo" @click="clickHandler('/')" width="80px" />
+      <img
+        class="imgLogo"
+        :src="themeLogo"
+        alt="The Ark Logo"
+        @click="clickHandler('/')"
+        width="80px"
+      />
       <div class="nav-items">
-        <MainAppBarNavItem v-for="item in navItems" :key="item.title" @click="clickHandler(item.to)">{{ item.title }}
+        <MainAppBarNavItem
+          v-for="item in navItems"
+          :key="item.title"
+          @click="clickHandler(item.to)"
+          >{{ item.title }}
         </MainAppBarNavItem>
       </div>
     </div>
     <div class="main-app-bar-right">
-      <UserButton class="user__button" />
-      <MainAppBarMobileMenu />
+      <ClientOnly>
+        <UserButton class="user__button" />
+        <MainAppBarMobileMenu />
+      </ClientOnly>
     </div>
   </div>
 </template>
@@ -91,7 +115,6 @@ watch(() => route.params.sportSlug, (newVal) => {
     gap: $unit;
   }
 }
-
 
 .user__button {
   display: none;

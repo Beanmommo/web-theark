@@ -28,6 +28,9 @@ const {
 } = usePayment();
 const user = useAuthUser();
 const router = useRouter();
+const route = useRoute();
+const sportSlug = route.params.sportSlug as string;
+const creditLedger = useCreditLedger();
 
 // Stores
 const presalesStore = usePresalesStore();
@@ -154,12 +157,28 @@ async function clickHandlerSubmit() {
       finalInvoiceData,
       props.packageItem
     );
-    if (creditPackageKey)
+    if (creditPackageKey) {
       await invoicesStore.updateInvoiceCreditPackageKey(
         finalInvoiceData.id,
         creditPackageKey
       );
-    router.push("/packages/thankyou");
+
+      // Record purchase in ledger
+      try {
+        await creditLedger.recordPurchase(
+          finalInvoiceData.userId,
+          finalInvoiceData.email,
+          finalInvoiceData.name,
+          finalInvoiceData.contact,
+          parseInt(props.packageItem.value),
+          creditPackageKey
+        );
+      } catch (error) {
+        console.error("Failed to record purchase in ledger:", error);
+        // Don't block the purchase flow if ledger fails
+      }
+    }
+    router.push(`/${sportSlug}/packages/thankyou`);
     loading.value = false;
   } else if (paymentMethod.value === PaymentMethods.PAYNOW) {
     paynowsStore.addPaynow(newPresaleData.id);

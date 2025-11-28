@@ -5,9 +5,7 @@
   </ClientOnly>
   <LayoutBase>
     <template #header>
-      <ClientOnly>
-        <MainAppBar />
-      </ClientOnly>
+      <MainAppBar />
     </template>
     <template #main>
       <slot />

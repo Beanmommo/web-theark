@@ -4,7 +4,7 @@ export const usePackagesStore = defineStore("packages", () => {
   const packages = ref<PackageDetails[]>([] as PackageDetails[]);
 
   const getPackagesBySport = (sportSlug: string) => {
-    return packages.value.filter((pkg) => pkg.typeOfSports === sportSlug);
+    return packages.value.filter((pkg) => (pkg.typeOfSports.toLowerCase() ?? 'futsal') === sportSlug);
   };
   const fetchPackages = async () => {
     const { data } = await useFetch("/api/packages");
