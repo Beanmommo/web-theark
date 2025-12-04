@@ -1,47 +1,72 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useTheme } from 'vuetify'
+import { ref } from "vue";
+import { useTheme } from "vuetify";
 
-const { isLogin, logout } = useAuth()
-const showSidebar = ref(false)
+const { isLogin, logout } = useAuth();
+const showSidebar = ref(false);
 
 /* Set the width of the side navigation to 0 or 250px */
 function clickHandler() {
-  showSidebar.value = !showSidebar.value
+  showSidebar.value = !showSidebar.value;
 }
 
 async function clickHandlerSignOut() {
-  await logout()
+  await logout();
 }
 
-const theme = useTheme()
+const theme = useTheme();
 const arkLogo = {
-  "thearkTheme": "/Logo/theark.png",
-  "futsalTheme": "/Logo/theark_futsal.svg",
-  "pickleBallTheme": "/Logo/theark_pickleball.png",
-}
+  thearkTheme: "/Logo/theark.png",
+  futsalTheme: "/Logo/theark_futsal.svg",
+  pickleBallTheme: "/Logo/theark_pickleball.png",
+};
 
 const accentColor = computed(() => {
-  return theme.current.value.colors.accent
-})
+  return theme.current.value.colors.accent;
+});
 
 const themeLogo = computed(() => {
   const key = theme.global.name.value as keyof typeof arkLogo;
   return arkLogo[key] ?? arkLogo["thearkTheme"];
-})
+});
 
-const route = useRoute()
-const sportSlug = route.params.sportSlug as string
+const route = useRoute();
+const sportSlug = route.params.sportSlug as string;
 
 const navItems = computed(() => {
-  if (sportSlug === 'futsal') {
-    return [{ title: "Pickleball", to: "/pickleball/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` }]
+  if (sportSlug === "futsal") {
+    return [
+      { title: "Pickleball", to: "/pickleball/venue" },
+      { title: "Packages", to: `/${sportSlug}/packages` },
+      { title: "Contact Us", to: `/${sportSlug}/contactus` },
+    ];
   }
-  if (sportSlug === 'pickleball') {
-    return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Packages", to: `/${sportSlug}/packages` }, { title: "Contact Us", to: `/${sportSlug}/contactus` },]
+  if (sportSlug === "pickleball") {
+    return [
+      { title: "Futsal", to: "/futsal/venue" },
+      { title: "Packages", to: `/${sportSlug}/packages` },
+      { title: "Contact Us", to: `/${sportSlug}/contactus` },
+    ];
   }
-  return [{ title: "Futsal", to: "/futsal/venue" }, { title: "Pickleball", to: "/pickleball/venue" }, { title: "Contact Us", to: "/contactus" },]
-})
+  return [
+    { title: "Futsal", to: "/futsal/venue" },
+    { title: "Pickleball", to: "/pickleball/venue" },
+    { title: "Contact Us", to: "/contactus" },
+  ];
+});
+
+// Conditional rendering of Book Now button - only show when on a sport-specific page
+const showBookNowButton = computed(() => {
+  return !!sportSlug;
+});
+
+async function handleBookNow() {
+  if (sportSlug) {
+    await navigateTo(`/${sportSlug}/booking`);
+    // Close the menu after navigation
+    showSidebar.value = false;
+  }
+}
 </script>
 
 <template>
@@ -54,7 +79,11 @@ const navItems = computed(() => {
       <div id="mySidenav" class="sidenav" v-show="showSidebar">
         <div class="header">
           <img :src="themeLogo" alt="The Ark Logo" width="72px" />
-          <div class="closebtn" :style="{ color: accentColor }" @click="clickHandler">
+          <div
+            class="closebtn"
+            :style="{ color: accentColor }"
+            @click="clickHandler"
+          >
             <IconClose />
           </div>
         </div>
@@ -62,6 +91,14 @@ const navItems = computed(() => {
           <template v-for="item in navItems">
             <a :href="item.to">{{ item.title }}</a>
           </template>
+          <!-- Book Now Button: Only show when on a sport-specific page -->
+          <Button
+            v-if="showBookNowButton"
+            class="form__container--button"
+            @click="handleBookNow"
+          >
+            Book Now</Button
+          >
           <div class="content--inner">
             <template v-if="isLogin">
               <NuxtLink to="/profile" v-if="isLogin">Your Profile</NuxtLink>
@@ -71,12 +108,9 @@ const navItems = computed(() => {
               <IconButtonUser>Sign In</IconButtonUser>
             </DialogSignIn>
           </div>
-
         </div>
-
       </div>
     </transition>
-
   </div>
 </template>
 
@@ -108,7 +142,6 @@ const navItems = computed(() => {
   background-color: $functional-white;
   padding: $margin;
 
-
   a,
   .signout {
     text-decoration: none;
@@ -133,7 +166,7 @@ const navItems = computed(() => {
   justify-content: space-between;
   margin-top: $unit;
 
-  >img {
+  > img {
     width: 150px;
   }
 }
@@ -151,7 +184,6 @@ const navItems = computed(() => {
     flex-direction: column;
     gap: $margin;
   }
-
 }
 
 /* Position and style the close button (top right corner) */
@@ -173,7 +205,7 @@ const navItems = computed(() => {
   gap: $margin;
   cursor: pointer;
 
-  >h5 {
+  > h5 {
     font-weight: 500;
     font-size: 1.2rem;
     margin: 0;
@@ -182,17 +214,15 @@ const navItems = computed(() => {
   &Icon {
     width: 40px;
   }
-
 }
-
 
 // Transition for Drawer Slide In/out
 .section-leave-active {
-  transition: .2s ease;
+  transition: 0.2s ease;
 }
 
 .section-enter-active {
-  transition: .5s ease;
+  transition: 0.5s ease;
 }
 
 .section-enter-from {

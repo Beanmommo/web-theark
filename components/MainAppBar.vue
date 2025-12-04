@@ -28,8 +28,19 @@ const navItems = computed(() => {
   ];
 });
 
+// Conditional rendering of Book Now button - only show when on a sport-specific page
+const showBookNowButton = computed(() => {
+  return !!sportSlug;
+});
+
 function clickHandler(link: string) {
   router.push(link);
+}
+
+function handleBookNow() {
+  if (sportSlug) {
+    router.push(`/${sportSlug}/booking`);
+  }
 }
 
 const theme = useTheme();
@@ -69,6 +80,14 @@ watch(
       </div>
     </div>
     <div class="main-app-bar-right">
+      <!-- Book Now Button: Only show when on a sport-specific page -->
+      <Button
+        v-if="showBookNowButton"
+        class="booknow__button form__container--button"
+        @click="handleBookNow"
+      >
+        Book Now</Button
+      >
       <ClientOnly>
         <UserButton class="user__button" />
         <MainAppBarMobileMenu />
@@ -117,6 +136,14 @@ watch(
 }
 
 .user__button {
+  display: none;
+
+  @media (min-width: 418px) {
+    display: inline-flex;
+  }
+}
+
+.booknow__button {
   display: none;
 
   @media (min-width: 418px) {
