@@ -2,10 +2,11 @@
  * Credit Transaction Types - Main Ledger
  */
 export type CreditTransactionType =
-  | "PURCHASE"    // Credit package purchased
-  | "USAGE"       // Credits used for booking
-  | "REFUND"      // Credits refunded (cancellation)
-  | "EXPIRY"      // Credits expired
+  | "PURCHASE" // Credit package purchased
+  | "USAGE" // Credits used for booking
+  | "REFUND" // Credits refunded (full booking cancellation)
+  | "PARTIAL_REFUND" // Credits refunded (partial slot cancellation)
+  | "EXPIRY" // Credits expired
   | "ADJUSTMENT"; // Manual adjustment by admin
 
 export type CreditTransactionSlot = {
@@ -118,6 +119,7 @@ export type Pitch = {
   backendStartDate?: string;
   backendEndDate?: string;
   automatePitchId?: string;
+  allowCancellation?: boolean; // Default: true. If false, hide cancel/delete on customer website
 };
 
 export type Timeslot = {
@@ -252,6 +254,17 @@ export type CustomerDetails = {
   userId: string;
 };
 
+/**
+ * Partial Cancellation record - tracks individual slot deletions
+ */
+export type PartialCancellation = {
+  slotKey: string;
+  slotRate: number;
+  cancelledDate: string;
+  cancelledBy: string;
+  creditRefundKey?: string;
+};
+
 export type Booking = CustomerDetails &
   CostData & {
     location: string;
@@ -265,6 +278,11 @@ export type Booking = CustomerDetails &
     date: string;
     amount?: string;
     typeOfSports: string;
+
+    // Partial cancellation fields
+    cancelledSlots?: string[]; // Slot keys that were partially cancelled
+    refundAmount?: number; // Cumulative refund amount (slot.rate values)
+    partialCancellations?: PartialCancellation[]; // Audit trail for partial cancellations
   };
 
 export type BookingDetails = {
@@ -314,7 +332,7 @@ export enum InvoiceType {
   BOOKING = "Booking",
 }
 
-export type DatabaseVersion = 'rtdb' | 'firestore';
+export type DatabaseVersion = "rtdb" | "firestore";
 
 export type Invoice = TotalCostData &
   CustomerDetails &
@@ -364,16 +382,16 @@ export type PresaleBooking = Presale & BookingDetails;
 export type PresalePackage = Presale & PackageDetails;
 
 export type CreditReceipt = BookingDetails & {
-    id: string;
-    name: string;
-    contact: string;
-    email: string;
-    userKey: string; // Using userKey to match existing credit receipt data in database
-    submittedDate: string;
-    creditPackageKeys: string[];
-    remainingCredits: number;
-    total: number;
-  };
+  id: string;
+  name: string;
+  contact: string;
+  email: string;
+  userKey: string; // Using userKey to match existing credit receipt data in database
+  submittedDate: string;
+  creditPackageKeys: string[];
+  remainingCredits: number;
+  total: number;
+};
 
 export type PaymentData = {
   paymentMethod: PaymentMethods;
