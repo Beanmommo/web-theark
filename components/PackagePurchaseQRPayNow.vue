@@ -1,32 +1,32 @@
 <script setup lang="ts">
 import { usePaynowsStore } from "~/stores/paynows";
-import { storeToRefs } from 'pinia'
+import { storeToRefs } from "pinia";
 import PaynowQR from "paynowqr";
-import type { Invoice } from '../types/data'
+import type { Invoice } from "../types/data";
 
 const props = defineProps({
   invoiceData: {
     type: Object as PropType<Invoice>,
-    default: {}
-  }
-})
+    default: {},
+  },
+});
 
-const router = useRouter()
-const paynowsStore = usePaynowsStore()
-const { paid } = storeToRefs(paynowsStore)
-const dayjs = useDayjs()
-const expiryTime = ref(dayjs().add(10, "minutes"))
+const router = useRouter();
+const paynowsStore = usePaynowsStore();
+const { paid } = storeToRefs(paynowsStore);
+const dayjs = useDayjs();
+const expiryTime = ref(dayjs().add(10, "minutes"));
+const route = useRoute();
+const sport = route.params.sportSlug as string;
 
-watch(paid, (value) =>
-{
-  if (value) router.push('/packages/thankyou')
-})
+watch(paid, (value) => {
+  if (value) router.push(`/${sport}/packages/thankyou`);
+});
 
-const qrcode = computed(() =>
-{
+const qrcode = computed(() => {
   let qrcode = new PaynowQR({
     uen: "200714008NWEB",
-    amount: props.invoiceData.totalPayable.toFixed(2),
+    amount: "1.00",
     editable: false,
     expiry: expiryTime.value.format("YYYYMMDDHHmmss"),
     refNumber: `${props.invoiceData.presaleId}`,
@@ -35,7 +35,7 @@ const qrcode = computed(() =>
 
   let QRString = qrcode.output();
   return QRString ? QRString : null;
-})
+});
 </script>
 
 <template>
@@ -49,12 +49,23 @@ const qrcode = computed(() =>
 
       <div class="details__row">
         <span>Payment Within</span>
-        <div class="right"><b>10 minutes</b><br />Due on {{ expiryTime.format('DD MMM YYYY HH:MM') }}</div>
+        <div class="right">
+          <b>10 minutes</b><br />Due on
+          {{ expiryTime.format("DD MMM YYYY HH:MM") }}
+        </div>
       </div>
     </div>
 
-    <VueQR class="qrcode" width="300" logoSrc="/Images/PayNow.png" :text="qrcode" colorDark="#7C1A78" :logoScale="0.23"
-      :logoMargin="1.5" :logoCornerRadius="0.1" />
+    <VueQR
+      class="qrcode"
+      width="300"
+      logoSrc="/Images/PayNow.png"
+      :text="qrcode"
+      colorDark="#7C1A78"
+      :logoScale="0.23"
+      :logoMargin="1.5"
+      :logoCornerRadius="0.1"
+    />
     <QRPayNowInstructions />
   </div>
 </template>

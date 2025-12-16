@@ -37,26 +37,54 @@ function reloadData() {
   selectedTimeslots.value = [];
 }
 
+// Get the unique pitch identifier - use pitch.id, fallback to pitch.name
+function getPitchId(pitch: Pitch): string {
+  return pitch.id || pitch.name;
+}
+
+// Check if a slot's pitch matches a given pitch
+// Handles both new format (pitch.id) and legacy format (pitch.name or "Pitch X")
+function isPitchMatch(slotPitch: string | number, pitch: Pitch): boolean {
+  const slotPitchStr = String(slotPitch);
+  const pitchId = getPitchId(pitch);
+
+  // Direct match with pitch.id or pitch.name
+  if (slotPitchStr === pitchId || slotPitchStr === pitch.name) {
+    return true;
+  }
+
+  // Handle legacy "Pitch X" format - extract number and compare
+  const legacyMatch = slotPitchStr.match(/^Pitch\s+(\d+)$/i);
+  if (legacyMatch) {
+    const extractedNumber = legacyMatch[1];
+    if (extractedNumber === pitchId || extractedNumber === pitch.name) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function checkBookedSlot(date: string, timeslot: SlotDetails, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
   const found = props.bookedSlots.find(
     (slot) =>
-      slot.pitch === pitch.name &&
+      isPitchMatch(slot.pitch, pitch) &&
       (slot.start === timeslot.start || slot.end === timeslot.end) &&
       dayjs(slot.date).isSame(formattedDate, "day")
   );
-  if (found !== undefined) console.log(found);
   return found !== undefined;
 }
 
 function checkSlot(date: string, start: string, pitch: Pitch) {
   const formattedDate = dayjs(date, "YYYY-MM-DD").format();
+  const pitchId = getPitchId(pitch);
   return (
     selectedTimeslots.value &&
     selectedTimeslots.value.findIndex(
       (slot) =>
         slot.start === start &&
-        slot.pitch === pitch.name &&
+        slot.pitch === pitchId &&
         dayjs(slot.date).isSame(formattedDate, "day")
     ) !== -1
   );
@@ -65,13 +93,14 @@ function checkSlot(date: string, start: string, pitch: Pitch) {
 function selectTimeslot(timeslot: SlotDetails, pitch: Pitch) {
   const { start } = timeslot;
   const dateSelected = props.date;
+  const pitchId = getPitchId(pitch);
   let newTimeSlots = selectedTimeslots.value
     ? [...selectedTimeslots.value]
     : [];
   const found = newTimeSlots.findIndex(
     (slot) =>
       slot.start === start &&
-      slot.pitch === pitch.name &&
+      slot.pitch === pitchId &&
       slot.date === dateSelected
   );
 
@@ -79,7 +108,7 @@ function selectTimeslot(timeslot: SlotDetails, pitch: Pitch) {
   else
     newTimeSlots.push({
       ...timeslot,
-      pitch: pitch.name,
+      pitch: pitchId,
       date: dateSelected,
       typeOfSports: pitch.typeOfSports,
       automatePitchId: pitch.automatePitchId,

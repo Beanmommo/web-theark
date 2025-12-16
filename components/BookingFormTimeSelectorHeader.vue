@@ -1,46 +1,46 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
-import type { Pitch } from '../types/data'
+import { useTheme } from "vuetify";
+import type { Pitch } from "../types/data";
 
 defineProps({
   locationPitches: Array<Pitch>,
-})
+});
 
-const theme = useTheme()
+const theme = useTheme();
 const accentColor = computed(() => {
-  return theme.current.value.colors.accent
-})
+  return theme.current.value.colors.accent;
+});
 
-const configStore = useConfigStore()
+const configStore = useConfigStore();
 
 function getPitchName(pitch: Pitch) {
-  console.log('🔍 getPitchName called with pitch:', {
-    name: pitch.name,
-    typeOfSports: pitch.typeOfSports,
-    typeOfSportsType: typeof pitch.typeOfSports
-  })
-  console.log('📊 Config sportsTypes:', configStore.config?.sportsTypes)
-
-  const terminology = configStore.getSportTerminology(pitch.typeOfSports, 'singular')
-
-  console.log('✅ Terminology result:', terminology)
-
-  return `${terminology} ${pitch.name}`
+  const terminology = configStore.getSportTerminology(
+    pitch.typeOfSports,
+    "singular"
+  );
+  return `${terminology} ${pitch.name}`;
 }
 </script>
 
 <template>
   <v-row no-gutters>
     <v-col cols="4" md="2">
-      <div class="time-slot-header" :style="{ background: accentColor }">Time</div>
+      <div class="time-slot-header" :style="{ background: accentColor }">
+        Time
+      </div>
     </v-col>
     <v-col cols="3" md="2">
-      <div class="time-slot-header" :style="{ background: accentColor }">Price (w/GST)</div>
+      <div class="time-slot-header" :style="{ background: accentColor }">
+        Price (w/GST)
+      </div>
     </v-col>
     <v-col cols="5" md="8">
       <div class="d-flex flex-row">
         <template v-for="pitch in locationPitches">
-          <div class="time-slot-header flex-grow-1" :style="{ background: accentColor }">
+          <div
+            class="time-slot-header flex-grow-1"
+            :style="{ background: accentColor }"
+          >
             {{ getPitchName(pitch) }}
           </div>
         </template>

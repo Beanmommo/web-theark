@@ -3,7 +3,6 @@ const creditsStore = useCreditsStore();
 const { totalCreditsLeft, purchasedCreditsLeft, refundCreditsLeft } =
   storeToRefs(creditsStore);
 const user = useAuthUser();
-const router = useRouter();
 
 // Edit mode state
 const isEditMode = ref(false);
@@ -130,10 +129,6 @@ async function sendPasswordReset() {
     alert("Failed to send password reset email. Please try again.");
   }
 }
-
-function clickHandler() {
-  router.push("/packages");
-}
 </script>
 <template>
   <div class="profileUserDetails">
@@ -252,8 +247,6 @@ function clickHandler() {
             <span class="credit-amount">${{ refundCreditsLeft }}</span>
           </div>
         </div>
-
-        <ButtonOutlined @click="clickHandler">Buy Package</ButtonOutlined>
       </div>
     </ClientOnly>
   </div>

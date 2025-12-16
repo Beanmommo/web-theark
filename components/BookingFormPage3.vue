@@ -243,6 +243,28 @@ async function handleMembershipCreditPayment(): Promise<{
   return { keys: creditPackageKeys, allocations };
 }
 
+// Check if two pitch values match, handling legacy "Pitch X" format
+function isPitchMatch(
+  slotPitch: string | number,
+  selectedPitch: string | number
+): boolean {
+  const slotPitchStr = String(slotPitch);
+  const selectedPitchStr = String(selectedPitch);
+
+  // Direct match
+  if (slotPitchStr === selectedPitchStr) {
+    return true;
+  }
+
+  // Handle legacy "Pitch X" format - extract number and compare
+  const legacyMatch = slotPitchStr.match(/^Pitch\s+(\d+)$/i);
+  if (legacyMatch && legacyMatch[1] === selectedPitchStr) {
+    return true;
+  }
+
+  return false;
+}
+
 async function checkBookingSlots() {
   const bookedSlots = await bookedSlotsStore.fetchBookedSlotsByDate(
     bookingDetails.value.date,
@@ -257,7 +279,7 @@ async function checkBookingSlots() {
         const found = bookedSlots.find(
           (slot) =>
             slot.start === start &&
-            slot.pitch === pitch &&
+            isPitchMatch(slot.pitch, pitch) &&
             dayjs(slot.date).format("YYYY-MM-DD") === date
         );
         if (found) booked = true;
