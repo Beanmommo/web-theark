@@ -38,17 +38,22 @@ const accentColor = computed(() => {
 
 <template>
   <div class="packagesSelectionCard">
-    <h4>{{ packageItem.title }}</h4>
+    <h4>{{ packageItem.title || packageItem.name || "Package" }}</h4>
     <CldImage
       v-if="useCloudinaryImage"
       :src="cloudinaryImageSrc"
       width="200"
       height="200"
-      :alt="packageItem.title"
+      :alt="packageItem.title || packageItem.name || 'Package image'"
       class="icon"
       crop="pad"
     />
-    <img v-else :src="localImageUrl" class="icon" :alt="packageItem.title" />
+    <img
+      v-else
+      :src="localImageUrl"
+      class="icon"
+      :alt="packageItem.title || packageItem.name || 'Package image'"
+    />
     <div class="details">
       <div class="amount" :style="{ color: accentColor }">
         ${{ packageItem.amount }}

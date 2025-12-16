@@ -471,6 +471,7 @@ export type CreditRefundData = { [key: string]: CreditRefund };
 
 export type PackageDetails = {
   title: string;
+  name?: string; // Legacy field from database
   amount: string;
   expiryPeriod: number;
   type: string;
