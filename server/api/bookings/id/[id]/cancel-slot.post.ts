@@ -7,17 +7,20 @@ dayjs.extend(customParseFormat);
 
 /**
  * POST /api/bookings/id/:id/cancel-slot
- * Cancel a single slot from a booking (partial cancellation)
- * 
+ * Cancel a single slot from a booking (partial cancellation) - PENDING APPROVAL WORKFLOW
+ *
  * Enforces 72-hour rule for customers (unless isAdmin=true)
- * 
+ *
  * Request body:
  * - slotKey: string - The key of the slot to cancel
  * - isAdmin?: boolean - If true, skip 72-hour validation
- * 
+ * - cancelledBy: string - Email of user who requested cancellation
+ * - cancellationReason: string - Reason for cancellation
+ * - otherReason?: string - Additional details if reason is "Other"
+ *
  * Response:
- * - For partial cancellation: { success: true, isLastSlot: false, slot, booking }
- * - For last slot: { success: true, isLastSlot: true, slot, booking }
+ * - For partial cancellation: { success: true, pending: true, isLastSlot: false }
+ * - For last slot: { success: true, isLastSlot: true }
  * - For 72-hour violation: { error: "Cannot delete slots within 72 hours..." }
  */
 export default defineEventHandler(async (event) => {
@@ -26,10 +29,24 @@ export default defineEventHandler(async (event) => {
     return { error: "Booking ID is required" };
   }
 
-  const { slotKey, isAdmin = false } = await readBody(event);
+  const {
+    slotKey,
+    isAdmin = false,
+    cancelledBy,
+    cancellationReason,
+    otherReason,
+  } = await readBody(event);
 
   if (!slotKey) {
     return { error: "Slot key is required" };
+  }
+
+  if (!cancelledBy) {
+    return { error: "cancelledBy is required" };
+  }
+
+  if (!cancellationReason) {
+    return { error: "cancellationReason is required" };
   }
 
   try {
@@ -42,7 +59,7 @@ export default defineEventHandler(async (event) => {
     const fsBookingDoc = await fsBookingRef.get();
 
     if (fsBookingDoc.exists) {
-      booking = { ...fsBookingDoc.data() as Booking, key: bookingId };
+      booking = { ...(fsBookingDoc.data() as Booking), key: bookingId };
       bookingSource = "firestore";
     } else {
       // Try RTDB
@@ -50,7 +67,7 @@ export default defineEventHandler(async (event) => {
       const rtdbSnapshot = await rtdbBookingRef.once("value");
 
       if (rtdbSnapshot.exists()) {
-        booking = { ...rtdbSnapshot.val() as Booking, key: bookingId };
+        booking = { ...(rtdbSnapshot.val() as Booking), key: bookingId };
         bookingSource = "rtdb";
       }
     }
@@ -73,7 +90,7 @@ export default defineEventHandler(async (event) => {
     const fsSlotDoc = await fsSlotRef.get();
 
     if (fsSlotDoc.exists) {
-      slot = { ...fsSlotDoc.data() as BookedSlot, key: slotKey };
+      slot = { ...(fsSlotDoc.data() as BookedSlot), key: slotKey };
       slotSource = "firestore";
     } else {
       // Try RTDB
@@ -81,7 +98,7 @@ export default defineEventHandler(async (event) => {
       const rtdbSnapshot = await rtdbSlotRef.once("value");
 
       if (rtdbSnapshot.exists()) {
-        slot = { ...rtdbSnapshot.val() as BookedSlot, key: slotKey };
+        slot = { ...(rtdbSnapshot.val() as BookedSlot), key: slotKey };
         slotSource = "rtdb";
       }
     }
@@ -101,7 +118,9 @@ export default defineEventHandler(async (event) => {
       );
 
       if (!slotDateTime.isValid()) {
-        console.warn(`Could not parse slot datetime: ${slot.date} ${slot.start}`);
+        console.warn(
+          `Could not parse slot datetime: ${slot.date} ${slot.start}`
+        );
         // Fall back to just the date
         const slotDate = dayjs(slot.date);
         const now = dayjs();
@@ -127,18 +146,55 @@ export default defineEventHandler(async (event) => {
     // Check if this is the last slot
     const isLastSlot = booking.slots.length === 1;
 
-    // Return data for client-side processing
+    // If last slot, return for full cancellation workflow
+    if (isLastSlot) {
+      return {
+        success: true,
+        isLastSlot: true,
+        message:
+          "This is the last slot. Please use full booking cancellation workflow.",
+      };
+    }
+
+    // Validate slot is not already pending cancellation
+    if (
+      booking.pendingCancelledSlots &&
+      booking.pendingCancelledSlots.includes(slotKey)
+    ) {
+      return { error: "This slot is already pending cancellation approval" };
+    }
+
+    // Mark slot as pending cancellation
+    const now = new Date().toISOString();
+    const updates: Partial<Booking> = {
+      status: "Cancelled",
+      pendingCancelledBy: cancelledBy,
+      pendingCancelledDate: now,
+      cancellationReason,
+      ...(otherReason && { otherReason }),
+      pendingCancelledSlots: [
+        ...(booking.pendingCancelledSlots || []),
+        slotKey,
+      ],
+    };
+
+    // Update booking in the appropriate database
+    if (bookingSource === "firestore") {
+      const fsBookingRef = fs.collection("bookings").doc(bookingId);
+      await fsBookingRef.update(updates);
+    } else {
+      const rtdbBookingRef = db.ref(`bookings/${bookingId}`);
+      await rtdbBookingRef.update(updates);
+    }
+
     return {
       success: true,
-      isLastSlot,
-      slot,
-      booking,
-      slotSource,
-      bookingSource,
+      pending: true,
+      isLastSlot: false,
+      message: "Slot cancellation request submitted for admin approval",
     };
   } catch (error) {
     console.error("Error in cancel-slot endpoint:", error);
     return { error: "Failed to process slot cancellation" };
   }
 });
-
