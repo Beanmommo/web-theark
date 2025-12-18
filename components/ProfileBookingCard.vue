@@ -185,6 +185,17 @@ const slotToDelete = ref<BookedSlot | null>(null);
 const slotToDeleteKey = ref<string>("");
 const isDeletingSlot = ref(false);
 const isDeleteSlotMode = ref(false); // Toggle to show/hide delete buttons
+const cancellationReason = ref<string>("");
+const otherReason = ref<string>("");
+
+// Cancellation reasons
+const cancellationReasons = [
+  "Change of plans",
+  "Weather concerns",
+  "Found another venue",
+  "Personal emergency",
+  "Other",
+];
 
 // Check if a slot can be deleted (72-hour rule)
 function getSlotDeletability(slot: BookedSlot) {
@@ -213,7 +224,18 @@ async function handleConfirmDeleteSlot() {
   if (!slotToDelete.value || !slotToDeleteKey.value || !props.booking.key)
     return;
 
-  message.value = "Deleting Slot";
+  // Validate cancellation reason
+  if (!cancellationReason.value) {
+    showError("Please select a cancellation reason");
+    return;
+  }
+
+  if (cancellationReason.value === "Other" && !otherReason.value.trim()) {
+    showError("Please provide details for 'Other' reason");
+    return;
+  }
+
+  message.value = "Submitting Cancellation Request";
   loading.value = true;
   isDeletingSlot.value = true;
 
@@ -221,12 +243,14 @@ async function handleConfirmDeleteSlot() {
     const result = await cancelSlot(
       props.booking.key,
       slotToDeleteKey.value,
-      "customer",
+      user.value?.email || "customer",
+      cancellationReason.value,
+      cancellationReason.value === "Other" ? otherReason.value : undefined,
       false // Not admin - enforce 72-hour rule
     );
 
     if (!result.success) {
-      showError(result.error || "Failed to delete slot");
+      showError(result.error || "Failed to submit cancellation request");
       return;
     }
 
@@ -242,24 +266,26 @@ async function handleConfirmDeleteSlot() {
     initialiseData();
 
     if (result.isLastSlot) {
-      showSuccess(
-        "Last slot deleted. Booking has been cancelled and credits refunded."
-      );
+      showSuccess("This is the last slot. Please use Cancel Booking option.");
     } else {
       showSuccess(
         result.message ||
-          `Slot deleted. $${result.refundAmount} credited to your account.`
+          "Slot cancellation request submitted. Pending admin approval."
       );
     }
   } catch (error) {
     console.error("Delete slot failed:", error);
-    showError("Failed to delete slot. Please try again or contact support.");
+    showError(
+      "Failed to submit cancellation request. Please try again or contact support."
+    );
   } finally {
     loading.value = false;
     isDeletingSlot.value = false;
     message.value = "";
     slotToDelete.value = null;
     slotToDeleteKey.value = "";
+    cancellationReason.value = "";
+    otherReason.value = "";
     showDeleteSlotDialog.value = false;
     isDeleteSlotMode.value = false; // Exit delete mode after action
   }
@@ -269,6 +295,11 @@ async function handleConfirmDeleteSlot() {
 const hasMultipleSlots = computed(() => {
   return bookingSlots.value.length > 1;
 });
+
+// Check if slot is pending cancellation
+function isSlotPending(slotKey: string): boolean {
+  return props.booking.pendingCancelledSlots?.includes(slotKey) || false;
+}
 </script>
 
 <template>
@@ -295,13 +326,30 @@ const hasMultipleSlots = computed(() => {
         </span>
       </div>
       <template v-for="(slot, index) in bookingSlots" :key="slot.key || index">
-        <div class="pitch-row">
+        <div
+          class="pitch-row"
+          :class="{
+            'pitch-pending': isSlotPending(booking.slots?.[index] || ''),
+          }"
+        >
+          <v-chip
+            v-if="isSlotPending(booking.slots?.[index] || '')"
+            color="warning"
+            size="x-small"
+            class="pending-badge"
+          >
+            Pending
+          </v-chip>
           <span class="pitch">
             {{ pitchName }} {{ slot.pitch }} - {{ slot.start }} to
             {{ slot.end }}
           </span>
-          <!-- Delete slot button (only shown in delete mode) -->
-          <template v-if="isDeleteSlotMode">
+          <!-- Delete slot button (only shown in delete mode and not pending) -->
+          <template
+            v-if="
+              isDeleteSlotMode && !isSlotPending(booking.slots?.[index] || '')
+            "
+          >
             <VTooltip
               v-if="!getSlotDeletability(slot).canDelete"
               location="left"
@@ -428,24 +476,67 @@ const hasMultipleSlots = computed(() => {
   />
 
   <!-- Delete Slot Confirmation Dialog -->
-  <ConfirmDialog
-    v-model="showDeleteSlotDialog"
-    title="Delete Time Slot"
-    message="Are you sure you want to delete this time slot?"
-    :details="
-      slotToDelete
-        ? `${pitchName} ${slotToDelete.pitch} - ${slotToDelete.start} to ${
-            slotToDelete.end
-          }\n\nYou will receive $${
-            slotToDelete.rate || 0
-          } credits (GST not included) for this refund. Refund credit package valid for 1 month.`
-        : ''
-    "
-    confirm-text="Yes, Delete Slot"
-    cancel-text="No, Keep Slot"
-    confirm-color="error"
-    @confirm="handleConfirmDeleteSlot"
-  />
+  <VDialog v-model="showDeleteSlotDialog" max-width="500" persistent>
+    <VCard>
+      <VCardTitle class="text-h6">Request Slot Cancellation?</VCardTitle>
+      <VCardText v-if="slotToDelete">
+        <p class="mb-3">
+          This will submit a cancellation request for admin approval.
+        </p>
+        <div class="slot-details-box">
+          <strong>{{ pitchName }} {{ slotToDelete.pitch }}</strong
+          ><br />
+          {{ slotToDelete.start }} to {{ slotToDelete.end }}<br />
+          <span class="refund-text"
+            >Refund: ${{ slotToDelete.rate || 0 }} (GST not included)</span
+          >
+        </div>
+
+        <!-- Cancellation Reason Selection -->
+        <VSelect
+          v-model="cancellationReason"
+          :items="cancellationReasons"
+          label="Cancellation Reason *"
+          variant="outlined"
+          density="compact"
+          class="mt-4"
+        />
+
+        <!-- Other Reason Text Field -->
+        <VTextField
+          v-if="cancellationReason === 'Other'"
+          v-model="otherReason"
+          label="Please specify *"
+          variant="outlined"
+          density="compact"
+          class="mt-2"
+        />
+
+        <VAlert type="warning" density="compact" class="mt-3">
+          This request requires admin approval. The slot will remain booked
+          until approved.
+        </VAlert>
+      </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn
+          variant="text"
+          @click="showDeleteSlotDialog = false"
+          :disabled="isDeletingSlot"
+        >
+          Cancel
+        </VBtn>
+        <VBtn
+          color="warning"
+          variant="flat"
+          @click="handleConfirmDeleteSlot"
+          :loading="isDeletingSlot"
+        >
+          Submit Request
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss">
@@ -481,6 +572,19 @@ const hasMultipleSlots = computed(() => {
   align-items: center;
   justify-content: flex-end;
   gap: 0.25rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &.pitch-pending {
+    background-color: #fff3e0;
+  }
+
+  .pending-badge {
+    font-size: 0.65rem;
+    height: 18px;
+    font-weight: 600;
+  }
 
   .pitch {
     font-size: 0.7rem;
@@ -493,6 +597,18 @@ const hasMultipleSlots = computed(() => {
     &:hover:not(:disabled) {
       opacity: 1;
     }
+  }
+}
+
+.slot-details-box {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+
+  .refund-text {
+    color: #ff6b00;
+    font-weight: 600;
   }
 }
 
