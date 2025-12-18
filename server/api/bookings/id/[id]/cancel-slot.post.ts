@@ -167,7 +167,8 @@ export default defineEventHandler(async (event) => {
     // Mark slot as pending cancellation
     const now = new Date().toISOString();
     const updates: Partial<Booking> = {
-      status: "Cancelled",
+      // Note: Do NOT change status to "Cancelled" for partial cancellation
+      // Status should only change when ALL slots are cancelled (full booking cancellation)
       pendingCancelledBy: cancelledBy,
       pendingCancelledDate: now,
       cancellationReason,
