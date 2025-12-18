@@ -283,6 +283,7 @@ export type Booking = CustomerDetails &
     cancelledSlots?: string[]; // Slot keys that were partially cancelled
     refundAmount?: number; // Cumulative refund amount (slot.rate values)
     partialCancellations?: PartialCancellation[]; // Audit trail for partial cancellations
+    pendingCancelledSlots?: string[]; // Slot keys pending cancellation approval
   };
 
 export type BookingDetails = {
