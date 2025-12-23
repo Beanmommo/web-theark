@@ -48,7 +48,6 @@ export const useSportsStore = defineStore("sport", () => {
   // Handles legacy pitches where typeOfSports is null (defaults to futsal)
   const isPitchForSport = (pitch: any, sportSlug: string) => {
     const lowerCaseSlug = sportSlug.toLowerCase();
-    console.log(lowerCaseSlug, pitch.typeOfSports);
     return (
       (pitch.typeOfSports === null && lowerCaseSlug === "futsal") ||
       (pitch.typeOfSports && pitch.typeOfSports.toLowerCase() === lowerCaseSlug)
@@ -63,7 +62,6 @@ export const useSportsStore = defineStore("sport", () => {
   ) => {
     const pitchesStore = usePitchesStore();
     const { pitches } = storeToRefs(pitchesStore);
-    console.log(pitches)
     return pitches.value.filter(
       (pitch) => activeCheck(pitch) && isPitchForSport(pitch, sportSlug)
     );
@@ -85,13 +83,11 @@ export const useSportsStore = defineStore("sport", () => {
     if (!sportSlug) return [];
     const locationsStore = useLocationsStore();
     const { locations } = storeToRefs(locationsStore);
-    console.log(locations.value);
     // Filter pitches by sport type AND active status (backend active)
     const sportPitches = filterPitchesBySport(
       sportSlug,
       (pitch) => pitch.active || pitch.backendActive
     );
-    console.log(sportPitches);
     // Get unique location keys from those pitches
     const uniqueVenueKeys = Array.from(
       new Set(sportPitches.map((pitch) => pitch.locationKey))

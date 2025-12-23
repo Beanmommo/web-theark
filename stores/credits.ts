@@ -24,13 +24,12 @@ export const useCreditsStore = defineStore("credits", () => {
     if (!user.value) return { credits: {}, refunds: {} };
 
     // 1. Single call to /api/credits/${uid} (RTDB + Firestore creditPackages)
-    const userCreditPackages: CreditPackageData = await $fetch(
-      `/api/credits/${user.value.uid}`
-    );
+    const userCreditPackages: CreditPackageData =
+      await $fetch<CreditPackageData>(`/api/credits/${user.value.uid}`);
 
     // 2. Single call to /api/creditRefunds/${uid} (Firestore creditRefunds)
     const userCreditRefunds: CreditRefundData = await $fetch(
-      `/api/creditRefunds/${user.value.uid}`
+      `/api/creditRefunds/${user.value.uid}` as any
     );
 
     // 3. Process creditPackages - separate purchased vs refunds
@@ -88,21 +87,6 @@ export const useCreditsStore = defineStore("credits", () => {
     setUserPackages(purchasedCredits);
     setUserCreditRefunds(allRefunds);
 
-    console.log(
-      `Fetched ${Object.keys(purchasedCredits).length} purchased credits`
-    );
-    console.log(
-      `Fetched ${
-        Object.keys(refundsFromPackages).length
-      } refunds from creditPackages`
-    );
-    console.log(
-      `Fetched ${
-        Object.keys(refundsFromCollection).length
-      } refunds from creditRefunds collection`
-    );
-    console.log(`Total refunds: ${Object.keys(allRefunds).length}`);
-
     return { credits: purchasedCredits, refunds: allRefunds };
   };
 
@@ -138,8 +122,6 @@ export const useCreditsStore = defineStore("credits", () => {
     purchasedCreditsLeft.value = purchasedCredits;
     totalCreditsLeft.value = totalCredits;
   }
-
-
 
   function setUserCreditRefunds(creditRefunds: CreditRefundData) {
     let userCreditRefunds = [] as CreditRefund[];
@@ -213,7 +195,7 @@ export const useCreditsStore = defineStore("credits", () => {
     key: string;
     creditsLeft: number;
   }) => {
-    const creditPackageKey = await $fetch(`/api/credits/id/${key}`, {
+    const creditPackageKey = await $fetch(`/api/credits/id/${key}` as any, {
       method: "PATCH",
       body: JSON.stringify({ creditsLeft }),
     });
@@ -221,7 +203,9 @@ export const useCreditsStore = defineStore("credits", () => {
   };
 
   const fetchNewCreditReceiptId = async (): Promise<string> => {
-    const creditReceiptId = await $fetch<string>(`/api/creditReceipt/id`);
+    const creditReceiptId = await $fetch<string>(
+      `/api/creditReceipt/id` as any
+    );
     return creditReceiptId;
   };
 
@@ -255,7 +239,7 @@ export const useCreditsStore = defineStore("credits", () => {
       total: invoiceData.total,
     };
 
-    await $fetch(`/api/creditReceipt/add`, {
+    await $fetch(`/api/creditReceipt/add` as any, {
       method: "POST",
       body: JSON.stringify(creditReceiptData),
     });
@@ -268,9 +252,10 @@ export const useCreditsStore = defineStore("credits", () => {
     originalBookingKey: string
   ) => {
     // Handle both userId (Invoice/Booking) and userKey (CreditReceipt)
-    const userKey = 'userId' in refundInvoiceData
-      ? refundInvoiceData.userId
-      : refundInvoiceData.userKey;
+    const userKey =
+      "userId" in refundInvoiceData
+        ? refundInvoiceData.userId
+        : refundInvoiceData.userKey;
 
     const customerDetails = {
       name: refundInvoiceData.name,
@@ -287,21 +272,22 @@ export const useCreditsStore = defineStore("credits", () => {
     // Booking has paymentMethod but no 'id' field (it has 'key' instead)
     // Invoice has both paymentMethod and 'id'
     // CreditReceipt has 'id' but no paymentMethod
-    const isBooking = "paymentMethod" in refundInvoiceData && !("id" in refundInvoiceData);
-    const isInvoice = "paymentMethod" in refundInvoiceData && "id" in refundInvoiceData;
+    const isBooking =
+      "paymentMethod" in refundInvoiceData && !("id" in refundInvoiceData);
+    const isInvoice =
+      "paymentMethod" in refundInvoiceData && "id" in refundInvoiceData;
 
-    const paymentMethod = isBooking || isInvoice
-      ? refundInvoiceData.paymentMethod
-      : "Credit" as any; // CreditReceipts are always paid with credits
+    const paymentMethod =
+      isBooking || isInvoice
+        ? refundInvoiceData.paymentMethod
+        : ("Credit" as any); // CreditReceipts are always paid with credits
 
-    const paymentStatus = isBooking || isInvoice
-      ? refundInvoiceData.paymentStatus
-      : "Paid"; // CreditReceipts are always paid
+    const paymentStatus =
+      isBooking || isInvoice ? refundInvoiceData.paymentStatus : "Paid"; // CreditReceipts are always paid
 
     // For Booking objects, we don't have an invoice/receipt ID to link
-    const refundInvoiceKey = "id" in refundInvoiceData
-      ? refundInvoiceData.id
-      : undefined;
+    const refundInvoiceKey =
+      "id" in refundInvoiceData ? refundInvoiceData.id : undefined;
 
     const creditRefundData = {
       ...customerDetails,
@@ -319,7 +305,7 @@ export const useCreditsStore = defineStore("credits", () => {
       cancelledBy: "system",
     } as CreditRefund;
 
-    const creditRefundKey = await $fetch("/api/creditRefunds", {
+    const creditRefundKey = await $fetch("/api/creditRefunds" as any, {
       method: "POST",
       body: JSON.stringify(creditRefundData),
     });
@@ -335,12 +321,11 @@ export const useCreditsStore = defineStore("credits", () => {
     creditsLeft: number;
   }) => {
     // Single call to PATCH endpoint that handles all fallbacks
-    const result = await $fetch(`/api/creditRefunds/id/${key}`, {
+    const result = await $fetch(`/api/creditRefunds/id/${key}` as any, {
       method: "PATCH",
       body: JSON.stringify({ creditsLeft }),
     });
 
-    console.log(`Updated credit refund ${key} in ${result.database}`);
     return result;
   };
 
@@ -348,7 +333,7 @@ export const useCreditsStore = defineStore("credits", () => {
     creditReceiptKey: string
   ): Promise<CreditReceipt> => {
     const creditReceiptData = await $fetch<CreditReceipt>(
-      `/api/creditReceipt/${creditReceiptKey}`
+      `/api/creditReceipt/${creditReceiptKey}` as any
     );
     return creditReceiptData;
   };

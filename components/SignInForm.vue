@@ -1,31 +1,29 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
+import { useTheme } from "vuetify";
 
-
-const emit = defineEmits(['success', 'change'])
-const { loginWithGoogle } = useAuth()
-const loading = ref(false)
-const message = 'Signing In'
+const emit = defineEmits(["success", "change"]);
+const { loginWithGoogle } = useAuth();
+const loading = ref(false);
+const message = "Signing In";
 
 function successHandler() {
-  emit('success')
+  emit("success");
 }
 
 async function clickHandlerGoogle() {
-  loading.value = true
-  await loginWithGoogle()
-  loading.value = false
+  loading.value = true;
+  await loginWithGoogle();
+  loading.value = false;
 }
 
 async function clickHandlerSignUp() {
-  emit('change')
+  emit("change");
 }
 
-const theme = useTheme()
+const theme = useTheme();
 const accentColor = computed(() => {
-  return theme.current.value.colors.accent
-})
-
+  return theme.current.value.colors.accent;
+});
 </script>
 
 <template>
@@ -35,17 +33,26 @@ const accentColor = computed(() => {
     <SignInFormEmail @success="successHandler" />
     <div class="alt__signin">
       <div class="separator">Or login with</div>
-      <v-btn color="#DB4437" block @click="clickHandlerGoogle" aria-label="Google Sign In">
-        <img src="/Icon/button_google.svg" height="20" />Google
+      <v-btn
+        color="#DB4437"
+        block
+        @click="clickHandlerGoogle"
+        aria-label="Google Sign In"
+      >
+        <img src="/Icon/button_google.svg" alt="Google" height="20" />Google
       </v-btn>
     </div>
 
     <div class="signup__option">
       Don't have an account?
-      <span class="accent" :style="{ color: accentColor }" @click="clickHandlerSignUp">SIGN UP</span>
+      <span
+        class="accent"
+        :style="{ color: accentColor }"
+        @click="clickHandlerSignUp"
+        >SIGN UP</span
+      >
     </div>
     <!-- <v-alert v-model="loginError" type="error" outlined>Sorry. There is no record of user.</v-alert> -->
-
   </div>
 </template>
 
