@@ -296,6 +296,21 @@ const hasMultipleSlots = computed(() => {
   return bookingSlots.value.length > 1;
 });
 
+// Check if menu should be shown (has at least one visible item)
+const shouldShowMenu = computed(() => {
+  // Check if cancel/delete options should be shown
+  const showCancelOptions =
+    !isPastBooking.value &&
+    isCancellablePaymentMethod.value &&
+    isPitchCancellationAllowed.value;
+
+  // Check if View Invoice should be shown
+  const showInvoiceOption = !!props.booking.invoiceKey;
+
+  // Show menu if either cancel options or invoice option is available
+  return showCancelOptions || showInvoiceOption;
+});
+
 // Check if slot is pending cancellation
 function isSlotPending(slotKey: string): boolean {
   return props.booking.pendingCancelledSlots?.includes(slotKey) || false;
@@ -393,7 +408,7 @@ function isSlotPending(slotKey: string): boolean {
         </VBtn>
       </div>
     </div>
-    <div class="action">
+    <div class="action" v-if="shouldShowMenu">
       <div>
         <VBtn icon="mdi-dots-vertical" density="compact" variant="plain" />
         <VMenu activator="parent">
@@ -443,7 +458,7 @@ function isSlotPending(slotKey: string): boolean {
                 <VListItemTitle color="red"> Cancel Booking </VListItemTitle>
               </VListItem>
             </template>
-            <VListItem @click="handleClickInvoice">
+            <VListItem v-if="booking.invoiceKey" @click="handleClickInvoice">
               <template #prepend>
                 <VIcon icon="mdi-invoice-text-outline" />
               </template>
@@ -456,9 +471,8 @@ function isSlotPending(slotKey: string): boolean {
   </div>
   <template v-if="booking.invoiceKey">
     <InvoiceOverlay
-      :modelValue="showInvoice"
+      v-model="showInvoice"
       :invoiceKey="booking.invoiceKey"
-      @update:modelValue="showInvoice = false"
       :sport="sportType || 'futsal'"
     />
   </template>
