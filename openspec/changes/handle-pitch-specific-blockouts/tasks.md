@@ -46,11 +46,11 @@
 
 ## 5. Visual Design
 
-- [ ] 5.1 Design blocked slot indicator
+- [x] 5.1 Design blocked slot indicator
   - Use distinct color (e.g., gray) different from booked (red) and available (green/gray)
   - Use appropriate icon (e.g., `mdi-block-helper`, `mdi-cancel`, or `mdi-lock`)
   - Ensure accessibility (color + icon)
-- [ ] 5.2 Add tooltip for blocked slots
+- [x] 5.2 Add tooltip for blocked slots
   - Show "Blocked" or "Unavailable due to blockout"
   - Consider showing blockout date range in tooltip
 
