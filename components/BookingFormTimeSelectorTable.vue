@@ -132,15 +132,17 @@ function isBlockedByBlockout(
 }
 
 /**
- * Check if a slot is blocked by any blockout
+ * Check if a slot is blocked by any blockout and return the blocking blockout
  */
 function checkBlockedSlot(
   date: string,
   timeslot: SlotDetails,
   pitch: Pitch
-): boolean {
-  return props.blockouts.some((blockout) =>
-    isBlockedByBlockout(blockout, date, pitch)
+): Blockout | null {
+  return (
+    props.blockouts.find((blockout) =>
+      isBlockedByBlockout(blockout, date, pitch)
+    ) || null
   );
 }
 
@@ -225,12 +227,30 @@ const accentColor = computed(() => {
                 class="time__slot time__slot--button"
                 v-else-if="checkBlockedSlot(date, timeSlot, pitch)"
               >
-                <v-tooltip text="Blocked due to blockout">
+                <v-tooltip>
                   <template v-slot:activator="{ props }">
                     <v-icon color="gray" v-bind="props"
                       >mdi-block-helper</v-icon
                     >
                   </template>
+                  <span>
+                    Blocked:
+                    {{
+                      dayjs(
+                        checkBlockedSlot(date, timeSlot, pitch)?.startDate
+                      ).format("DD/MM/YYYY")
+                    }}
+                    -
+                    {{
+                      dayjs(checkBlockedSlot(date, timeSlot, pitch)?.endDate)
+                        .subtract(
+                          checkBlockedSlot(date, timeSlot, pitch)
+                            ?.autoReleaseDays || 0,
+                          "day"
+                        )
+                        .format("DD/MM/YYYY")
+                    }}
+                  </span>
                 </v-tooltip>
               </div>
               <!-- Available slot -->
