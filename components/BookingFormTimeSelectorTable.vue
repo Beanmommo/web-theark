@@ -5,11 +5,24 @@ import type {
   BookedSlot,
   SlotDetails,
   BookingSlotDetails,
+  Blockout,
 } from "../types/data";
 
 const dayjs = useDayjs();
 const selectedTimeslots = ref([] as BookingSlotDetails[]);
 
+/**
+ * Props for the BookingFormTimeSelectorTable component
+ * @property {Pitch[]} locationPitches - Array of pitches available at the selected location
+ * @property {SlotDetails[]} timeSlots - Array of available time slots for the selected date
+ * @property {string} location - The selected location identifier
+ * @property {string} date - The selected booking date in YYYY-MM-DD format
+ * @property {BookedSlot[]} bookedSlots - Array of already booked slots for the date and location
+ * @property {Blockout[]} blockouts - Array of blockouts that may affect slot availability. Blockouts can be:
+ *   - Location-wide (targetSpecificPitches: false): Blocks all pitches at the location
+ *   - Pitch-specific (targetSpecificPitches: true): Blocks only specified pitches in targetPitches array
+ *   - Auto-release (autoReleaseDays > 0): Slots become available after the specified number of days
+ */
 const props = defineProps({
   locationPitches: {
     type: Array<Pitch>,
@@ -19,6 +32,7 @@ const props = defineProps({
   location: { type: String, required: true },
   date: { type: String, required: true },
   bookedSlots: { type: Array<BookedSlot>, required: true },
+  blockouts: { type: Array<Blockout>, default: () => [] },
 });
 
 const emit = defineEmits(["select"]);
@@ -87,6 +101,115 @@ function checkSlot(date: string, start: string, pitch: Pitch) {
         slot.pitch === pitchId &&
         dayjs(slot.date).isSame(formattedDate, "day")
     ) !== -1
+  );
+}
+
+/**
+ * Check if a specific blockout blocks a given date and pitch
+ *
+ * This function determines whether a slot is blocked by evaluating:
+ * 1. Location matching - blockout must be for the current location
+ * 2. Date range matching - booking date must be within the blockout period
+ * 3. Pitch targeting - either all pitches or specific pitches based on blockout configuration
+ *
+ * @param blockout - The blockout configuration to check against
+ * @param date - The booking date in YYYY-MM-DD format
+ * @param pitch - The pitch object being checked
+ * @returns true if the slot is blocked by this blockout, false otherwise
+ *
+ * @example
+ * // Location-wide blockout
+ * const blockout = {
+ *   location: "venue1",
+ *   startDate: "2025-01-01",
+ *   endDate: "2025-01-31",
+ *   targetSpecificPitches: false
+ * };
+ * isBlockedByBlockout(blockout, "2025-01-15", pitch); // true for all pitches at venue1
+ *
+ * @example
+ * // Pitch-specific blockout with auto-release
+ * const blockout = {
+ *   location: "venue1",
+ *   startDate: "2025-01-01",
+ *   endDate: "2025-01-31",
+ *   targetSpecificPitches: true,
+ *   targetPitches: ["pitchKey1", "pitchKey2"],
+ *   autoReleaseDays: 3
+ * };
+ * // Effective end date: 2025-01-31 - 3 days = 2025-01-28
+ * isBlockedByBlockout(blockout, "2025-01-20", pitch); // true if pitch.key is in targetPitches
+ * isBlockedByBlockout(blockout, "2025-01-30", pitch); // false (past effective end date)
+ */
+function isBlockedByBlockout(
+  blockout: Blockout,
+  date: string,
+  pitch: Pitch
+): boolean {
+  // Check location match - blockout must be for the current location
+  if (blockout.location !== props.location) {
+    return false;
+  }
+
+  // Calculate effective end date: endDate - autoReleaseDays days
+  // This allows slots to become available before the official end date
+  // Example: If endDate is 2025-01-31 and autoReleaseDays is 3, effective end is 2025-01-28
+  const autoReleaseDays = blockout.autoReleaseDays || 0;
+  const effectiveEndDate = dayjs(blockout.endDate).subtract(
+    autoReleaseDays,
+    "day"
+  );
+
+  // Check if booking date is within startDate to effectiveEndDate range (inclusive)
+  // The "[]" parameter makes the range inclusive of both start and end dates
+  const bookingDate = dayjs(date);
+  if (
+    !bookingDate.isBetween(blockout.startDate, effectiveEndDate, "day", "[]")
+  ) {
+    return false;
+  }
+
+  // Check pitch targeting based on blockout configuration
+  if (blockout.targetSpecificPitches) {
+    // Block specific pitches only - check if pitch.key is in targetPitches array
+    // Note: targetPitches contains pitch.key values (Firebase keys), not pitch.id or pitch.name
+    // This is because pitch.key is the unique identifier used in the database
+    return blockout.targetPitches?.includes(pitch.key) || false;
+  } else {
+    // Block all pitches at the location (location-wide blockout)
+    return true;
+  }
+}
+
+/**
+ * Check if a slot is blocked by any blockout and return the blocking blockout
+ *
+ * This function iterates through all available blockouts and returns the first one
+ * that blocks the specified slot. If multiple blockouts apply, only the first match
+ * is returned, but all blocking blockouts would prevent the slot from being bookable.
+ *
+ * @param date - The booking date in YYYY-MM-DD format
+ * @param timeslot - The timeslot details (start/end times, rate, etc.)
+ * @param pitch - The pitch object being checked
+ * @returns The first blocking Blockout object, or null if the slot is not blocked
+ *
+ * @example
+ * const blockout = checkBlockedSlot("2025-01-15", timeSlot, pitch);
+ * if (blockout) {
+ *   console.log("Blocked by:", blockout.reason);
+ *   console.log("Effective period:", blockout.startDate, "to",
+ *     dayjs(blockout.endDate).subtract(blockout.autoReleaseDays || 0, "day").format("YYYY-MM-DD"));
+ * }
+ */
+function checkBlockedSlot(
+  date: string,
+  timeslot: SlotDetails,
+  pitch: Pitch
+): Blockout | null {
+  return (
+    props.blockouts.find((blockout) =>
+      isBlockedByBlockout(blockout, date, pitch)
+    ) || null
   );
 }
 
@@ -159,12 +282,45 @@ const accentColor = computed(() => {
         <div class="d-flex flex-row justify-center align-center">
           <template v-for="pitch in locationPitches" :key="pitch.key">
             <div class="flex-grow-1">
+              <!-- Booked slot -->
               <div
                 class="time__slot time__slot--button"
                 v-if="checkBookedSlot(date, timeSlot, pitch)"
               >
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
+              <!-- Blocked slot -->
+              <div
+                class="time__slot time__slot--button"
+                v-else-if="checkBlockedSlot(date, timeSlot, pitch)"
+              >
+                <v-tooltip>
+                  <template v-slot:activator="{ props }">
+                    <v-icon color="gray" v-bind="props"
+                      >mdi-block-helper</v-icon
+                    >
+                  </template>
+                  <span>
+                    Blocked:
+                    {{
+                      dayjs(
+                        checkBlockedSlot(date, timeSlot, pitch)?.startDate
+                      ).format("DD/MM/YYYY")
+                    }}
+                    -
+                    {{
+                      dayjs(checkBlockedSlot(date, timeSlot, pitch)?.endDate)
+                        .subtract(
+                          checkBlockedSlot(date, timeSlot, pitch)
+                            ?.autoReleaseDays || 0,
+                          "day"
+                        )
+                        .format("DD/MM/YYYY")
+                    }}
+                  </span>
+                </v-tooltip>
+              </div>
+              <!-- Available slot -->
               <div
                 class="time__slot time__slot--button"
                 @click.prevent="selectTimeslot(timeSlot, pitch)"

@@ -1,27 +1,70 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useLocationsStore } from '~/stores/locations'
-import { storeToRefs } from 'pinia'
+import { ref, computed, onMounted } from "vue";
+import { useLocationsStore } from "~/stores/locations";
+import { useBlockoutsStore } from "~/stores/blockouts";
+import { storeToRefs } from "pinia";
 
-const locationsStore = useLocationsStore()
-const { locations } = storeToRefs(locationsStore)
-const sportsStore = useSportsStore()
-const { activeSport, activeSportVenues } = storeToRefs(sportsStore)
+const locationsStore = useLocationsStore();
+const { locations } = storeToRefs(locationsStore);
+const sportsStore = useSportsStore();
+const { activeSport, activeSportVenues } = storeToRefs(sportsStore);
+const blockoutsStore = useBlockoutsStore();
+const { blockouts } = storeToRefs(blockoutsStore);
 
-const router = useRouter()
-const selectedVenue = ref()
-const selectedDate = ref()
+const dayjs = useDayjs();
+const selectedVenue = ref();
+const selectedDate = ref();
+
+// Fetch blockouts on mount
+onMounted(async () => {
+  await blockoutsStore.fetchBlockouts();
+});
+
+// Compute disabled dates based on selected venue and location-wide blockouts
+const disabledDates = computed(() => {
+  if (!selectedVenue.value) return [];
+
+  // Find the location key for the selected venue name
+  const selectedLocation = locations.value.find(
+    (loc) => loc.name === selectedVenue.value
+  );
+
+  if (!selectedLocation) return [];
+
+  // Filter blockouts for this location that are location-wide (not pitch-specific)
+  const locationBlockouts = blockouts.value.filter(
+    (blockout) =>
+      blockout.location === selectedLocation.name &&
+      !blockout.targetSpecificPitches
+  );
+
+  // Convert blockouts to array of disabled dates
+  const disabled: Date[] = [];
+  locationBlockouts.forEach((blockout) => {
+    const start = dayjs(blockout.startDate);
+    const end = dayjs(blockout.endDate);
+    let current = start;
+
+    // Add each date in the range to disabled array
+    while (current.isSameOrBefore(end, "day")) {
+      disabled.push(current.toDate());
+      current = current.add(1, "day");
+    }
+  });
+
+  return disabled;
+});
 
 function clickHandler() {
-  let url = `/${activeSport.value?.slug}/booking`
-  if (selectedVenue.value || selectedDate.value) url += '?'
-  if (selectedVenue.value) url += `venue=${selectedVenue.value}`
-  if (selectedVenue.value && selectedDate.value) url += '&'
+  let url = `/${activeSport.value?.slug}/booking`;
+  if (selectedVenue.value || selectedDate.value) url += "?";
+  if (selectedVenue.value) url += `venue=${selectedVenue.value}`;
+  if (selectedVenue.value && selectedDate.value) url += "&";
   if (selectedDate.value) {
-    const date = format(selectedDate.value)
-    url += `date=${date}`
+    const date = format(selectedDate.value);
+    url += `date=${date}`;
   }
-  navigateTo(url)
+  navigateTo(url);
 }
 
 function format(date: Date) {
@@ -29,22 +72,38 @@ function format(date: Date) {
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
 
-  return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 }
 
-const backgroundImage = computed(() => activeSport.value?.backgroundImage || '')
+const backgroundImage = computed(
+  () => activeSport.value?.backgroundImage || ""
+);
 </script>
 
-
 <template>
-  <section class="sectionQuickBooking" :style="{ backgroundImage: `url(${backgroundImage})` }">
+  <section
+    class="sectionQuickBooking"
+    :style="{ backgroundImage: `url(${backgroundImage})` }"
+  >
     <div class="sectionContainer">
       <div class="quickBooking">
         <h2>{{ activeSport?.name }} Quick Booking</h2>
         <div class="form__container">
-          <FieldInputSelect v-model="selectedVenue" placeholder="Venue" :options="activeSportVenues" />
-          <FieldInputDate v-model="selectedDate" placeholder="Date" />
-          <Button class="form__container--button" @click="clickHandler">Search</Button>
+          <FieldInputSelect
+            v-model="selectedVenue"
+            placeholder="Venue"
+            :options="activeSportVenues"
+          />
+          <FieldInputDate
+            v-model="selectedDate"
+            placeholder="Date"
+            :disabled-dates="disabledDates"
+          />
+          <Button class="form__container--button" @click="clickHandler"
+            >Search</Button
+          >
         </div>
       </div>
     </div>
@@ -101,7 +160,6 @@ const backgroundImage = computed(() => activeSport.value?.backgroundImage || '')
   @include md {
     grid-auto-flow: column;
     grid-template-columns: 40% 40% 1fr;
-
   }
 }
 </style>

@@ -1,66 +1,82 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useBlockoutsStore } from '~/stores/blockouts';
-import { storeToRefs } from 'pinia';
-type DisabledDate = { start: Date, end: Date }
+import { onMounted, ref, watch } from "vue";
+import { useBlockoutsStore } from "~/stores/blockouts";
+import { storeToRefs } from "pinia";
+type DisabledDate = { start: Date; end: Date };
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(["click"]);
 
-const dayjs = useDayjs()
-const route = useRoute()
-const blockoutsStore = useBlockoutsStore()
-const { blockouts } = storeToRefs(blockoutsStore)
+const dayjs = useDayjs();
+const route = useRoute();
+const blockoutsStore = useBlockoutsStore();
+const { blockouts } = storeToRefs(blockoutsStore);
 
-const minDate = ref()
-const maxDate = ref()
-const disabledDates = ref([] as DisabledDate[])
-const selectedDate = ref()
+const minDate = ref();
+const maxDate = ref();
+const disabledDates = ref([] as DisabledDate[]);
+const selectedDate = ref();
 
 const attributes = ref([
   {
     highlight: {
-      fillMode: 'outline'
+      fillMode: "outline",
     },
-    dates: new Date()
+    dates: new Date(),
   },
 ]);
 
 onMounted(() => {
-  initialiseDate()
-})
+  initialiseDate();
+});
 
-watch(() => route.query.venue, (newValue) => {
-  initialiseDate()
-})
+watch(
+  () => route.query.venue,
+  (newValue) => {
+    initialiseDate();
+  }
+);
 
 function initialiseDate() {
-  disabledDates.value = getDisabledDates(route.query.venue as string)
-  minDate.value = getMinDate()
-  maxDate.value = dayjs().add(1, 'month').format()
-  if (route.query.date && !isOutsideRange(route.query.date as string) && !isDisabledDates(route.query.date as string)) {
-    const dateString: string = route.query.date as string
-    selectedDate.value = dateString
-    attributes.value = [{ highlight: { fillMode: 'solid' }, dates: dayjs(dateString, 'DD-MM-YYYY').toDate() }]
-    emit('click', selectedDate.value)
+  disabledDates.value = getDisabledDates(route.query.venue as string);
+  minDate.value = getMinDate();
+  maxDate.value = dayjs().add(1, "month").format();
+  if (
+    route.query.date &&
+    !isOutsideRange(route.query.date as string) &&
+    !isDisabledDates(route.query.date as string)
+  ) {
+    const dateString: string = route.query.date as string;
+    selectedDate.value = dateString;
+    attributes.value = [
+      {
+        highlight: { fillMode: "solid" },
+        dates: dayjs(dateString, "YYYY-MM-DD").toDate(),
+      },
+    ];
+    emit("click", selectedDate.value);
   }
   if (isDisabledDates(route.query.date as string)) {
-    selectedDate.value = null
-    attributes.value = []
-    emit('click', selectedDate.value)
+    selectedDate.value = null;
+    attributes.value = [];
+    emit("click", selectedDate.value);
   }
 }
 
 function getDisabledDates(location: string) {
-  let disabledDates: DisabledDate[] = []
-  const blockoutDates = blockouts.value.filter(blockout => blockout.location === location)
+  let disabledDates: DisabledDate[] = [];
+  // Only include blockouts that target the entire location (not pitch-specific)
+  const blockoutDates = blockouts.value.filter(
+    (blockout) =>
+      blockout.location === location && !blockout.targetSpecificPitches
+  );
   if (blockoutDates.length > 0)
-    disabledDates = blockoutDates.map(blockout => {
+    disabledDates = blockoutDates.map((blockout) => {
       return {
         start: dayjs(blockout.startDate).toDate(),
-        end: dayjs(blockout.endDate).toDate()
-      }
-    })
-  return disabledDates
+        end: dayjs(blockout.endDate).toDate(),
+      };
+    });
+  return disabledDates;
 }
 
 function getMinDate() {
@@ -79,28 +95,38 @@ function getMinDate() {
 function dayClickHandler(calendarDay: any) {
   if (isOutsideRange(calendarDay.id)) return;
   if (isDisabledDates(calendarDay.id)) return;
-  selectedDate.value = calendarDay.id
-  attributes.value = [{ highlight: { fillMode: 'solid' }, dates: calendarDay.date }]
-  emit('click', selectedDate.value)
+  selectedDate.value = calendarDay.id;
+  attributes.value = [
+    { highlight: { fillMode: "solid" }, dates: calendarDay.date },
+  ];
+  emit("click", selectedDate.value);
 }
 
 function isDisabledDates(date: string) {
-  const day = dayjs(date, 'YYYY-MM-DD')
-  return disabledDates.value.some(disabledDate => day.isBetween(disabledDate.start, disabledDate.end, 'day', '[]'))
+  const day = dayjs(date, "YYYY-MM-DD");
+  return disabledDates.value.some((disabledDate) =>
+    day.isBetween(disabledDate.start, disabledDate.end, "day", "[]")
+  );
 }
 
 function isOutsideRange(date: string) {
-  const day = dayjs(date, 'YYYY-MM-DD')
-  const min = dayjs(minDate.value)
-  const max = dayjs(maxDate.value)
-  return day.isBefore(min, 'day') || day.isAfter(max, 'day')
+  const day = dayjs(date, "YYYY-MM-DD");
+  const min = dayjs(minDate.value);
+  const max = dayjs(maxDate.value);
+  return day.isBefore(min, "day") || day.isAfter(max, "day");
 }
 </script>
 
-
 <template>
   <ClientOnly>
-    <VCalendar :min-date="minDate" :max-date="maxDate" :disabled-dates="disabledDates" :attributes="attributes"
-      @dayclick="dayClickHandler" expanded color="gray" />
+    <VCalendar
+      :min-date="minDate"
+      :max-date="maxDate"
+      :disabled-dates="disabledDates"
+      :attributes="attributes"
+      @dayclick="dayClickHandler"
+      expanded
+      color="gray"
+    />
   </ClientOnly>
 </template>
