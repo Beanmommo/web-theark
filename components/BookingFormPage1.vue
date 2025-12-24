@@ -8,6 +8,7 @@ import type {
 import { useLocationsStore } from "~/stores/locations";
 import { useTimeslotsStore } from "~/stores/timeslots";
 import { usePresalesStore } from "~/stores/presales";
+import { useBlockoutsStore } from "~/stores/blockouts";
 import { storeToRefs } from "pinia";
 
 const emit = defineEmits(["update", "next"]);
@@ -21,6 +22,7 @@ const { locations } = storeToRefs(locationsStore);
 const timeslotsStore = useTimeslotsStore();
 const { timeslots } = storeToRefs(timeslotsStore);
 const presalesStore = usePresalesStore();
+const blockoutsStore = useBlockoutsStore();
 
 const timeSelector = ref();
 const selectedDate = ref();
@@ -28,14 +30,16 @@ const selectedVenue = ref();
 const selectedTimeslots = ref([] as BookingSlotDetails[]);
 const initialLoad = ref(true);
 
-onMounted(() => {
+onMounted(async () => {
   initialiseQuery();
+  await blockoutsStore.fetchBlockouts();
 });
 
 const sport = route.params.sportSlug as string;
 
-watch(selectedVenue, () => {
+watch(selectedVenue, async () => {
   selectedTimeslots.value = [];
+  await blockoutsStore.fetchBlockouts();
   router.replace({
     query: { venue: selectedVenue.value, date: selectedDate.value },
   });
