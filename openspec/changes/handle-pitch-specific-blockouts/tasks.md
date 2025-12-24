@@ -10,14 +10,14 @@
 
 ## 2. Blockout Validation Logic
 
-- [ ] 2.1 Create helper function `isBlockedByBlockout()` in `components/BookingFormTimeSelectorTable.vue`
+- [x] 2.1 Create helper function `isBlockedByBlockout()` in `components/BookingFormTimeSelectorTable.vue`
   - Calculate effective end date: `effectiveEndDate = endDate - autoReleaseDays days`
   - Check if booking date is within `startDate` to `effectiveEndDate` range
   - Check location match
   - If `targetSpecificPitches = true`, check if pitch is in `targetPitches` array
   - If `targetSpecificPitches = false`, block all pitches at location
   - Return boolean indicating if slot is blocked
-- [ ] 2.2 Add `checkBlockedSlot()` function
+- [x] 2.2 Add `checkBlockedSlot()` function
   - Accept date, timeslot, pitch, and blockouts array as parameters
   - Call `isBlockedByBlockout()` for each blockout
   - Return true if any blockout blocks the slot
