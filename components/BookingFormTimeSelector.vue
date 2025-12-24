@@ -67,10 +67,32 @@ onMounted(async () => {
 
 const formattedDate = computed(() => dayjs(props.date).format("DD MMM YYYY"));
 
-// Filter blockouts by location and date range
+/**
+ * Filter blockouts by location and date range
+ *
+ * This computed property filters all available blockouts to return only those that:
+ * 1. Match the selected location
+ * 2. Have an effective date range that includes the selected booking date
+ *
+ * The effective end date is calculated as: endDate - autoReleaseDays
+ * This ensures that blockouts with auto-release are only shown during their active period.
+ *
+ * @returns {Blockout[]} Array of blockouts applicable to the current date and location
+ *
+ * @example
+ * // If booking date is 2025-01-15 and location is "venue1"
+ * // Blockout 1: location="venue1", startDate="2025-01-01", endDate="2025-01-31", autoReleaseDays=0
+ * //   → Included (date is within range)
+ * // Blockout 2: location="venue1", startDate="2025-01-01", endDate="2025-01-31", autoReleaseDays=3
+ * //   → Included (effective end date is 2025-01-28, date is within range)
+ * // Blockout 3: location="venue2", startDate="2025-01-01", endDate="2025-01-31"
+ * //   → Excluded (wrong location)
+ * // Blockout 4: location="venue1", startDate="2025-02-01", endDate="2025-02-28"
+ * //   → Excluded (date is before blockout start)
+ */
 const filteredBlockouts = computed(() => {
   return blockouts.value.filter((blockout) => {
-    // Filter by location
+    // Filter by location - only include blockouts for the current location
     if (blockout.location !== props.location) {
       return false;
     }
@@ -79,12 +101,16 @@ const filteredBlockouts = computed(() => {
     const bookingDate = dayjs(props.date);
     const startDate = dayjs(blockout.startDate);
     const autoReleaseDays = blockout.autoReleaseDays || 0;
+
+    // Calculate effective end date: endDate - autoReleaseDays
+    // This allows slots to become available before the official end date
     const effectiveEndDate = dayjs(blockout.endDate).subtract(
       autoReleaseDays,
       "day"
     );
 
-    // Check if booking date falls within the blockout period
+    // Check if booking date falls within the blockout period (inclusive)
+    // The "[]" parameter makes the range inclusive of both start and end dates
     return bookingDate.isBetween(startDate, effectiveEndDate, "day", "[]");
   });
 });
@@ -103,6 +129,18 @@ async function initialiseBookedSlots(date: string, location: string) {
   await bookedSlotsStore.fetchBookedSlotsByDate(date, location, props.sport);
 }
 
+/**
+ * Fetch all blockouts from the store
+ *
+ * This function retrieves all blockouts from the blockouts store. The blockouts
+ * are then filtered by the filteredBlockouts computed property to only include
+ * those relevant to the current location and date.
+ *
+ * Blockouts are fetched whenever the location or date changes to ensure the
+ * UI always shows the most up-to-date blockout information.
+ *
+ * @see filteredBlockouts - The computed property that filters blockouts
+ */
 async function initialiseBlockouts() {
   await blockoutsStore.fetchBlockouts();
 }
