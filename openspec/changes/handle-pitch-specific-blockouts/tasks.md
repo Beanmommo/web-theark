@@ -24,7 +24,7 @@
 
 ## 3. UI Component Updates
 
-- [ ] 3.1 Update `BookingFormTimeSelectorTable.vue`
+- [x] 3.1 Update `BookingFormTimeSelectorTable.vue`
   - Add `blockouts` prop (Array<Blockout>)
   - Import and use blockouts in slot rendering
   - Add `checkBlockedSlot()` call in template
@@ -32,7 +32,7 @@
   - Add tooltip showing blockout reason
   - Ensure blocked slots are not clickable
   - Maintain pitch column visibility (don't hide columns)
-- [ ] 3.2 Update `BookingFormTimeSelector.vue`
+- [x] 3.2 Update `BookingFormTimeSelector.vue`
   - Fetch blockouts from store
   - Pass blockouts to `BookingFormTimeSelectorTable` component
   - Filter blockouts by location and date range
