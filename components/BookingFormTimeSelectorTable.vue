@@ -5,6 +5,7 @@ import type {
   BookedSlot,
   SlotDetails,
   BookingSlotDetails,
+  Blockout,
 } from "../types/data";
 
 const dayjs = useDayjs();
@@ -19,6 +20,7 @@ const props = defineProps({
   location: { type: String, required: true },
   date: { type: String, required: true },
   bookedSlots: { type: Array<BookedSlot>, required: true },
+  blockouts: { type: Array<Blockout>, default: () => [] },
 });
 
 const emit = defineEmits(["select"]);
@@ -87,6 +89,58 @@ function checkSlot(date: string, start: string, pitch: Pitch) {
         slot.pitch === pitchId &&
         dayjs(slot.date).isSame(formattedDate, "day")
     ) !== -1
+  );
+}
+
+/**
+ * Check if a specific blockout blocks a given date and pitch
+ */
+function isBlockedByBlockout(
+  blockout: Blockout,
+  date: string,
+  pitch: Pitch
+): boolean {
+  // Check location match
+  if (blockout.location !== props.location) {
+    return false;
+  }
+
+  // Calculate effective end date: endDate - autoReleaseDays days
+  const autoReleaseDays = blockout.autoReleaseDays || 0;
+  const effectiveEndDate = dayjs(blockout.endDate).subtract(
+    autoReleaseDays,
+    "day"
+  );
+
+  // Check if booking date is within startDate to effectiveEndDate range (inclusive)
+  const bookingDate = dayjs(date);
+  if (
+    !bookingDate.isBetween(blockout.startDate, effectiveEndDate, "day", "[]")
+  ) {
+    return false;
+  }
+
+  // Check pitch targeting
+  if (blockout.targetSpecificPitches) {
+    // Block specific pitches - check if pitch is in targetPitches array
+    const pitchId = getPitchId(pitch);
+    return blockout.targetPitches?.includes(pitchId) || false;
+  } else {
+    // Block all pitches at location
+    return true;
+  }
+}
+
+/**
+ * Check if a slot is blocked by any blockout
+ */
+function checkBlockedSlot(
+  date: string,
+  timeslot: SlotDetails,
+  pitch: Pitch
+): boolean {
+  return props.blockouts.some((blockout) =>
+    isBlockedByBlockout(blockout, date, pitch)
   );
 }
 
@@ -161,7 +215,10 @@ const accentColor = computed(() => {
             <div class="flex-grow-1">
               <div
                 class="time__slot time__slot--button"
-                v-if="checkBookedSlot(date, timeSlot, pitch)"
+                v-if="
+                  checkBookedSlot(date, timeSlot, pitch) ||
+                  checkBlockedSlot(date, timeSlot, pitch)
+                "
               >
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
