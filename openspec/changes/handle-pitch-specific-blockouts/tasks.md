@@ -2,11 +2,11 @@
 
 ## 1. Type Definitions
 
-- [ ] 1.1 Update `types/data.ts` Blockout type
+- [x] 1.1 Update `types/data.ts` Blockout type
   - Add `targetSpecificPitches?: boolean`
   - Add `targetPitches?: string[]`
   - Add `autoReleaseDays?: number`
-- [ ] 1.2 Verify type compatibility with admin-side types
+- [x] 1.2 Verify type compatibility with admin-side types
 
 ## 2. Blockout Validation Logic
 
@@ -90,4 +90,3 @@
 - [ ] 7.2 Add inline comments for complex logic
   - Explain effective end date calculation
   - Document pitch matching logic
-
