@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useBookedSlotsStore } from "~/stores/bookedslots";
 import { useHolidaysStore } from "~/stores/holidays";
+import { useBlockoutsStore } from "~/stores/blockouts";
 import { storeToRefs } from "pinia";
 import type {
   Pitch,
@@ -44,6 +45,8 @@ const holidaysStore = useHolidaysStore();
 const { holidays } = storeToRefs(holidaysStore);
 const bookedSlotsStore = useBookedSlotsStore();
 const { bookedslots } = storeToRefs(bookedSlotsStore);
+const blockoutsStore = useBlockoutsStore();
+const { blockouts } = storeToRefs(blockoutsStore);
 
 const timeSlots = ref([] as SlotDetails[]);
 const loading = ref(false);
@@ -64,15 +67,44 @@ onMounted(async () => {
 
 const formattedDate = computed(() => dayjs(props.date).format("DD MMM YYYY"));
 
+// Filter blockouts by location and date range
+const filteredBlockouts = computed(() => {
+  return blockouts.value.filter((blockout) => {
+    // Filter by location
+    if (blockout.location !== props.location) {
+      return false;
+    }
+
+    // Filter by date range - include blockouts that overlap with the selected date
+    const bookingDate = dayjs(props.date);
+    const startDate = dayjs(blockout.startDate);
+    const autoReleaseDays = blockout.autoReleaseDays || 0;
+    const effectiveEndDate = dayjs(blockout.endDate).subtract(
+      autoReleaseDays,
+      "day"
+    );
+
+    // Check if booking date falls within the blockout period
+    return bookingDate.isBetween(startDate, effectiveEndDate, "day", "[]");
+  });
+});
+
 async function reloadData() {
   loading.value = true;
   initialiseTimeslots();
-  if (props.location) await initialiseBookedSlots(props.date, props.location);
+  if (props.location) {
+    await initialiseBookedSlots(props.date, props.location);
+    await initialiseBlockouts();
+  }
   loading.value = false;
 }
 
 async function initialiseBookedSlots(date: string, location: string) {
   await bookedSlotsStore.fetchBookedSlotsByDate(date, location, props.sport);
+}
+
+async function initialiseBlockouts() {
+  await blockoutsStore.fetchBlockouts();
 }
 
 function initialiseTimeslots() {
@@ -249,6 +281,7 @@ function selectHandler(selectedTimeslots: BookingSlotDetails[]) {
       :date="date"
       :location="location"
       :bookedSlots="bookedslots"
+      :blockouts="filteredBlockouts"
       @select="selectHandler"
     />
   </div>

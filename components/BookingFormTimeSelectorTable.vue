@@ -213,15 +213,27 @@ const accentColor = computed(() => {
         <div class="d-flex flex-row justify-center align-center">
           <template v-for="pitch in locationPitches" :key="pitch.key">
             <div class="flex-grow-1">
+              <!-- Booked slot -->
               <div
                 class="time__slot time__slot--button"
-                v-if="
-                  checkBookedSlot(date, timeSlot, pitch) ||
-                  checkBlockedSlot(date, timeSlot, pitch)
-                "
+                v-if="checkBookedSlot(date, timeSlot, pitch)"
               >
                 <v-icon color="red">mdi-close-circle</v-icon>
               </div>
+              <!-- Blocked slot -->
+              <div
+                class="time__slot time__slot--button"
+                v-else-if="checkBlockedSlot(date, timeSlot, pitch)"
+              >
+                <v-tooltip text="Blocked due to blockout">
+                  <template v-slot:activator="{ props }">
+                    <v-icon color="gray" v-bind="props"
+                      >mdi-block-helper</v-icon
+                    >
+                  </template>
+                </v-tooltip>
+              </div>
+              <!-- Available slot -->
               <div
                 class="time__slot time__slot--button"
                 @click.prevent="selectTimeslot(timeSlot, pitch)"
