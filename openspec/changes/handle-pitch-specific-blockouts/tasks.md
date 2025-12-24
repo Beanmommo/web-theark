@@ -39,7 +39,7 @@
 
 ## 4. Store Integration
 
-- [ ] 4.1 Update `components/BookingFormPage1.vue`
+- [x] 4.1 Update `components/BookingFormPage1.vue`
   - Import `useBlockoutsStore`
   - Call `fetchBlockouts()` when component mounts or location changes
   - Ensure blockouts are available before rendering time selector
