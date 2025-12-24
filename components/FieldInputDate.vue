@@ -1,34 +1,51 @@
 <script setup lang="ts">
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
+import VueDatePicker from "@vuepic/vue-datepicker";
+import "@vuepic/vue-datepicker/dist/main.css";
 
 defineProps({
   modelValue: Date,
   placeholder: String,
-})
-const emit = defineEmits(['update:modelValue'])
+  disabledDates: {
+    type: Array as () => Date[],
+    default: () => [],
+  },
+});
+const emit = defineEmits(["update:modelValue"]);
 
-function format(date: Date)
-{
+function format(date: Date) {
   const day = date.getDate();
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
 
-  return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+  return `${day.toString().padStart(2, "0")}/${month
+    .toString()
+    .padStart(2, "0")}/${year}`;
 }
 
-function updateHandler(modelData: Date)
-{
-  emit('update:modelValue', modelData)
+function updateHandler(modelData: Date) {
+  emit("update:modelValue", modelData);
 }
 </script>
 
 <template>
   <fieldset class="fieldInputDate">
-    <legend class="legend" :class="{ 'legend--selected': modelValue }">{{ placeholder }}</legend>
-    <VueDatePicker :modelValue="modelValue" @update:model-value="updateHandler" :placeholder="placeholder"
-      input-class-name="dp-custom-input" date :format="format" :min-date="new Date()"
-      :max-date="$dayjs().add(1, 'month').format()" :enable-time-picker="false" auto-apply hide-offset-dates>
+    <legend class="legend" :class="{ 'legend--selected': modelValue }">
+      {{ placeholder }}
+    </legend>
+    <VueDatePicker
+      :modelValue="modelValue"
+      @update:model-value="updateHandler"
+      :placeholder="placeholder"
+      input-class-name="dp-custom-input"
+      date
+      :format="format"
+      :min-date="new Date()"
+      :max-date="$dayjs().add(1, 'month').format()"
+      :enable-time-picker="false"
+      :disabled-dates="disabledDates"
+      auto-apply
+      hide-offset-dates
+    >
     </VueDatePicker>
   </fieldset>
 </template>
@@ -62,7 +79,6 @@ function updateHandler(modelData: Date)
     visibility: visible;
     padding-inline-start: 2px;
     padding-inline-end: 2px;
-
   }
 }
 </style>
@@ -85,7 +101,7 @@ function updateHandler(modelData: Date)
 }
 
 .dp__pointer {
-  font-weight: 500
+  font-weight: 500;
 }
 
 .dp__btn {

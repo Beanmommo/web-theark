@@ -122,9 +122,9 @@ function isBlockedByBlockout(
 
   // Check pitch targeting
   if (blockout.targetSpecificPitches) {
-    // Block specific pitches - check if pitch is in targetPitches array
-    const pitchId = getPitchId(pitch);
-    return blockout.targetPitches?.includes(pitchId) || false;
+    // Block specific pitches - check if pitch.key is in targetPitches array
+    // Note: targetPitches contains pitch.key values (Firebase keys), not pitch.id or pitch.name
+    return blockout.targetPitches?.includes(pitch.key) || false;
   } else {
     // Block all pitches at location
     return true;

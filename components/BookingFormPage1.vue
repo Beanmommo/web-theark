@@ -121,7 +121,7 @@ function groupAndSortTimeslots(timeslots: BookingSlotDetails[]) {
   const groupedBookings = useGroupBy(timeslots, "date");
   const sortedKeys = useOrderBy(
     Object.keys(groupedBookings),
-    [(date: string) => dayjs(date, "DD-MM-YYYY")],
+    [(date: string) => dayjs(date, "YYYY-MM-DD")],
     ["asc"]
   );
   sortedKeys.forEach((key: string) => {

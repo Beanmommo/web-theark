@@ -56,27 +56,27 @@
 
 ## 6. Testing
 
-- [ ] 6.1 Test location-wide blockouts
+- [x] 6.1 Test location-wide blockouts
   - Create location-wide blockout in admin
   - Verify all pitches at location are blocked in booking UI
   - Verify other locations are not affected
-- [ ] 6.2 Test pitch-specific blockouts
+- [x] 6.2 Test pitch-specific blockouts
   - Create pitch-specific blockout for 1-2 pitches
   - Verify only selected pitches show blocked slots
   - Verify other pitches at same location remain selectable
-- [ ] 6.3 Test auto-release days
+- [x] 6.3 Test auto-release days
   - Create blockout with `autoReleaseDays = 3`
   - Verify slots are blocked until effective end date
   - Verify slots are available after effective end date
-- [ ] 6.4 Test visual indicators
+- [x] 6.4 Test visual indicators
   - Verify blocked slots show correct icon and color
   - Verify tooltip displays on hover
   - Verify blocked slots are not clickable
-- [ ] 6.5 Test backward compatibility
+- [x] 6.5 Test backward compatibility
   - Verify existing blockouts without new fields work as location-wide blocks
   - Test with missing `targetSpecificPitches` field (should default to false)
   - Test with missing `autoReleaseDays` field (should default to 0)
-- [ ] 6.6 Test edge cases
+- [x] 6.6 Test edge cases
   - Multiple overlapping blockouts (location-wide + pitch-specific)
   - Blockout spanning multiple days
   - Same-day blockouts with different auto-release settings
