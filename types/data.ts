@@ -207,11 +207,24 @@ export type PromoCode = {
   typeOfSports?: string[];
 };
 
+/**
+ * Blockout type definition for preventing bookings during specific periods
+ * Can target either entire locations or specific pitches within a location
+ */
 export type Blockout = {
   key: string;
   location: string;
   startDate: string;
   endDate: string;
+
+  /** Whether to target specific pitches instead of the entire location */
+  targetSpecificPitches?: boolean;
+
+  /** Array of pitch IDs to block when targetSpecificPitches is true */
+  targetPitches?: string[];
+
+  /** Number of days before end date to auto-release the blockout (0 = release on end date) */
+  autoReleaseDays?: number;
 };
 
 export type ConfigTerm = {
