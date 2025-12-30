@@ -76,10 +76,12 @@ function handleClickInvoice() {
 
 const isCancelling = ref(false);
 const showCancelDialog = ref(false);
+const acknowledgeRefundTerms = ref(false);
 const { showSuccess, showError } = useAlert();
 
 function handleClickCancel() {
   if (!props.booking.key) return;
+  acknowledgeRefundTerms.value = false; // Reset checkbox when opening dialog
   showCancelDialog.value = true;
 }
 
@@ -478,16 +480,48 @@ function isSlotPending(slotKey: string): boolean {
   </template>
 
   <!-- Cancel Booking Confirmation Dialog -->
-  <ConfirmDialog
-    v-model="showCancelDialog"
-    title="Cancel Booking"
-    message="Are you sure you want to cancel this booking?"
-    :details="`You will receive $${booking.subtotal} credits (GST + transaction fee not included) for this booking refund. Refund credit package valid for 1 month.`"
-    confirm-text="Yes, Cancel Booking"
-    cancel-text="No, Keep Booking"
-    confirm-color="error"
-    @confirm="handleConfirmCancel"
-  />
+  <VDialog v-model="showCancelDialog" max-width="500" persistent>
+    <VCard>
+      <VCardTitle class="text-h5 font-weight-bold"> Cancel Booking </VCardTitle>
+      <VCardText>
+        <div class="text-body-1 mb-2">
+          Are you sure you want to cancel this booking?
+        </div>
+        <div class="text-body-2 text-medium-emphasis mb-4">
+          You will receive ${{ booking.subtotal }} credits (GST + transaction
+          fee not included) for this booking refund. Refund credit package valid
+          for 1 month.
+        </div>
+        <VCheckbox
+          v-model="acknowledgeRefundTerms"
+          color="error"
+          density="compact"
+          hide-details
+        >
+          <template #label>
+            <span class="text-body-2">
+              I acknowledge and agree that any ARK credit refund is valid for 30
+              days from today and will automatically expire with no extensions
+            </span>
+          </template>
+        </VCheckbox>
+      </VCardText>
+      <VCardActions class="px-4 pb-4">
+        <VSpacer />
+        <VBtn variant="text" @click="showCancelDialog = false">
+          No, Keep Booking
+        </VBtn>
+        <VBtn
+          color="error"
+          variant="flat"
+          :disabled="!acknowledgeRefundTerms"
+          @click="handleConfirmCancel"
+        >
+          Yes, Cancel Booking
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 
   <!-- Delete Slot Confirmation Dialog -->
   <VDialog v-model="showDeleteSlotDialog" max-width="500" persistent>
