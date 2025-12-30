@@ -489,8 +489,7 @@ function isSlotPending(slotKey: string): boolean {
         </div>
         <div class="text-body-2 text-medium-emphasis mb-4">
           You will receive ${{ booking.subtotal }} credits (GST + transaction
-          fee not included) for this booking refund. Refund credit package valid
-          for 1 month.
+          fee not included) for this booking refund.
         </div>
         <VCheckbox
           v-model="acknowledgeRefundTerms"

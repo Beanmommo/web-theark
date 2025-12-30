@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useCreditsStore } from "~/stores/credits";
+import { usePitchesStore } from "~/stores/pitches";
+import { useLocationsStore } from "~/stores/locations";
 
 definePageMeta({
   middleware: "auth",
@@ -7,8 +9,16 @@ definePageMeta({
 
 const user = useAuthUser();
 const creditsStore = useCreditsStore();
+const pitchesStore = usePitchesStore();
+const locationsStore = useLocationsStore();
 
-// Fetch credits once during SSR/hydration
+// Fetch necessary data - works for both SSR and client-side navigation
+await Promise.all([
+  useAsyncData(() => pitchesStore.fetchPitches()),
+  useAsyncData(() => locationsStore.fetchLocations()),
+]);
+
+// Fetch user-specific credits on mount (requires auth)
 onMounted(async () => {
   await creditsStore.fetchUserCreditsAndRefunds();
 });
