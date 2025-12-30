@@ -26,7 +26,7 @@ watch(paid, (value) => {
 const qrcode = computed(() => {
   let qrcode = new PaynowQR({
     uen: "200714008NWEB",
-    amount: "1.00",
+    amount: props.invoiceData.totalPayable.toFixed(2),
     editable: false,
     expiry: expiryTime.value.format("YYYYMMDDHHmmss"),
     refNumber: `${props.invoiceData.presaleId}`,
