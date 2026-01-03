@@ -28,6 +28,8 @@
 
 ## 3. Testing
 
+See TESTING.md for detailed testing instructions.
+
 - [ ] 3.1 Test with all pitches allowing cancellation (default behavior)
   - [ ] 3.1.1 Verify all three checkboxes are visible
   - [ ] 3.1.2 Verify form requires both terms and covid checkboxes
@@ -44,5 +46,5 @@
 
 ## 4. Documentation
 
-- [ ] 4.1 Update component comments to document the conditional rendering logic
-- [ ] 4.2 Add JSDoc comments for the `allowsCancellation` computed property
+- [x] 4.1 Update component comments to document the conditional rendering logic
+- [x] 4.2 Add JSDoc comments for the `allowsCancellation` computed property
