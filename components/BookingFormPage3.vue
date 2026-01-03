@@ -499,7 +499,10 @@ async function clickHandlerSubmit() {
         <BookingFormPage3CreditCardDetails @update="updateCardValidity" />
       </template>
       <BookingFormPage3PaymentSummary />
-      <BookingFormPage3CheckList @update="updateHandlerCheckList" />
+      <BookingFormPage3CheckList
+        :groupedTimeslots="groupedTimeslots"
+        @update="updateHandlerCheckList"
+      />
     </template>
     <AlertError v-if="paymentError">{{ paymentErrorMessage }}</AlertError>
     <AlertError v-if="slotsBooked"
