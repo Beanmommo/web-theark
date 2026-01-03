@@ -30,6 +30,11 @@ const date = computed(() => dayjs(route.query.date as string, "YYYY-MM-DD"));
 const venueId = computed(() => {
   const venueName = venue.value as string;
   const location = locationsStore.getLocation(venueName);
+  console.log("🏢 Venue lookup:", {
+    venueName,
+    foundLocation: location,
+    locationKey: location?.key || "NOT FOUND",
+  });
   return location?.key || "";
 });
 
@@ -110,9 +115,39 @@ function matchesSportTypeTargeting(promocode: PromoCode): boolean {
   });
 }
 
+/**
+ * Check if the promo code matches the timeslot type targeting criteria
+ */
+function matchesTimeslotTypeTargeting(promocode: PromoCode): boolean {
+  // If timeslot type targeting is not configured, skip validation
+  if (!promocode.timeslotTypes || promocode.timeslotTypes.length === 0) {
+    return true;
+  }
+
+  // Check if all selected timeslots match the targeted timeslot types
+  const allTimeslots = Object.values(props.groupedTimeslots).flat();
+
+  // If no timeslots selected, cannot validate
+  if (allTimeslots.length === 0) {
+    return false;
+  }
+
+  // All timeslots must be for types in the timeslotTypes array
+  return allTimeslots.every((slot) => {
+    return promocode.timeslotTypes!.includes(slot.type);
+  });
+}
+
 function clickHandler() {
   error.value = false;
   valid.value = false;
+
+  console.log("🔍 Promo Code Validation Debug:");
+  console.log("  Code entered:", code.value);
+  console.log("  Current venue ID:", venueId.value);
+  console.log("  Booking date:", date.value.format("YYYY-MM-DD"));
+  console.log("  Current date:", dayjs().format("YYYY-MM-DD"));
+  console.log("  Selected timeslots:", props.groupedTimeslots);
 
   const found = promocodes.value.find((promocode) => {
     // Skip if not matching code
@@ -123,36 +158,103 @@ function clickHandler() {
       return false;
     }
 
+    console.log("✅ Found matching promo code:", promocode.name);
+    console.log("  Promo data:", promocode);
+
     // Basic validation (location, dates, code match)
     // Empty locations array means "all locations"
+    // Support both location keys (new format) and location names (old format)
     const locationMatch =
       !promocode.locations ||
       promocode.locations.length === 0 ||
-      promocode.locations.includes(venueId.value);
+      promocode.locations.includes(venueId.value) || // Match by location key (new format)
+      promocode.locations.includes(venue.value as string); // Match by location name (old format)
+
+    console.log("  Location match:", locationMatch);
+    console.log("    Promo locations:", promocode.locations);
+    console.log("    Venue ID (key):", venueId.value);
+    console.log("    Venue name:", venue.value);
+
+    const publishStartCheck = dayjs().isSameOrAfter(
+      promocode.publishStart,
+      "day"
+    );
+    const publishEndCheck = dayjs().isSameOrBefore(promocode.publishEnd, "day");
+    const validTillCheck = dayjs(date.value).isSameOrBefore(
+      promocode.validTill,
+      "day"
+    );
+    const startDateCheck = dayjs(date.value).isSameOrAfter(
+      promocode.startDate,
+      "day"
+    );
+
+    console.log("  Date validations:");
+    console.log(
+      "    Publish start check:",
+      publishStartCheck,
+      `(${dayjs().format("YYYY-MM-DD")} >= ${promocode.publishStart})`
+    );
+    console.log(
+      "    Publish end check:",
+      publishEndCheck,
+      `(${dayjs().format("YYYY-MM-DD")} <= ${promocode.publishEnd})`
+    );
+    console.log(
+      "    Valid till check:",
+      validTillCheck,
+      `(${date.value.format("YYYY-MM-DD")} <= ${promocode.validTill})`
+    );
+    console.log(
+      "    Start date check:",
+      startDateCheck,
+      `(${date.value.format("YYYY-MM-DD")} >= ${promocode.startDate})`
+    );
 
     const basicValidation =
       locationMatch &&
-      dayjs().isSameOrAfter(promocode.publishStart, "day") &&
-      dayjs().isSameOrBefore(promocode.publishEnd, "day") &&
-      dayjs(date.value).isSameOrBefore(promocode.validTill, "day") &&
-      dayjs(date.value).isSameOrAfter(promocode.startDate, "day");
+      publishStartCheck &&
+      publishEndCheck &&
+      validTillCheck &&
+      startDateCheck;
+
+    console.log("  Basic validation result:", basicValidation);
 
     // If basic validation fails, skip this promo code
     if (!basicValidation) {
+      console.log("❌ Basic validation failed");
       return false;
     }
 
-    // Additional validation for pitch and sport targeting
+    // Additional validation for pitch, sport, and timeslot type targeting
     const pitchMatch = matchesPitchTargeting(promocode);
     const sportMatch = matchesSportTypeTargeting(promocode);
+    const timeslotTypeMatch = matchesTimeslotTypeTargeting(promocode);
 
-    return pitchMatch && sportMatch;
+    console.log("  Pitch match:", pitchMatch);
+    console.log("  Sport match:", sportMatch);
+    console.log("  Timeslot type match:", timeslotTypeMatch);
+    console.log("    Promo timeslot types:", promocode.timeslotTypes);
+    console.log(
+      "    Selected slot types:",
+      Object.values(props.groupedTimeslots)
+        .flat()
+        .map((s) => s.type)
+    );
+    console.log(
+      "  Final result:",
+      pitchMatch && sportMatch && timeslotTypeMatch
+    );
+
+    return pitchMatch && sportMatch && timeslotTypeMatch;
   });
 
   if (found !== undefined) {
+    console.log("✅ Promo code validated successfully!");
     valid.value = true;
     emit("update", found);
   } else {
+    console.log("❌ Promo code validation failed");
     error.value = true;
     emit("update", {});
   }
