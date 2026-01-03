@@ -89,7 +89,7 @@ function inputHandler() {
             </template>
             Opens in new window
           </v-tooltip>
-          , including :
+          <template v-if="allowsCancellation">, including :</template>
         </div>
       </template>
     </v-checkbox>
