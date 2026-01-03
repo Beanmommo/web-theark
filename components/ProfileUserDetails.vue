@@ -115,18 +115,23 @@ async function sendPasswordReset() {
   if (!user.value?.email) return;
 
   try {
-    const { $fireAuth } = useNuxtApp();
-    if (!$fireAuth) {
-      alert("Authentication system is not ready. Please try again.");
-      return;
-    }
+    const response = await $fetch<{ success: boolean; message: string }>(
+      "/api/auth/password-reset",
+      {
+        method: "POST",
+        body: { email: user.value.email },
+      }
+    );
 
-    const { sendPasswordResetEmail } = await import("firebase/auth");
-    await sendPasswordResetEmail($fireAuth, user.value.email);
-    alert("Password reset email sent! Please check your inbox.");
-  } catch (error) {
+    if (response.success) {
+      alert("Password reset email sent! Please check your inbox.");
+    }
+  } catch (error: any) {
     console.error("Error sending password reset email:", error);
-    alert("Failed to send password reset email. Please try again.");
+    const errorMessage =
+      error.data?.statusMessage ||
+      "Failed to send password reset email. Please try again.";
+    alert(errorMessage);
   }
 }
 </script>
@@ -192,7 +197,11 @@ async function sendPasswordReset() {
           density="compact"
           prefix="+65"
           :error="
-            updateError && phoneNumber && !/^(6|8|9)\d{7}$/.test(phoneNumber)
+            !!(
+              updateError &&
+              phoneNumber &&
+              !/^(6|8|9)\d{7}$/.test(phoneNumber)
+            )
           "
           hint="8 digits starting with 6, 8, or 9"
           persistent-hint

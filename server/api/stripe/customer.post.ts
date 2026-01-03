@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
     "https://theark.sg",
     "https://www.theark.sg",
     "http://localhost:3000",
+    "https://web-theark-multisports.vercel.app",
   ];
   const origin = getHeader(event, "origin");
   if (!origin) return;
