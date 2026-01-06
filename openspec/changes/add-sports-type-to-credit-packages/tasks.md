@@ -21,9 +21,9 @@
 
 ## 4. Web-theark-multisports: Credit Ledger Validation
 
-- [ ] 4.1 Update `composables/useCreditLedger.ts` `recordUsage()` to validate sport type
-- [ ] 4.2 Add validation to ensure credit package's `typeOfSports` matches booking's `typeOfSports`
-- [ ] 4.3 Add error handling for sport type mismatch
+- [x] 4.1 Update `composables/useCreditLedger.ts` `recordUsage()` to validate sport type
+- [x] 4.2 Add validation to ensure credit package's `typeOfSports` matches booking's `typeOfSports`
+- [x] 4.3 Add error handling for sport type mismatch
 
 ## 5. Admin-theark-new: Unpaid Booking Drawer
 
