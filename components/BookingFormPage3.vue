@@ -69,7 +69,8 @@ const slotsBooked = ref(false);
 
 onMounted(async () => {
   loading.value = true;
-  await creditsStore.fetchUserCreditsAndRefunds();
+  // Filter credits by sport type for the current booking
+  await creditsStore.fetchUserCreditsAndRefunds(sport);
   initialiseUserDetailsPresalesStore();
   updateSubtotal(props.groupedTimeslots);
   goTo("#booking");
