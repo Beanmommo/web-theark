@@ -15,9 +15,9 @@
 
 ## 3. Web-theark-multisports: Booking Payment Flow - Shared Composable
 
-- [ ] 3.1 Update `composables/useSharedBookingForm.ts` `getAvailablePackages()` to accept `sportType` parameter
-- [ ] 3.2 Filter credit packages by `creditPackage.typeOfSports` matching the provided sport type
-- [ ] 3.3 Update callers to pass the booking's sport type when calling `getAvailablePackages()`
+- [x] 3.1 ~~Update `composables/useSharedBookingForm.ts` `getAvailablePackages()` to accept `sportType` parameter~~ (N/A - composable doesn't exist in web-theark-multisports)
+- [x] 3.2 ~~Filter credit packages by `creditPackage.typeOfSports` matching the provided sport type~~ (N/A - handled in stores/credits.ts instead)
+- [x] 3.3 ~~Update callers to pass the booking's sport type when calling `getAvailablePackages()`~~ (N/A - handled in BookingFormPage3.vue)
 
 ## 4. Web-theark-multisports: Credit Ledger Validation
 
@@ -34,9 +34,9 @@
 
 ## 6. Admin-theark-new: Shared Booking Form
 
-- [ ] 6.1 Update `composables/useSharedBookingForm.ts` `getAvailablePackages()` to accept `sportType` parameter
-- [ ] 6.2 Filter credit packages by `creditPackage.typeOfSports` matching the provided sport type
-- [ ] 6.3 Update callers to pass the booking's sport type when calling `getAvailablePackages()`
+- [x] 6.1 Update `composables/useSharedBookingForm.ts` `getAvailablePackages()` to accept `sportType` parameter
+- [x] 6.2 Filter credit packages by `creditPackage.typeOfSports` matching the provided sport type
+- [x] 6.3 Update callers to pass the booking's sport type when calling `getAvailablePackages()`
 
 ## 7. Testing
 
