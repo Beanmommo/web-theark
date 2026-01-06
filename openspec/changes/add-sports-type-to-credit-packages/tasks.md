@@ -42,36 +42,36 @@
 
 ### 7.1 Package Purchase Flow
 
-- [ ] 7.1.1 Test: verify only Futsal packages shown on `/futsal/packages`
-- [ ] 7.1.2 Test: verify only Pickleball packages shown on `/pickleball/packages`
+- [x] 7.1.1 Test: verify only Futsal packages shown on `/futsal/packages`
+- [x] 7.1.2 Test: verify only Pickleball packages shown on `/pickleball/packages`
 
 ### 7.2 Booking Payment Flow
 
-- [ ] 7.2.1 Test: verify only matching credit packages available for selection
-- [ ] 7.2.2 Test: verify credit validation rejects mismatched sport types
-- [ ] 7.2.3 Test: verify total credit balance only includes matching packages
+- [x] 7.2.1 Test: verify only matching credit packages available for selection
+- [x] 7.2.2 Test: verify credit validation rejects mismatched sport types
+- [x] 7.2.3 Test: verify total credit balance only includes matching packages
 
 ### 7.3 Admin Unpaid Booking
 
-- [ ] 7.3.1 Test: verify only matching credit packages shown in drawer
-- [ ] 7.3.2 Test: verify credit balance display shows sport-specific totals
+- [x] 7.3.1 Test: verify only matching credit packages shown in drawer
+- [x] 7.3.2 Test: verify credit balance display shows sport-specific totals
 
 ### 7.4 Backward Compatibility (Critical!)
 
-- [ ] 7.4.1 Test: verify existing purchased packages without `typeOfSports` default to "futsal"
-- [ ] 7.4.2 Test: verify legacy packages appear in Futsal booking payment options
-- [ ] 7.4.3 Test: verify legacy packages do NOT appear in Pickleball booking payment options
-- [ ] 7.4.4 Test: verify legacy packages can be used for Futsal bookings
-- [ ] 7.4.5 Test: verify legacy packages are rejected for Pickleball bookings
-- [ ] 7.4.6 Test: verify mixed environment (old + new packages) calculates correct totals
+- [x] 7.4.1 Test: verify existing purchased packages without `typeOfSports` default to "futsal"
+- [x] 7.4.2 Test: verify legacy packages appear in Futsal booking payment options
+- [x] 7.4.3 Test: verify legacy packages do NOT appear in Pickleball booking payment options
+- [x] 7.4.4 Test: verify legacy packages can be used for Futsal bookings
+- [x] 7.4.5 Test: verify legacy packages are rejected for Pickleball bookings
+- [x] 7.4.6 Test: verify mixed environment (old + new packages) calculates correct totals
 
 ### 7.5 Edge Cases
 
-- [ ] 7.5.1 Test: verify behavior when user has credits for multiple sports
-- [ ] 7.5.2 Test: verify behavior when user has no credits for the booking sport
-- [ ] 7.5.3 Test: verify behavior when all user credits are for different sport
+- [x] 7.5.1 Test: verify behavior when user has credits for multiple sports
+- [x] 7.5.2 Test: verify behavior when user has no credits for the booking sport
+- [x] 7.5.3 Test: verify behavior when all user credits are for different sport
 
 ## 8. Documentation
 
-- [ ] 8.1 Update inline code comments explaining sports type filtering logic
-- [ ] 8.2 Document the default behavior for legacy packages without `typeOfSports`
+- [x] 8.1 Update inline code comments explaining sports type filtering logic
+- [x] 8.2 Document the default behavior for legacy packages without `typeOfSports`
