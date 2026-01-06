@@ -2,6 +2,7 @@ import { db, fs } from "../../../../utils/firebase";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import type { Booking, BookedSlot } from "~/types/data";
+import { CANCELLATION_HOURS_REQUIRED } from "~/constants/booking";
 
 dayjs.extend(customParseFormat);
 
@@ -9,11 +10,11 @@ dayjs.extend(customParseFormat);
  * POST /api/bookings/id/:id/cancel-slot
  * Cancel a single slot from a booking (partial cancellation) - PENDING APPROVAL WORKFLOW
  *
- * Enforces 72-hour rule for customers (unless isAdmin=true)
+ * Enforces CANCELLATION_HOURS_REQUIRED-hour rule for customers (unless isAdmin=true)
  *
  * Request body:
  * - slotKey: string - The key of the slot to cancel
- * - isAdmin?: boolean - If true, skip 72-hour validation
+ * - isAdmin?: boolean - If true, skip time validation
  * - cancelledBy: string - Email of user who requested cancellation
  * - cancellationReason: string - Reason for cancellation
  * - otherReason?: string - Additional details if reason is "Other"
@@ -21,7 +22,7 @@ dayjs.extend(customParseFormat);
  * Response:
  * - For partial cancellation: { success: true, pending: true, isLastSlot: false }
  * - For last slot: { success: true, isLastSlot: true }
- * - For 72-hour violation: { error: "Cannot delete slots within 72 hours..." }
+ * - For time violation: { error: "Cannot delete slots within CANCELLATION_HOURS_REQUIRED hours..." }
  */
 export default defineEventHandler(async (event) => {
   const bookingId = getRouterParam(event, "id");
@@ -107,7 +108,7 @@ export default defineEventHandler(async (event) => {
       return { error: "Slot not found" };
     }
 
-    // 72-hour validation (skip for admins)
+    // Time validation (skip for admins)
     if (!isAdmin) {
       // Parse slot date and start time
       // Slot date is "YYYY-MM-DD", start is like "9am" or "10:00am"
@@ -126,18 +127,18 @@ export default defineEventHandler(async (event) => {
         const now = dayjs();
         const hoursUntil = slotDate.diff(now, "hour");
 
-        if (hoursUntil < 72) {
+        if (hoursUntil < CANCELLATION_HOURS_REQUIRED) {
           return {
-            error: `Cannot delete slots within 72 hours of booking time. This slot is in ${hoursUntil} hours.`,
+            error: `Cannot delete slots within ${CANCELLATION_HOURS_REQUIRED} hours of booking time. This slot is in ${hoursUntil} hours.`,
           };
         }
       } else {
         const now = dayjs();
         const hoursUntil = slotDateTime.diff(now, "hour");
 
-        if (hoursUntil < 72) {
+        if (hoursUntil < CANCELLATION_HOURS_REQUIRED) {
           return {
-            error: `Cannot delete slots within 72 hours of booking time. This slot is in ${hoursUntil} hours.`,
+            error: `Cannot delete slots within ${CANCELLATION_HOURS_REQUIRED} hours of booking time. This slot is in ${hoursUntil} hours.`,
           };
         }
       }

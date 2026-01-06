@@ -23,7 +23,7 @@ const navItems = computed(() => {
   }
   return [
     { title: "Futsal", to: "/futsal" },
-    { title: "Pickelball", to: "/pickleball" },
+    { title: "Pickleball", to: "/pickleball" },
     { title: "Contact Us", to: "/contactus" },
   ];
 });

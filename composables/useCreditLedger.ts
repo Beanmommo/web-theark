@@ -1,4 +1,11 @@
-import type { CreditTransaction, CreditTransactionType, CreditType, PackageAllocation, CreditPackage, CreditRefund } from "~/types/data";
+import type {
+  CreditTransaction,
+  CreditTransactionType,
+  CreditType,
+  PackageAllocation,
+  CreditPackage,
+  CreditRefund,
+} from "~/types/data";
 import dayjs from "dayjs";
 
 /**
@@ -12,19 +19,23 @@ export const useCreditLedger = () => {
    */
   const getCurrentBalance = async (userKey: string): Promise<number> => {
     try {
-      const transactions = await $fetch<any>(`/api/creditTransactions/${userKey}`);
-      
+      const transactions = await $fetch<any>(
+        `/api/creditTransactions/${userKey}`
+      );
+
       if (!transactions || Object.keys(transactions).length === 0) return 0;
 
       // Convert to array and sort by timestamp descending
-      const transactionArray = Object.values(transactions) as CreditTransaction[];
-      transactionArray.sort((a, b) => 
-        dayjs(b.timestamp).valueOf() - dayjs(a.timestamp).valueOf()
+      const transactionArray = Object.values(
+        transactions
+      ) as CreditTransaction[];
+      transactionArray.sort(
+        (a, b) => dayjs(b.timestamp).valueOf() - dayjs(a.timestamp).valueOf()
       );
 
       return transactionArray[0].balanceAfter || 0;
     } catch (error) {
-      console.error('Error getting current balance:', error);
+      console.error("Error getting current balance:", error);
       return 0;
     }
   };
@@ -38,13 +49,26 @@ export const useCreditLedger = () => {
     amount: number,
     packages: CreditPackage[],
     refunds: CreditRefund[]
-  ): Array<{ packageKey: string; amount: number; packageBalanceBefore: number; packageBalanceAfter: number; collection: 'creditPackages' | 'creditRefunds' }> => {
-    const allocations: Array<{ packageKey: string; amount: number; packageBalanceBefore: number; packageBalanceAfter: number; collection: 'creditPackages' | 'creditRefunds' }> = [];
+  ): Array<{
+    packageKey: string;
+    amount: number;
+    packageBalanceBefore: number;
+    packageBalanceAfter: number;
+    collection: "creditPackages" | "creditRefunds";
+  }> => {
+    const allocations: Array<{
+      packageKey: string;
+      amount: number;
+      packageBalanceBefore: number;
+      packageBalanceAfter: number;
+      collection: "creditPackages" | "creditRefunds";
+    }> = [];
     let remaining = amount;
 
     // PRIORITY 1: Use refund credits FIRST (sorted by date, oldest first)
-    const sortedRefunds = [...refunds].sort((a, b) =>
-      dayjs(a.submittedDate).valueOf() - dayjs(b.submittedDate).valueOf()
+    const sortedRefunds = [...refunds].sort(
+      (a, b) =>
+        dayjs(a.submittedDate).valueOf() - dayjs(b.submittedDate).valueOf()
     );
 
     for (const refund of sortedRefunds) {
@@ -56,11 +80,11 @@ export const useCreditLedger = () => {
       const toUse = Math.min(available, remaining);
 
       allocations.push({
-        packageKey: refund.key || '',
+        packageKey: refund.key || "",
         amount: -toUse, // Negative for usage
         packageBalanceBefore: available,
         packageBalanceAfter: available - toUse,
-        collection: 'creditRefunds',
+        collection: "creditRefunds",
       });
 
       remaining -= toUse;
@@ -68,8 +92,9 @@ export const useCreditLedger = () => {
 
     // PRIORITY 2: Then use purchased packages (FIFO - oldest first)
     if (remaining > 0) {
-      const sortedPackages = [...packages].sort((a, b) =>
-        dayjs(a.submittedDate).valueOf() - dayjs(b.submittedDate).valueOf()
+      const sortedPackages = [...packages].sort(
+        (a, b) =>
+          dayjs(a.submittedDate).valueOf() - dayjs(b.submittedDate).valueOf()
       );
 
       for (const pkg of sortedPackages) {
@@ -81,11 +106,11 @@ export const useCreditLedger = () => {
         const toUse = Math.min(available, remaining);
 
         allocations.push({
-          packageKey: pkg.key || '',
+          packageKey: pkg.key || "",
           amount: -toUse, // Negative for usage
           packageBalanceBefore: available,
           packageBalanceAfter: available - toUse,
-          collection: 'creditPackages',
+          collection: "creditPackages",
         });
 
         remaining -= toUse;
@@ -93,7 +118,11 @@ export const useCreditLedger = () => {
     }
 
     if (remaining > 0) {
-      throw new Error(`Insufficient credits. Need ${amount}, but only ${amount - remaining} available.`);
+      throw new Error(
+        `Insufficient credits. Need ${amount}, but only ${
+          amount - remaining
+        } available.`
+      );
     }
 
     return allocations;
@@ -105,7 +134,7 @@ export const useCreditLedger = () => {
     amount: number; // Negative for usage, positive for refund
     packageBalanceBefore: number;
     packageBalanceAfter: number;
-    collection: 'creditPackages' | 'creditRefunds';
+    collection: "creditPackages" | "creditRefunds";
   };
 
   /**
@@ -131,46 +160,98 @@ export const useCreditLedger = () => {
   ): Promise<void> => {
     const timestamp = new Date().toISOString();
 
+    // Validate sport type matching (if slots have typeOfSports)
+    const bookingSportType = slots[0]?.typeOfSports?.toLowerCase();
+    if (bookingSportType) {
+      // Validate packages
+      for (const pkg of packages) {
+        const pkgSportType =
+          pkg.creditPackage?.typeOfSports?.toLowerCase() ?? "futsal";
+        if (pkgSportType !== bookingSportType) {
+          console.error(
+            `Sport type mismatch: Package ${pkg.key} is for ${pkgSportType} but booking is for ${bookingSportType}`
+          );
+          throw new Error(
+            `Cannot use ${pkgSportType} credits for ${bookingSportType} booking. Please use matching sport credits.`
+          );
+        }
+      }
+
+      // Validate refunds
+      for (const refund of refunds) {
+        const refundSportType =
+          refund.creditPackage?.typeOfSports?.toLowerCase() ?? "futsal";
+        if (refundSportType !== bookingSportType) {
+          console.error(
+            `Sport type mismatch: Refund ${refund.key} is for ${refundSportType} but booking is for ${bookingSportType}`
+          );
+          throw new Error(
+            `Cannot use ${refundSportType} credits for ${bookingSportType} booking. Please use matching sport credits.`
+          );
+        }
+      }
+    }
+
     // Use pre-calculated allocations if provided, otherwise calculate (legacy)
-    const allocations = preCalculatedAllocations || allocateCreditsFromPackages(amount, packages, refunds);
+    const allocations =
+      preCalculatedAllocations ||
+      allocateCreditsFromPackages(amount, packages, refunds);
 
     // Group allocations by credit type (REFUND vs PACKAGE)
-    const refundAllocations = allocations.filter(a => a.collection === 'creditRefunds');
-    const packageAllocations = allocations.filter(a => a.collection === 'creditPackages');
+    const refundAllocations = allocations.filter(
+      (a) => a.collection === "creditRefunds"
+    );
+    const packageAllocations = allocations.filter(
+      (a) => a.collection === "creditPackages"
+    );
 
     // Create separate transaction for REFUND credits (if any were used)
     if (refundAllocations.length > 0) {
-      const refundBalanceBefore = refundAllocations.reduce((sum, a) => sum + a.packageBalanceBefore, 0);
-      const refundBalanceAfter = refundAllocations.reduce((sum, a) => sum + a.packageBalanceAfter, 0);
-      const refundAmount = refundAllocations.reduce((sum, a) => sum + a.amount, 0); // Already negative
+      const refundBalanceBefore = refundAllocations.reduce(
+        (sum, a) => sum + a.packageBalanceBefore,
+        0
+      );
+      const refundBalanceAfter = refundAllocations.reduce(
+        (sum, a) => sum + a.packageBalanceAfter,
+        0
+      );
+      const refundAmount = refundAllocations.reduce(
+        (sum, a) => sum + a.amount,
+        0
+      ); // Already negative
 
-      const refundTransaction: Omit<CreditTransaction, 'id'> = {
+      const refundTransaction: Omit<CreditTransaction, "id"> = {
         userKey,
         email,
         name,
         contact,
-        type: 'USAGE',
-        creditType: 'REFUND',
+        type: "USAGE",
+        creditType: "REFUND",
         timestamp,
         amount: refundAmount,
         balanceBefore: refundBalanceBefore,
         balanceAfter: refundBalanceAfter,
         bookingKey,
-        description: `Booking at ${location} on ${bookingDate} - $${Math.abs(refundAmount)} (refund credits)`,
+        description: `Booking at ${location} on ${bookingDate} - $${Math.abs(
+          refundAmount
+        )} (refund credits)`,
         bookingDate,
         location,
         slots,
         slotKeys,
       };
 
-      const refundTransactionId = await $fetch<string>('/api/creditTransactions', {
-        method: 'POST',
-        body: refundTransaction,
-      });
+      const refundTransactionId = await $fetch<string>(
+        "/api/creditTransactions",
+        {
+          method: "POST",
+          body: refundTransaction,
+        }
+      );
 
       // Create package allocations for refund credits
       for (const alloc of refundAllocations) {
-        const allocation: Omit<PackageAllocation, 'id'> = {
+        const allocation: Omit<PackageAllocation, "id"> = {
           transactionId: refundTransactionId,
           packageKey: alloc.packageKey,
           collection: alloc.collection,
@@ -182,8 +263,8 @@ export const useCreditLedger = () => {
           email,
         };
 
-        await $fetch('/api/packageAllocations', {
-          method: 'POST',
+        await $fetch("/api/packageAllocations", {
+          method: "POST",
           body: allocation,
         });
       }
@@ -191,37 +272,51 @@ export const useCreditLedger = () => {
 
     // Create separate transaction for PACKAGE credits (if any were used)
     if (packageAllocations.length > 0) {
-      const packageBalanceBefore = packageAllocations.reduce((sum, a) => sum + a.packageBalanceBefore, 0);
-      const packageBalanceAfter = packageAllocations.reduce((sum, a) => sum + a.packageBalanceAfter, 0);
-      const packageAmount = packageAllocations.reduce((sum, a) => sum + a.amount, 0); // Already negative
+      const packageBalanceBefore = packageAllocations.reduce(
+        (sum, a) => sum + a.packageBalanceBefore,
+        0
+      );
+      const packageBalanceAfter = packageAllocations.reduce(
+        (sum, a) => sum + a.packageBalanceAfter,
+        0
+      );
+      const packageAmount = packageAllocations.reduce(
+        (sum, a) => sum + a.amount,
+        0
+      ); // Already negative
 
-      const packageTransaction: Omit<CreditTransaction, 'id'> = {
+      const packageTransaction: Omit<CreditTransaction, "id"> = {
         userKey,
         email,
         name,
         contact,
-        type: 'USAGE',
-        creditType: 'PACKAGE',
+        type: "USAGE",
+        creditType: "PACKAGE",
         timestamp,
         amount: packageAmount,
         balanceBefore: packageBalanceBefore,
         balanceAfter: packageBalanceAfter,
         bookingKey,
-        description: `Booking at ${location} on ${bookingDate} - $${Math.abs(packageAmount)} (purchased credits)`,
+        description: `Booking at ${location} on ${bookingDate} - $${Math.abs(
+          packageAmount
+        )} (purchased credits)`,
         bookingDate,
         location,
         slots,
         slotKeys,
       };
 
-      const packageTransactionId = await $fetch<string>('/api/creditTransactions', {
-        method: 'POST',
-        body: packageTransaction,
-      });
+      const packageTransactionId = await $fetch<string>(
+        "/api/creditTransactions",
+        {
+          method: "POST",
+          body: packageTransaction,
+        }
+      );
 
       // Create package allocations for purchased credits
       for (const alloc of packageAllocations) {
-        const allocation: Omit<PackageAllocation, 'id'> = {
+        const allocation: Omit<PackageAllocation, "id"> = {
           transactionId: packageTransactionId,
           packageKey: alloc.packageKey,
           collection: alloc.collection,
@@ -233,8 +328,8 @@ export const useCreditLedger = () => {
           email,
         };
 
-        await $fetch('/api/packageAllocations', {
-          method: 'POST',
+        await $fetch("/api/packageAllocations", {
+          method: "POST",
           body: allocation,
         });
       }
@@ -257,12 +352,12 @@ export const useCreditLedger = () => {
     const timestamp = new Date().toISOString();
 
     // Create transaction (Firestore will auto-generate ID)
-    const transaction: Omit<CreditTransaction, 'id'> = {
+    const transaction: Omit<CreditTransaction, "id"> = {
       userKey,
       email,
       name,
       contact,
-      type: 'PURCHASE',
+      type: "PURCHASE",
       timestamp,
       amount: amount,
       balanceBefore: currentBalance,
@@ -271,16 +366,16 @@ export const useCreditLedger = () => {
       description: `Purchased credit package - $${amount}`,
     };
 
-    const transactionId = await $fetch<string>('/api/creditTransactions', {
-      method: 'POST',
+    const transactionId = await $fetch<string>("/api/creditTransactions", {
+      method: "POST",
       body: transaction,
     });
 
     // Create package allocation (Firestore will auto-generate ID)
-    const allocation: Omit<PackageAllocation, 'id'> = {
+    const allocation: Omit<PackageAllocation, "id"> = {
       transactionId,
       packageKey,
-      collection: 'creditPackages',
+      collection: "creditPackages",
       amount: amount, // Positive for purchase (credits added)
       packageBalanceBefore: 0,
       packageBalanceAfter: amount,
@@ -289,8 +384,8 @@ export const useCreditLedger = () => {
       email,
     };
 
-    await $fetch('/api/packageAllocations', {
-      method: 'POST',
+    await $fetch("/api/packageAllocations", {
+      method: "POST",
       body: allocation,
     });
   };
@@ -320,32 +415,32 @@ export const useCreditLedger = () => {
     const timestamp = new Date().toISOString();
 
     // Create refund transaction (Firestore will auto-generate ID)
-    const transaction: Omit<CreditTransaction, 'id'> = {
+    const transaction: Omit<CreditTransaction, "id"> = {
       userKey,
       email,
       name,
       contact,
-      type: 'REFUND',
+      type: "REFUND",
       timestamp,
       amount: amount, // Positive for refund
       balanceBefore: packageBalanceBefore, // Refund package starts at 0
-      balanceAfter: packageBalanceAfter,   // Refund package now has the amount
+      balanceAfter: packageBalanceAfter, // Refund package now has the amount
       bookingKey,
       packageKey: refundPackageKey,
       description: `Refund for booking cancellation - $${amount}`,
       notes: reason,
     };
 
-    const transactionId = await $fetch<string>('/api/creditTransactions', {
-      method: 'POST',
+    const transactionId = await $fetch<string>("/api/creditTransactions", {
+      method: "POST",
       body: transaction,
     });
 
     // Create package allocation for the new refund package
-    const allocation: Omit<PackageAllocation, 'id'> = {
+    const allocation: Omit<PackageAllocation, "id"> = {
       transactionId,
       packageKey: refundPackageKey,
-      collection: 'creditRefunds',
+      collection: "creditRefunds",
       amount: amount, // Positive for refund (credits added)
       packageBalanceBefore: packageBalanceBefore,
       packageBalanceAfter: packageBalanceAfter,
@@ -354,8 +449,8 @@ export const useCreditLedger = () => {
       email,
     };
 
-    await $fetch('/api/packageAllocations', {
-      method: 'POST',
+    await $fetch("/api/packageAllocations", {
+      method: "POST",
       body: allocation,
     });
   };
@@ -368,4 +463,3 @@ export const useCreditLedger = () => {
     recordRefund,
   };
 };
-

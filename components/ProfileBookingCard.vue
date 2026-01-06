@@ -7,6 +7,10 @@ import { usePitchesStore } from "../stores/pitches";
 import { useLocationsStore } from "../stores/locations";
 import type { Booking, BookedSlot } from "../types/data";
 import { VTooltip } from "vuetify/components";
+import {
+  CANCELLATION_HOURS_REQUIRED,
+  CANCELLABLE_PAYMENT_METHODS,
+} from "../constants/booking";
 
 const props = defineProps({
   booking: {
@@ -79,6 +83,13 @@ const showCancelDialog = ref(false);
 const acknowledgeRefundTerms = ref(false);
 const { showSuccess, showError } = useAlert();
 
+// Calculate the actual refund amount (subtotal - discount)
+const refundAmount = computed(() => {
+  const subtotal = props.booking.subtotal || 0;
+  const discount = props.booking.discount || 0;
+  return subtotal - discount;
+});
+
 function handleClickCancel() {
   if (!props.booking.key) return;
   acknowledgeRefundTerms.value = false; // Reset checkbox when opening dialog
@@ -118,12 +129,31 @@ async function handleConfirmCancel() {
 }
 
 const isCancellable = computed(() => {
-  // Make sure dayjs is configured with timezone plugin and "Asia/Singapore"
+  // Check if the earliest slot in the booking is at least CANCELLATION_HOURS_REQUIRED hours away
+  if (bookingSlots.value.length === 0) return false;
+
+  // Find the earliest slot time
+  const earliestSlot = bookingSlots.value.reduce((earliest, slot) => {
+    const slotDateTime = dayjs(
+      `${slot.date} ${slot.start}`,
+      ["YYYY-MM-DD ha", "YYYY-MM-DD h:mma", "YYYY-MM-DD HH:mm"],
+      true
+    ).tz("Asia/Singapore");
+
+    if (!slotDateTime.isValid()) {
+      // Fall back to just the date at midnight
+      return dayjs(slot.date).tz("Asia/Singapore").isBefore(earliest)
+        ? dayjs(slot.date).tz("Asia/Singapore")
+        : earliest;
+    }
+
+    return slotDateTime.isBefore(earliest) ? slotDateTime : earliest;
+  }, dayjs().tz("Asia/Singapore").add(1000, "years")); // Start with far future date
+
+  // Check if current time is before (earliest slot time - CANCELLATION_HOURS_REQUIRED)
   return dayjs()
     .tz("Asia/Singapore")
-    .isBefore(
-      dayjs(props.booking.date).tz("Asia/Singapore").subtract(72, "hours")
-    );
+    .isBefore(earliestSlot.subtract(CANCELLATION_HOURS_REQUIRED, "hours"));
 });
 
 const isPastBooking = computed(() => {
@@ -134,7 +164,6 @@ const isPastBooking = computed(() => {
 });
 
 // Only allow cancellation for specific payment methods
-const CANCELLABLE_PAYMENT_METHODS = ["PayNow", "Credit Card", "Credit"];
 const isCancellablePaymentMethod = computed(() => {
   const paymentMethod = props.booking.paymentMethod;
   return CANCELLABLE_PAYMENT_METHODS.includes(paymentMethod);
@@ -298,6 +327,17 @@ const hasMultipleSlots = computed(() => {
   return bookingSlots.value.length > 1;
 });
 
+// Check if any slot in the booking is deletable (within time constraints)
+const hasAnyDeletableSlot = computed(() => {
+  if (bookingSlots.value.length === 0) return false;
+
+  // Check if at least one slot can be deleted
+  return bookingSlots.value.some((slot) => {
+    const { canDelete } = getSlotDeletability(slot);
+    return canDelete;
+  });
+});
+
 // Check if menu should be shown (has at least one visible item)
 const shouldShowMenu = computed(() => {
   // Check if cancel/delete options should be shown
@@ -306,11 +346,15 @@ const shouldShowMenu = computed(() => {
     isCancellablePaymentMethod.value &&
     isPitchCancellationAllowed.value;
 
+  // Check if any cancel/delete action is actually available
+  const hasActionableOptions =
+    showCancelOptions && (isCancellable.value || hasAnyDeletableSlot.value);
+
   // Check if View Invoice should be shown
   const showInvoiceOption = !!props.booking.invoiceKey;
 
-  // Show menu if either cancel options or invoice option is available
-  return showCancelOptions || showInvoiceOption;
+  // Show menu if either actionable cancel/delete options or invoice option is available
+  return hasActionableOptions || showInvoiceOption;
 });
 
 // Check if slot is pending cancellation
@@ -423,9 +467,29 @@ function isSlotPending(slotKey: string): boolean {
                 isPitchCancellationAllowed
               "
             >
-              <!-- Delete Time Slot option (only for multi-slot bookings) -->
+              <!-- Delete Time Slot option (only for multi-slot bookings and if any slot is deletable) -->
+              <VTooltip
+                v-if="hasMultipleSlots && !hasAnyDeletableSlot"
+                location="right"
+              >
+                <template #activator="{ props }">
+                  <div v-bind="props">
+                    <VListItem disabled>
+                      <template #prepend>
+                        <VIcon icon="mdi-calendar-remove" color="grey" />
+                      </template>
+                      <VListItemTitle>Delete Time Slot</VListItemTitle>
+                    </VListItem>
+                  </div>
+                </template>
+                <span
+                  >Slot deletion is not allowed
+                  {{ CANCELLATION_HOURS_REQUIRED }} hours before the slot
+                  time</span
+                >
+              </VTooltip>
               <VListItem
-                v-if="hasMultipleSlots"
+                v-else-if="hasMultipleSlots && hasAnyDeletableSlot"
                 @click="handleClickDeleteSlotMode"
               >
                 <template #prepend>
@@ -449,8 +513,9 @@ function isSlotPending(slotKey: string): boolean {
                   </div>
                 </template>
                 <span
-                  >Cancellation is not allowed 72 hours before the booking
-                  date</span
+                  >Cancellation is not allowed
+                  {{ CANCELLATION_HOURS_REQUIRED }} hours before the booking
+                  time</span
                 >
               </VTooltip>
               <VListItem v-else @click="handleClickCancel">
@@ -488,8 +553,8 @@ function isSlotPending(slotKey: string): boolean {
           Are you sure you want to cancel this booking?
         </div>
         <div class="text-body-2 text-medium-emphasis mb-4">
-          You will receive ${{ booking.subtotal }} credits (GST + transaction
-          fee not included) for this booking refund.
+          You will receive ${{ refundAmount }} credits (GST + transaction fee
+          not included) for this booking refund.
         </div>
         <VCheckbox
           v-model="acknowledgeRefundTerms"

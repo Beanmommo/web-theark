@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GroupedTimeslots } from "~/types/data";
+import { CANCELLATION_HOURS_REQUIRED } from "~/constants/booking";
 
 // Props
 const props = defineProps({
@@ -19,6 +20,7 @@ const { bookingDetails } = storeToRefs(presalesStore);
 
 // Reactive state
 const terms = ref(false);
+const nonCancellable = ref(false);
 const covid = ref(false);
 const emit = defineEmits(["update"]);
 
@@ -59,17 +61,18 @@ const allowsCancellation = computed(() => {
 
 /**
  * Validates form based on visible checkboxes.
- * If cancellation is not allowed, only the terms checkbox is required.
+ * If cancellation is not allowed, all three checkboxes are required (terms, nonCancellable, covid).
  * If cancellation is allowed, both terms and covid checkboxes are required.
  */
 function inputHandler() {
   if (allowsCancellation.value) {
-    // All checkboxes visible: require terms AND covid
+    // Cancellation allowed: require terms AND covid (weather policy)
     if (terms.value && covid.value) emit("update", true);
     else emit("update", false);
   } else {
-    // Only terms checkbox visible: require only terms
-    if (terms.value) emit("update", true);
+    // Cancellation NOT allowed: require ALL THREE checkboxes
+    if (terms.value && nonCancellable.value && covid.value)
+      emit("update", true);
     else emit("update", false);
   }
 }
@@ -89,17 +92,47 @@ function inputHandler() {
             </template>
             Opens in new window
           </v-tooltip>
-          <template v-if="allowsCancellation">, including :</template>
+          , including :
         </div>
       </template>
     </v-checkbox>
-    <!-- Checkbox 2: 72-hour rescheduling notice - only shown if cancellation is allowed -->
+    <!-- Checkbox 2: only shown if cancellation is not allowed -->
+    <v-checkbox
+      v-if="!allowsCancellation"
+      v-model="nonCancellable"
+      @input="inputHandler"
+    >
+      <template v-slot:label>
+        <div class="label">
+          Acknowledging and agreeing that bookings for sheltered courts/pitches
+          are strictly <b>NON-CANCELLABLE</b> and <b>NON-REFUNDABLE</b> once
+          payment is made.
+        </div>
+      </template>
+    </v-checkbox>
+    <!-- Checkbox 3: only shown if cancellation is not allowed -->
+    <v-checkbox
+      v-if="!allowsCancellation"
+      v-model="covid"
+      @input="inputHandler"
+    >
+      <template v-slot:label>
+        <div class="label">
+          This policy applies regardless of attendance, usage, or weather
+          conditions.
+        </div>
+      </template>
+    </v-checkbox>
+    <!-- Checkbox 2: Rescheduling notice - only shown if cancellation is allowed -->
     <v-checkbox v-if="allowsCancellation">
       <template v-slot:label>
         <div class="label">
-          Providing more than <b>72 hours'</b> notice (prior to the booking
-          date) for rescheduling via 9185 2555.<br />
-          Requests with less than <b>72 hours'</b> notice will not be accepted.
+          Providing more than
+          <b>{{ CANCELLATION_HOURS_REQUIRED }} hours'</b> notice (prior to the
+          booking date) for rescheduling via 9185 2555.<br />
+          Requests with less than
+          <b>{{ CANCELLATION_HOURS_REQUIRED }} hours'</b> notice will not be
+          accepted.
         </div>
       </template>
     </v-checkbox>

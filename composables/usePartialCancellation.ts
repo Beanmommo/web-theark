@@ -6,6 +6,7 @@ import type {
   PartialCancellation,
   CreditRefund,
 } from "~/types/data";
+import { CANCELLATION_HOURS_REQUIRED } from "~/constants/booking";
 
 dayjs.extend(customParseFormat);
 
@@ -29,7 +30,7 @@ export const usePartialCancellation = () => {
   const bookingsStore = useBookingsStore();
 
   /**
-   * Check if a slot can be deleted (72+ hours before slot time)
+   * Check if a slot can be deleted (CANCELLATION_HOURS_REQUIRED+ hours before slot time)
    * @param slot - The slot to check
    * @returns Object with canDelete status and reason if not deletable
    */
@@ -53,11 +54,11 @@ export const usePartialCancellation = () => {
       hoursUntil = slotDateTime.diff(dayjs(), "hour");
     }
 
-    if (hoursUntil < 72) {
+    if (hoursUntil < CANCELLATION_HOURS_REQUIRED) {
       return {
         canDelete: false,
         hoursUntil,
-        reason: `Cannot delete slots within 72 hours of booking time. This slot is in ${hoursUntil} hours.`,
+        reason: `Cannot delete slots within ${CANCELLATION_HOURS_REQUIRED} hours of booking time. This slot is in ${hoursUntil} hours.`,
       };
     }
 

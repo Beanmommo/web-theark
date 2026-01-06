@@ -19,7 +19,7 @@ export const useCreditsStore = defineStore("credits", () => {
   const refundCreditsLeft = ref(0);
   const currentCreditRefunds = ref([] as Array<CreditRefund>);
   const dayjs = useDayjs();
-  const fetchUserCreditsAndRefunds = async () => {
+  const fetchUserCreditsAndRefunds = async (sportType?: string) => {
     const user = useAuthUser();
     if (!user.value) return { credits: {}, refunds: {} };
 
@@ -84,19 +84,29 @@ export const useCreditsStore = defineStore("credits", () => {
     };
 
     // 6. Update state
-    setUserPackages(purchasedCredits);
-    setUserCreditRefunds(allRefunds);
+    setUserPackages(purchasedCredits, sportType);
+    setUserCreditRefunds(allRefunds, sportType);
 
     return { credits: purchasedCredits, refunds: allRefunds };
   };
 
-  function setUserPackages(packages: CreditPackageData) {
+  function setUserPackages(packages: CreditPackageData, sportType?: string) {
     let userPackages = [] as CreditPackage[];
     let totalCredits = 0;
     let purchasedCredits = 0;
     Object.keys(packages).forEach((key) => {
-      const { creditsLeft, expiryDate, paymentMethod, value } = packages[key];
+      const { creditsLeft, expiryDate, paymentMethod, value, creditPackage } =
+        packages[key];
       const notExpired = dayjs().isSameOrBefore(expiryDate, "day");
+
+      // Filter by sport type if provided (backward compatible: default to "futsal")
+      if (sportType) {
+        const pkgSportType =
+          creditPackage?.typeOfSports?.toLowerCase() ?? "futsal";
+        if (pkgSportType !== sportType.toLowerCase()) {
+          return; // Skip this package - doesn't match sport type
+        }
+      }
 
       // IMPORTANT: Exclude refund credits (they're handled separately in fetchUserCreditsAndRefunds)
       if (notExpired && paymentMethod !== "Refund") {
@@ -123,13 +133,26 @@ export const useCreditsStore = defineStore("credits", () => {
     totalCreditsLeft.value = totalCredits;
   }
 
-  function setUserCreditRefunds(creditRefunds: CreditRefundData) {
+  function setUserCreditRefunds(
+    creditRefunds: CreditRefundData,
+    sportType?: string
+  ) {
     let userCreditRefunds = [] as CreditRefund[];
     let refundCredits = 0;
 
     Object.keys(creditRefunds).forEach((key) => {
-      const { creditsLeft, expiryDate, value } = creditRefunds[key];
+      const { creditsLeft, expiryDate, value, creditPackage } =
+        creditRefunds[key];
       const notExpired = dayjs().isSameOrBefore(expiryDate, "day");
+
+      // Filter by sport type if provided (backward compatible: default to "futsal")
+      if (sportType) {
+        const pkgSportType =
+          creditPackage?.typeOfSports?.toLowerCase() ?? "futsal";
+        if (pkgSportType !== sportType.toLowerCase()) {
+          return; // Skip this refund - doesn't match sport type
+        }
+      }
 
       if (notExpired) {
         userCreditRefunds.push({
