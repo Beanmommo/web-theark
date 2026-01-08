@@ -1,18 +1,18 @@
 <script setup lang="ts">
-const locationsStore = useLocationsStore()
-const pitchesStore = usePitchesStore()
-const timeslotsStore = useTimeslotsStore()
+const locationsStore = useLocationsStore();
+const pitchesStore = usePitchesStore();
+const timeslotsStore = useTimeslotsStore();
+const sportsStore = useSportsStore();
 
 // Fetch data needed for sport venues display
 await Promise.all([
-  useAsyncData('locations', () => locationsStore.fetchLocations()),
-  useAsyncData('pitches', () => pitchesStore.fetchPitches()),
-  useAsyncData('timeslots', () => timeslotsStore.fetchTimeslots()),
-])
+  useAsyncData("locations", () => locationsStore.fetchLocations()),
+  useAsyncData("pitches", () => pitchesStore.fetchPitches()),
+  useAsyncData("timeslots", () => timeslotsStore.fetchTimeslots()),
+  useAsyncData("sports", () => sportsStore.fetchSports()),
+]);
 
-const sportsStore = useSportsStore()
-const { sports } = storeToRefs(sportsStore)
-
+const { sports } = storeToRefs(sportsStore);
 </script>
 
 <template>
@@ -27,13 +27,14 @@ const { sports } = storeToRefs(sportsStore)
 .sport__container {
   display: grid;
   grid-template-columns: 1fr;
-  min-height: calc(100vh - $header-height - 382px); // 100vh - header height - footer min-height
+  min-height: calc(
+    100vh - $header-height - 382px
+  ); // 100vh - header height - footer min-height
 
   // Mobile: single column
   @media (max-width: $mobile) {
     grid-template-columns: 1fr;
     min-height: calc(100vh - $header-height - 400px);
-
   }
 
   // Tablet and above: two columns

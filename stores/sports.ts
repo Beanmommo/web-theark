@@ -1,28 +1,61 @@
 import type { Sport } from "~/types/sport";
+import type { SportType } from "~/types/data";
 
 export const useSportsStore = defineStore("sport", () => {
-  const sports = ref<Sport[]>([
-    {
-      name: "Futsal",
-      slug: "futsal",
-      icon: "mdi-soccer",
-      startingRate: 60,
-      tag: "Indoor & Outdoor",
-      theme: "futsalTheme",
-      backgroundImage:
-        "https://res.cloudinary.com/thearksg/image/upload/f_auto/v1594089843/website/landingpage_image_slide1.png",
-    },
-    {
-      name: "Pickleball",
-      slug: "pickleball",
-      icon: "mdi-tennis",
-      startingRate: 25,
-      tag: "Indoor",
-      theme: "pickleBallTheme",
-      backgroundImage:
-        "https://github.com/Beanmommo/web-theark/blob/main/public/Images/pickleball_background.png?raw=true",
-    },
-  ]);
+  const sports = ref<Sport[]>([]);
+  const isLoaded = ref(false);
+
+  /**
+   * Fetch sports from Firebase config
+   * Filters based on websitePublishDate to show only live sports
+   */
+  const fetchSports = async () => {
+    try {
+      const configStore = useConfigStore();
+
+      // Ensure config is loaded
+      if (!configStore.config) {
+        await configStore.fetchConfig();
+      }
+
+      const sportsTypes = configStore.getSportTypes();
+
+      if (!sportsTypes || sportsTypes.length === 0) {
+        console.warn("No sports types found in config");
+        return;
+      }
+
+      const now = new Date();
+
+      // Convert SportType[] to Sport[] and filter by publish dates
+      sports.value = sportsTypes
+        .filter((sportType: SportType) => {
+          // Must be active
+          if (!sportType.active) return false;
+
+          // If websitePublishDate is set, check if it's in the past
+          if (sportType.websitePublishDate) {
+            const publishDate = new Date(sportType.websitePublishDate);
+            if (publishDate > now) return false; // Not yet published
+          }
+
+          return true;
+        })
+        .map((sportType: SportType) => ({
+          name: sportType.name,
+          slug: sportType.slug,
+          icon: sportType.icon,
+          theme: sportType.theme,
+          backgroundImage: sportType.backgroundImage,
+          tag: sportType.tag,
+          startingRate: sportType.startingRate,
+        }));
+
+      isLoaded.value = true;
+    } catch (error) {
+      console.error("Error fetching sports:", error);
+    }
+  };
 
   const activeSportSlug = ref<string>("");
   const activeSport = computed(() => {
@@ -113,6 +146,8 @@ export const useSportsStore = defineStore("sport", () => {
 
   return {
     sports,
+    isLoaded,
+    fetchSports,
     activeSport,
     activeSportVenues,
     activeSportPitches,
