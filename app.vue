@@ -5,12 +5,16 @@ import { computed } from "vue";
 const theme = useTheme();
 const themeKey = computed(() => theme.global.name.value);
 
-// Fetch config on app load for sport terminology
+// Fetch config and sports on app load
 const configStore = useConfigStore();
-await useAsyncData("config", () => configStore.fetchConfig());
+const sportsStore = useSportsStore();
+
+await Promise.all([
+  useAsyncData("config", () => configStore.fetchConfig()),
+  useAsyncData("sports", () => sportsStore.fetchSports()),
+]);
 
 const route = useRoute();
-const sportsStore = useSportsStore();
 const { sports } = storeToRefs(sportsStore);
 
 function updateThemeByRoute() {
