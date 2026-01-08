@@ -9,7 +9,7 @@ export const useSportsStore = defineStore("sport", () => {
    * Fetch sports from Firebase config
    * Filters based on websitePublishDate to show only live sports
    */
-  const fetchSports = async () => {
+  const fetchSports = async (): Promise<Sport[]> => {
     try {
       const configStore = useConfigStore();
 
@@ -22,7 +22,8 @@ export const useSportsStore = defineStore("sport", () => {
 
       if (!sportsTypes || sportsTypes.length === 0) {
         console.warn("No sports types found in config");
-        return;
+        isLoaded.value = true;
+        return sports.value;
       }
 
       const now = new Date();
@@ -52,8 +53,11 @@ export const useSportsStore = defineStore("sport", () => {
         }));
 
       isLoaded.value = true;
+      return sports.value;
     } catch (error) {
       console.error("Error fetching sports:", error);
+      isLoaded.value = true;
+      return sports.value;
     }
   };
 

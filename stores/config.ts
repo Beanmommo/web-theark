@@ -5,9 +5,13 @@ export const useConfigStore = defineStore("config", () => {
   const config = ref<Config>();
   const showPopup = ref(false);
 
-  const fetchConfig = async () => {
+  const fetchConfig = async (): Promise<Config | undefined> => {
     const { data } = await useFetch("/api/config");
-    if (!data.value) return;
+    if (!data.value) {
+      console.warn("No config data received from API");
+      return config.value;
+    }
+
     config.value = data.value as Config;
 
     // Safely check if popup exists and is an array
