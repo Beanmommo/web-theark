@@ -22,7 +22,6 @@ await Promise.all([
   useAsyncData(() => sportsStore.fetchSports()),
 ]);
 
-onBeforeMount(() => {
-  sportsStore.setActiveSportBySlug(sportSlug as string);
-});
+// Set active sport after sports are loaded
+sportsStore.setActiveSportBySlug(sportSlug as string);
 </script>
