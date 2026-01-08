@@ -1,30 +1,32 @@
-import { defineStore } from 'pinia'
-import { type Config, type Pitch, type SportType } from '../types/data'
+import { defineStore } from "pinia";
+import { type Config, type Pitch, type SportType } from "../types/data";
 
-export const useConfigStore = defineStore('config', () =>
-{
-  const config = ref<Config>()
-  const showPopup = ref(false)
+export const useConfigStore = defineStore("config", () => {
+  const config = ref<Config>();
+  const showPopup = ref(false);
 
-  const fetchConfig = async () =>
-  {
-
-    const { data } = await useFetch('/api/config')
+  const fetchConfig = async () => {
+    const { data } = await useFetch("/api/config");
     if (!data.value) return;
-    config.value = data.value as Config
-    showPopup.value = config.value?.popup?.some(item => item.popup) ?? false
-    return config.value
-  }
+    config.value = data.value as Config;
 
-  const closePopup = () =>
-  {
-    showPopup.value = false
-  }
+    // Safely check if popup exists and is an array
+    if (config.value?.popup && Array.isArray(config.value.popup)) {
+      showPopup.value = config.value.popup.some((item) => item.popup) ?? false;
+    } else {
+      showPopup.value = false;
+    }
 
-  const getSportTypes = () =>
-  {
-    return config.value?.sportsTypes
-  }
+    return config.value;
+  };
+
+  const closePopup = () => {
+    showPopup.value = false;
+  };
+
+  const getSportTypes = (): SportType[] => {
+    return config.value?.sportsTypes ?? [];
+  };
 
   /**
    * Get sport terminology by sport slug (lowercase name)
@@ -32,30 +34,31 @@ export const useConfigStore = defineStore('config', () =>
    * @param type - 'singular' or 'plural'
    * @returns The terminology string capitalized (e.g., "Pitch", "Court")
    */
-  const getSportTerminology = (sportSlug: string | null | undefined, type: 'singular' | 'plural' = 'singular'): string => {
+  const getSportTerminology = (
+    sportSlug: string | null | undefined,
+    type: "singular" | "plural" = "singular"
+  ): string => {
     // Handle null/undefined typeOfSports (legacy futsal pitches)
     // If typeOfSports is null or undefined, default to "futsal"
-    const slug = sportSlug?.toLowerCase() || 'futsal'
+    const slug = sportSlug?.toLowerCase() || "futsal";
 
     // Find sport type in config by comparing lowercase name
-    const sportType = config.value?.sportsTypes?.find(
-      (st: SportType) => {
-        const match = st.name.toLowerCase() === slug
-        return match
-      }
-    )
+    const sportType = config.value?.sportsTypes?.find((st: SportType) => {
+      const match = st.name.toLowerCase() === slug;
+      return match;
+    });
 
     // Return terminology (capitalize first letter) or fallback to "Pitch"/"Pitches"
     if (sportType?.terminology) {
-      const term = sportType.terminology[type]
+      const term = sportType.terminology[type];
       // Capitalize first letter
-      const capitalized = term.charAt(0).toUpperCase() + term.slice(1)
-      return capitalized
+      const capitalized = term.charAt(0).toUpperCase() + term.slice(1);
+      return capitalized;
     }
 
     // Fallback
-    return type === 'singular' ? 'Pitch' : 'Pitches'
-  }
+    return type === "singular" ? "Pitch" : "Pitches";
+  };
 
   /**
    * Get terminology for a Pitch object
@@ -63,9 +66,12 @@ export const useConfigStore = defineStore('config', () =>
    * @param type - 'singular' or 'plural'
    * @returns The terminology string capitalized (e.g., "Pitch", "Court")
    */
-  const getPitchTerminology = (pitch: Pitch, type: 'singular' | 'plural' = 'singular'): string => {
-    return getSportTerminology(pitch.typeOfSports, type)
-  }
+  const getPitchTerminology = (
+    pitch: Pitch,
+    type: "singular" | "plural" = "singular"
+  ): string => {
+    return getSportTerminology(pitch.typeOfSports, type);
+  };
 
   return {
     config,
@@ -75,5 +81,5 @@ export const useConfigStore = defineStore('config', () =>
     getSportTypes,
     getSportTerminology,
     getPitchTerminology,
-  }
-})
+  };
+});
