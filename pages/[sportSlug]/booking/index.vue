@@ -102,33 +102,39 @@ function submitHandler(invoiceDetails: Invoice) {
 const sport = route.params.sportSlug as string;
 const dayjs = useDayjs();
 
-// Get current sport and check if bookable
+// Get current sport and check if booking is available
 const currentSport = computed(() => sportsStore.getSportBySlug(sport));
 const activeSportName = computed(() => currentSport.value?.name || "");
 
-const isBookable = computed(() => {
+const isBookingAvailable = computed(() => {
   if (!currentSport.value) return false;
-  return sportsStore.isBookable(currentSport.value);
+
+  // Check bookingPublishDate for actual booking availability
+  if (!currentSport.value.bookingPublishDate) return true; // No date = always available
+
+  const bookingDate = new Date(currentSport.value.bookingPublishDate);
+  const now = new Date();
+  return bookingDate <= now;
 });
 
-// Format publish date for display
-const publishDate = computed(() => {
-  if (!currentSport.value?.websitePublishDate) return "";
-  return dayjs(currentSport.value.websitePublishDate).format("MMMM D, YYYY");
+// Format booking publish date for display
+const bookingPublishDate = computed(() => {
+  if (!currentSport.value?.bookingPublishDate) return "";
+  return dayjs(currentSport.value.bookingPublishDate).format("MMMM D, YYYY");
 });
 </script>
 
 <template>
   <PageBannerBooking :sport="activeSportName" />
 
-  <!-- Coming Soon Section (Simple version without background) -->
+  <!-- Coming Soon Section (when booking is not yet available) -->
   <SectionComingSoonSimple
-    v-if="!isBookable && currentSport"
+    v-if="!isBookingAvailable && currentSport"
     :sport="currentSport"
-    :publish-date="publishDate"
+    :publish-date="bookingPublishDate"
   />
 
-  <!-- Booking Forms (only show if bookable) -->
+  <!-- Booking Forms (only show when booking is available) -->
   <template v-else>
     <BookingFormPage1
       v-if="isSelectionPage"
