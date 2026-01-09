@@ -18,21 +18,21 @@
 
 ## 3. Quick Booking Component Updates
 
-- [ ] 3.1 Import and use `isBookingEnabled()` from sports store
-- [ ] 3.2 Add computed property to check if booking is enabled for active sport
-- [ ] 3.3 Create "Coming Soon" state UI component/section
-- [ ] 3.4 Display booking launch date if available when showing "Coming Soon"
-- [ ] 3.5 Conditionally render booking form OR "Coming Soon" based on booking status
-- [ ] 3.6 Style "Coming Soon" state to match existing design system
+- [x] 3.1 Import and use `isBookingEnabled()` from sports store
+- [x] 3.2 Add computed property to check if booking is enabled for active sport
+- [x] 3.3 Create "Coming Soon" state UI component/section
+- [x] 3.4 Display booking launch date if available when showing "Coming Soon"
+- [x] 3.5 Conditionally render booking form OR "Coming Soon" based on booking status
+- [x] 3.6 Style "Coming Soon" state to match existing design system
 
 ## 4. Booking Page Updates
 
-- [ ] 4.1 Add booking status check on page load in `pages/[sportSlug]/booking/index.vue`
-- [ ] 4.2 Create "Coming Soon" banner component for booking page
-- [ ] 4.3 Display launch date and call-to-action when booking is disabled
-- [ ] 4.4 Hide booking forms (date picker, time slots, etc.) when booking is disabled
-- [ ] 4.5 Show informational content about the sport while booking is disabled
-- [ ] 4.6 Ensure direct navigation to booking page shows appropriate state
+- [x] 4.1 Add booking status check on page load in `pages/[sportSlug]/booking/index.vue`
+- [x] 4.2 Create "Coming Soon" banner component for booking page
+- [x] 4.3 Display launch date and call-to-action when booking is disabled
+- [x] 4.4 Hide booking forms (date picker, time slots, etc.) when booking is disabled
+- [x] 4.5 Show informational content about the sport while booking is disabled
+- [x] 4.6 Ensure direct navigation to booking page shows appropriate state
 
 ## 5. Data Migration
 
