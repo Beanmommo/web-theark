@@ -37,6 +37,16 @@ function clickHandler(link: string) {
   router.push(link);
 }
 
+function handleLogoClick() {
+  // If on a sport sub-page, navigate to sport home
+  // Otherwise, navigate to main home page
+  if (sportSlug) {
+    router.push(`/${sportSlug}`);
+  } else {
+    router.push("/");
+  }
+}
+
 function handleBookNow() {
   if (sportSlug) {
     router.push(`/${sportSlug}/booking`);
@@ -67,7 +77,7 @@ watch(
         class="imgLogo"
         :src="themeLogo"
         alt="The Ark Logo"
-        @click="clickHandler('/')"
+        @click="handleLogoClick"
         width="80px"
       />
       <div class="nav-items">
