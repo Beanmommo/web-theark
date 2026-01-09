@@ -21,29 +21,35 @@ sportsStore.setActiveSportBySlug(sportSlug as string);
 
 const dayjs = useDayjs();
 
-// Check if current sport is bookable
+// Check if current sport booking is available
 const currentSport = computed(() => sportsStore.activeSport);
-const isBookable = computed(() => {
+const isBookingAvailable = computed(() => {
   if (!currentSport.value) return false;
-  return sportsStore.isBookable(currentSport.value);
+
+  // Check bookingPublishDate for actual booking availability
+  if (!currentSport.value.bookingPublishDate) return true; // No date = always available
+
+  const bookingDate = new Date(currentSport.value.bookingPublishDate);
+  const now = new Date();
+  return bookingDate <= now;
 });
 
-// Format publish date for display
-const publishDate = computed(() => {
-  if (!currentSport.value?.websitePublishDate) return "";
-  return dayjs(currentSport.value.websitePublishDate).format("MMMM D, YYYY");
+// Format booking publish date for display
+const bookingPublishDate = computed(() => {
+  if (!currentSport.value?.bookingPublishDate) return "";
+  return dayjs(currentSport.value.bookingPublishDate).format("MMMM D, YYYY");
 });
 </script>
 
 <template>
-  <!-- Coming Soon Section -->
+  <!-- Coming Soon Section (when booking is not yet available) -->
   <SectionComingSoon
-    v-if="!isBookable && currentSport"
+    v-if="!isBookingAvailable && currentSport"
     :sport="currentSport"
-    :publish-date="publishDate"
+    :publish-date="bookingPublishDate"
   />
 
-  <!-- Quick Booking Section -->
+  <!-- Quick Booking Section (when booking is available) -->
   <SectionQuickBooking v-else />
 
   <!-- Sport Venues Section -->
