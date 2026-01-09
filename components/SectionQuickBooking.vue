@@ -8,7 +8,7 @@ const route = useRoute();
 const locationsStore = useLocationsStore();
 const { locations } = storeToRefs(locationsStore);
 const sportsStore = useSportsStore();
-const { activeSport, activeSportVenues } = storeToRefs(sportsStore);
+const { sports, activeSport, activeSportVenues } = storeToRefs(sportsStore);
 const blockoutsStore = useBlockoutsStore();
 const { blockouts } = storeToRefs(blockoutsStore);
 
@@ -21,10 +21,10 @@ const currentSport = computed(() => {
   // First try activeSport (set by parent page)
   if (activeSport.value) return activeSport.value;
 
-  // Fallback: get from route params
+  // Fallback: get from route params and search in sports array
   const sportSlug = route.params.sportSlug as string;
-  if (sportSlug) {
-    return sportsStore.getSportBySlug(sportSlug);
+  if (sportSlug && sports.value.length > 0) {
+    return sports.value.find((sport) => sport.slug === sportSlug);
   }
 
   return null;
@@ -92,9 +92,18 @@ function format(date: Date) {
     .padStart(2, "0")}`;
 }
 
-const backgroundImage = computed(
-  () => currentSport.value?.backgroundImage || ""
-);
+const backgroundImage = computed(() => {
+  const bg = currentSport.value?.backgroundImage || "";
+  console.log("SectionQuickBooking - currentSport:", currentSport.value);
+  console.log("SectionQuickBooking - backgroundImage:", bg);
+  console.log("SectionQuickBooking - activeSport:", activeSport.value);
+  console.log(
+    "SectionQuickBooking - route.params.sportSlug:",
+    route.params.sportSlug
+  );
+  console.log("SectionQuickBooking - all sports:", sports.value);
+  return bg;
+});
 </script>
 
 <template>
