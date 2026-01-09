@@ -42,10 +42,10 @@
 
 ## 6. Testing
 
-- [ ] 6.1 Test sport visibility with various `websiteStartDate` values (past, future, null)
-- [ ] 6.2 Test booking availability with various `websitePublishDate` values
-- [ ] 6.3 Test "Coming Soon" state in Quick Booking component
-- [ ] 6.4 Test "Coming Soon" state on booking page via direct navigation
-- [ ] 6.5 Test backward compatibility with sports missing new fields
-- [ ] 6.6 Test sport filtering and venue/pitch associations still work correctly
-- [ ] 6.7 Test routing to sport pages works for all configured sports
+- [x] 6.1 Test sport visibility with various `websiteStartDate` values (past, future, null)
+- [x] 6.2 Test booking availability with various `websitePublishDate` values
+- [x] 6.3 Test "Coming Soon" state in Quick Booking component
+- [x] 6.4 Test "Coming Soon" state on booking page via direct navigation
+- [x] 6.5 Test backward compatibility with sports missing new fields
+- [x] 6.6 Test sport filtering and venue/pitch associations still work correctly
+- [x] 6.7 Test routing to sport pages works for all configured sports
