@@ -75,22 +75,23 @@ export const useSportsStore = defineStore("sport", () => {
   };
 
   /**
-   * Check if a sport is bookable (bookingPublishDate has passed)
+   * Check if a sport page is accessible (websitePublishDate has passed)
+   * Used for homepage "Book Now" button - determines if user can navigate to sport page
    * @param sport - The sport to check
-   * @returns true if booking is available, false if coming soon
+   * @returns true if sport page is accessible, false if coming soon
    */
   const isBookable = (sport: Sport): boolean => {
-    if (!sport.bookingPublishDate) return true; // No date = always bookable
+    if (!sport.websitePublishDate) return true; // No date = always accessible
 
-    const publishDate = new Date(sport.bookingPublishDate);
+    const publishDate = new Date(sport.websitePublishDate);
     const now = new Date();
     return publishDate <= now;
   };
 
   /**
-   * Check if a sport is coming soon (bookingPublishDate is in the future)
+   * Check if a sport is coming soon (websitePublishDate is in the future)
    * @param sport - The sport to check
-   * @returns true if coming soon, false if already bookable
+   * @returns true if coming soon, false if page is accessible
    */
   const isComingSoon = (sport: Sport): boolean => {
     return !isBookable(sport);
