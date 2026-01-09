@@ -2,19 +2,19 @@
 
 ## 1. Type Definitions and Config Store
 
-- [ ] 1.1 Update `Sport` type in `types/sport.ts` to include optional scheduling fields
-- [ ] 1.2 Create or update config store to fetch sports configuration from Firebase
-- [ ] 1.3 Add type definitions for Firebase config sports structure
+- [x] 1.1 Update `Sport` type in `types/sport.ts` to include optional scheduling fields
+- [x] 1.2 Create or update config store to fetch sports configuration from Firebase
+- [x] 1.3 Add type definitions for Firebase config sports structure
 
 ## 2. Sports Store Refactoring
 
-- [ ] 2.1 Replace hardcoded sports array with reactive ref initialized as empty
-- [ ] 2.2 Add `fetchSports()` method to load sports from Firebase config
-- [ ] 2.3 Implement date-based filtering to hide sports before `websiteStartDate`
-- [ ] 2.4 Add `isBookingEnabled(sportSlug)` method to check `websitePublishDate`
-- [ ] 2.5 Add `getBookingLaunchDate(sportSlug)` method to retrieve publish date for display
-- [ ] 2.6 Ensure existing methods (`getSportBySlug`, `getSportPitches`, etc.) continue to work
-- [ ] 2.7 Call `fetchSports()` on store initialization
+- [x] 2.1 Replace hardcoded sports array with reactive ref initialized as empty
+- [x] 2.2 Add `fetchSports()` method to load sports from Firebase config
+- [x] 2.3 Implement date-based filtering to hide sports before `websiteStartDate`
+- [x] 2.4 Add `isBookingEnabled(sportSlug)` method to check `websitePublishDate`
+- [x] 2.5 Add `getBookingLaunchDate(sportSlug)` method to retrieve publish date for display
+- [x] 2.6 Ensure existing methods (`getSportBySlug`, `getSportPitches`, etc.) continue to work
+- [x] 2.7 Call `fetchSports()` on store initialization
 
 ## 3. Quick Booking Component Updates
 
@@ -36,9 +36,9 @@
 
 ## 5. Data Migration
 
-- [ ] 5.1 Document process for migrating existing sports (Futsal, Pickleball) to Firebase
-- [ ] 5.2 Create migration script or manual steps to populate Firebase config
-- [ ] 5.3 Verify existing sports work after migration
+- [x] 5.1 Document process for migrating existing sports (Futsal, Pickleball) to Firebase
+- [x] 5.2 Create migration script or manual steps to populate Firebase config
+- [x] 5.3 Verify existing sports work after migration
 
 ## 6. Testing
 
@@ -49,4 +49,3 @@
 - [ ] 6.5 Test backward compatibility with sports missing new fields
 - [ ] 6.6 Test sport filtering and venue/pitch associations still work correctly
 - [ ] 6.7 Test routing to sport pages works for all configured sports
-

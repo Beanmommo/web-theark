@@ -6,22 +6,57 @@ export const useConfigStore = defineStore("config", () => {
   const showPopup = ref(false);
 
   const fetchConfig = async (): Promise<Config | undefined> => {
-    const { data } = await useFetch("/api/config");
-    if (!data.value) {
-      console.warn("No config data received from API");
+    try {
+      const { data } = await useFetch("/api/config");
+      if (!data.value) {
+        console.warn("No config data received from API");
+        return config.value;
+      }
+
+      // Normalize the data structure
+      const rawData = data.value as any;
+
+      // Ensure popup is an array
+      let popupArray: any[] = [];
+      if (rawData.popup) {
+        if (Array.isArray(rawData.popup)) {
+          popupArray = rawData.popup;
+        } else if (typeof rawData.popup === "object") {
+          // Convert object to array (in case it's stored as an object in Firebase)
+          popupArray = Object.values(rawData.popup);
+        }
+      }
+
+      // Ensure sportsTypes is an array
+      let sportsTypesArray: SportType[] = [];
+      if (rawData.sportsTypes) {
+        if (Array.isArray(rawData.sportsTypes)) {
+          sportsTypesArray = rawData.sportsTypes;
+        } else if (typeof rawData.sportsTypes === "object") {
+          // Convert object to array (in case it's stored as an object in Firebase)
+          sportsTypesArray = Object.values(rawData.sportsTypes);
+        }
+      }
+
+      config.value = {
+        popup: popupArray,
+        sportsTypes: sportsTypesArray,
+      };
+
+      // Safely check if any popup should be shown
+      showPopup.value =
+        popupArray.some((item) => item?.popup === true) ?? false;
+
+      return config.value;
+    } catch (error) {
+      console.error("Error in fetchConfig:", error);
+      // Return empty config to prevent crashes
+      config.value = {
+        popup: [],
+        sportsTypes: [],
+      };
       return config.value;
     }
-
-    config.value = data.value as Config;
-
-    // Safely check if popup exists and is an array
-    if (config.value?.popup && Array.isArray(config.value.popup)) {
-      showPopup.value = config.value.popup.some((item) => item.popup) ?? false;
-    } else {
-      showPopup.value = false;
-    }
-
-    return config.value;
   };
 
   const closePopup = () => {
