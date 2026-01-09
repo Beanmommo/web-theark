@@ -1,6 +1,15 @@
 <template>
-  <!-- TODO: Connect this with firebase later -->
-  <SectionQuickBooking />
+  <!-- Coming Soon Section -->
+  <SectionComingSoon
+    v-if="!isBookable && currentSport"
+    :sport="currentSport"
+    :publish-date="publishDate"
+  />
+
+  <!-- Quick Booking Section -->
+  <SectionQuickBooking v-else />
+
+  <!-- Sport Venues Section -->
   <SectionSportVenues :sport-slug="sportSlug" />
 </template>
 
@@ -24,4 +33,19 @@ await Promise.all([
 
 // Set active sport after sports are loaded
 sportsStore.setActiveSportBySlug(sportSlug as string);
+
+const dayjs = useDayjs();
+
+// Check if current sport is bookable
+const currentSport = computed(() => sportsStore.activeSport);
+const isBookable = computed(() => {
+  if (!currentSport.value) return false;
+  return sportsStore.isBookable(currentSport.value);
+});
+
+// Format publish date for display
+const publishDate = computed(() => {
+  if (!currentSport.value?.websitePublishDate) return "";
+  return dayjs(currentSport.value.websitePublishDate).format("MMMM D, YYYY");
+});
 </script>
