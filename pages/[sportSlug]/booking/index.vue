@@ -1,114 +1,157 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useGoTo } from 'vuetify'
-import type { GroupedTimeslots, Invoice } from '~/types/data';
-import { useLocationsStore } from '~/stores/locations'
+import { onMounted, ref } from "vue";
+import { useGoTo } from "vuetify";
+import type { GroupedTimeslots, Invoice } from "~/types/data";
+import { useLocationsStore } from "~/stores/locations";
 import { useTimeslotsStore } from "~/stores/timeslots";
 import { usePitchesStore } from "~/stores/pitches";
-import { useHolidaysStore } from '~/stores/holidays';
-import { useBlockoutsStore } from '~/stores/blockouts';
-import { usePromoCodesStore } from '~/stores/promocodes';
+import { useHolidaysStore } from "~/stores/holidays";
+import { useBlockoutsStore } from "~/stores/blockouts";
+import { usePromoCodesStore } from "~/stores/promocodes";
 
-const locationsStore = useLocationsStore()
-const timeslotsStore = useTimeslotsStore()
-const pitchesStore = usePitchesStore()
-const holidaysStore = useHolidaysStore()
-const blockoutsStore = useBlockoutsStore()
-const promocodesStore = usePromoCodesStore()
+const locationsStore = useLocationsStore();
+const timeslotsStore = useTimeslotsStore();
+const pitchesStore = usePitchesStore();
+const holidaysStore = useHolidaysStore();
+const blockoutsStore = useBlockoutsStore();
+const promocodesStore = usePromoCodesStore();
 const creditsStore = useCreditsStore();
+const sportsStore = useSportsStore();
 
 await Promise.all([
-  useAsyncData('locations', () => locationsStore.fetchLocations()),
-  useAsyncData('timeslots', () => timeslotsStore.fetchTimeslots()),
-  useAsyncData('pitches', () => pitchesStore.fetchPitches()),
-  useAsyncData('holidays', () => holidaysStore.fetchHolidays()),
-  useAsyncData('blockouts', () => blockoutsStore.fetchBlockouts()),
-  useAsyncData('promocodes', () => promocodesStore.fetchPromoCodes()),
-  useAsyncData('credits', () => creditsStore.fetchUserCreditsAndRefunds())
-])
-
+  useAsyncData("locations", () => locationsStore.fetchLocations()),
+  useAsyncData("timeslots", () => timeslotsStore.fetchTimeslots()),
+  useAsyncData("pitches", () => pitchesStore.fetchPitches()),
+  useAsyncData("holidays", () => holidaysStore.fetchHolidays()),
+  useAsyncData("blockouts", () => blockoutsStore.fetchBlockouts()),
+  useAsyncData("promocodes", () => promocodesStore.fetchPromoCodes()),
+  useAsyncData("credits", () => creditsStore.fetchUserCreditsAndRefunds()),
+  useAsyncData("sports", () => sportsStore.fetchSports()),
+]);
 
 enum Step {
   SelectionPage = 1,
   AuthPage = 2,
   PaymentPage = 3,
-  QRPage = 4
+  QRPage = 4,
 }
 
 const route = useRoute();
 const goTo = useGoTo();
-const venue = ref()
-const step = ref(1)
-const groupedTimeslots = ref({} as GroupedTimeslots)
-const user = useAuthUser()
-const invoiceData = ref({} as Invoice)
+const venue = ref();
+const step = ref(1);
+const groupedTimeslots = ref({} as GroupedTimeslots);
+const user = useAuthUser();
+const invoiceData = ref({} as Invoice);
 
 onMounted(() => {
-  if (!route.query.venue) return
-  venue.value = route.query.venue
-})
+  if (!route.query.venue) return;
+  venue.value = route.query.venue;
+});
 
-const isLogin = computed(() => user.value !== null)
+const isLogin = computed(() => user.value !== null);
 
 watch(isLogin, (login: boolean) => {
-  if (login && step.value === Step.AuthPage) step.value = Step.PaymentPage
-  if (!login && step.value === Step.PaymentPage) step.value = Step.AuthPage
-})
+  if (login && step.value === Step.AuthPage) step.value = Step.PaymentPage;
+  if (!login && step.value === Step.PaymentPage) step.value = Step.AuthPage;
+});
 
-watch(() => route.query.venue, (venue) => {
-  if (!venue) {
-    step.value = Step.SelectionPage
-    resetForm()
+watch(
+  () => route.query.venue,
+  (venue) => {
+    if (!venue) {
+      step.value = Step.SelectionPage;
+      resetForm();
+    }
   }
-})
+);
 
-const isSelectionPage = computed(() => step.value === Step.SelectionPage)
-const isAuthPage = computed(() => step.value === Step.AuthPage)
-const isPaymentPage = computed(() => step.value === Step.PaymentPage)
-const isQRPage = computed(() => step.value === Step.QRPage)
+const isSelectionPage = computed(() => step.value === Step.SelectionPage);
+const isAuthPage = computed(() => step.value === Step.AuthPage);
+const isPaymentPage = computed(() => step.value === Step.PaymentPage);
+const isQRPage = computed(() => step.value === Step.QRPage);
 
 function resetForm() {
-  groupedTimeslots.value = {}
-  invoiceData.value = {} as Invoice
-  venue.value = ''
+  groupedTimeslots.value = {};
+  invoiceData.value = {} as Invoice;
+  venue.value = "";
 }
 
 function updateHandler(newGroupedTimeslots: GroupedTimeslots) {
-  groupedTimeslots.value = newGroupedTimeslots
+  groupedTimeslots.value = newGroupedTimeslots;
 }
 
 function nextHandler() {
   if (step.value === Step.SelectionPage && isLogin.value)
-    step.value = Step.PaymentPage
-  else
-    step.value = Step.AuthPage
-  goTo('#booking')
-
+    step.value = Step.PaymentPage;
+  else step.value = Step.AuthPage;
+  goTo("#booking");
 }
 
 function backHandler() {
-  step.value = Step.SelectionPage
-  goTo('#booking')
+  step.value = Step.SelectionPage;
+  goTo("#booking");
 }
 
 function submitHandler(invoiceDetails: Invoice) {
-  step.value = Step.QRPage
-  goTo('#booking')
-  invoiceData.value = invoiceDetails
+  step.value = Step.QRPage;
+  goTo("#booking");
+  invoiceData.value = invoiceDetails;
 }
 
-const sport = route.params.sportSlug as string
-const sportStore = useSportsStore()
-const activeSportName = computed(() => {
-  return sportStore.getSportBySlug(sport)?.name || ''
-})
+const sport = route.params.sportSlug as string;
+const dayjs = useDayjs();
+
+// Get current sport and check if booking is available
+const currentSport = computed(() => sportsStore.getSportBySlug(sport));
+const activeSportName = computed(() => currentSport.value?.name || "");
+
+const isBookingAvailable = computed(() => {
+  if (!currentSport.value) return false;
+
+  // Check bookingPublishDate for actual booking availability
+  if (!currentSport.value.bookingPublishDate) return true; // No date = always available
+
+  const bookingDate = new Date(currentSport.value.bookingPublishDate);
+  const now = new Date();
+  return bookingDate <= now;
+});
+
+// Format booking publish date for display
+const bookingPublishDate = computed(() => {
+  if (!currentSport.value?.bookingPublishDate) return "";
+  return dayjs(currentSport.value.bookingPublishDate).format("MMMM D, YYYY");
+});
 </script>
 
 <template>
   <PageBannerBooking :sport="activeSportName" />
-  <BookingFormPage1 v-if="isSelectionPage" @next="nextHandler" @update="updateHandler" />
-  <BookingFormPage2 v-if="isAuthPage" />
-  <BookingFormPage3 v-if="isPaymentPage" @back="backHandler" :groupedTimeslots="groupedTimeslots"
-    @submit="submitHandler" />
-  <BookingFormQRPayNow v-if="isQRPage" :groupedTimeslots="groupedTimeslots" :invoiceData="invoiceData" />
+
+  <!-- Coming Soon Section (when booking is not yet available) -->
+  <SectionComingSoonSimple
+    v-if="!isBookingAvailable && currentSport"
+    :sport="currentSport"
+    :publish-date="bookingPublishDate"
+  />
+
+  <!-- Booking Forms (only show when booking is available) -->
+  <template v-else>
+    <BookingFormPage1
+      v-if="isSelectionPage"
+      @next="nextHandler"
+      @update="updateHandler"
+    />
+    <BookingFormPage2 v-if="isAuthPage" />
+    <BookingFormPage3
+      v-if="isPaymentPage"
+      @back="backHandler"
+      :groupedTimeslots="groupedTimeslots"
+      @submit="submitHandler"
+    />
+    <BookingFormQRPayNow
+      v-if="isQRPage"
+      :groupedTimeslots="groupedTimeslots"
+      :invoiceData="invoiceData"
+    />
+  </template>
 </template>

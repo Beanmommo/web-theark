@@ -4,16 +4,31 @@ import { useLocationsStore } from "~/stores/locations";
 import { useBlockoutsStore } from "~/stores/blockouts";
 import { storeToRefs } from "pinia";
 
+const route = useRoute();
 const locationsStore = useLocationsStore();
 const { locations } = storeToRefs(locationsStore);
 const sportsStore = useSportsStore();
-const { activeSport, activeSportVenues } = storeToRefs(sportsStore);
+const { sports, activeSport, activeSportVenues } = storeToRefs(sportsStore);
 const blockoutsStore = useBlockoutsStore();
 const { blockouts } = storeToRefs(blockoutsStore);
 
 const dayjs = useDayjs();
 const selectedVenue = ref();
 const selectedDate = ref();
+
+// Get sport from route or activeSport for SSR compatibility
+const currentSport = computed(() => {
+  // First try activeSport (set by parent page)
+  if (activeSport.value) return activeSport.value;
+
+  // Fallback: get from route params and search in sports array
+  const sportSlug = route.params.sportSlug as string;
+  if (sportSlug && sports.value.length > 0) {
+    return sports.value.find((sport) => sport.slug === sportSlug);
+  }
+
+  return null;
+});
 
 // Fetch blockouts on mount
 onMounted(async () => {
@@ -56,7 +71,7 @@ const disabledDates = computed(() => {
 });
 
 function clickHandler() {
-  let url = `/${activeSport.value?.slug}/booking`;
+  let url = `/${currentSport.value?.slug}/booking`;
   if (selectedVenue.value || selectedDate.value) url += "?";
   if (selectedVenue.value) url += `venue=${selectedVenue.value}`;
   if (selectedVenue.value && selectedDate.value) url += "&";
@@ -77,9 +92,9 @@ function format(date: Date) {
     .padStart(2, "0")}`;
 }
 
-const backgroundImage = computed(
-  () => activeSport.value?.backgroundImage || ""
-);
+const backgroundImage = computed(() => {
+  return currentSport.value?.backgroundImage || "";
+});
 </script>
 
 <template>
@@ -89,7 +104,7 @@ const backgroundImage = computed(
   >
     <div class="sectionContainer">
       <div class="quickBooking">
-        <h2>{{ activeSport?.name }} Quick Booking</h2>
+        <h2>{{ currentSport?.name }} Quick Booking</h2>
         <div class="form__container">
           <FieldInputSelect
             v-model="selectedVenue"

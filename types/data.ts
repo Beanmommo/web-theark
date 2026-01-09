@@ -511,9 +511,26 @@ export type ConfigPopup = {
 export type SportType = {
   active: boolean;
   name: string;
+
+  // URL routing
+  slug: string; // URL-friendly identifier (e.g., "pickleball", "futsal")
+
+  // Launch scheduling (optional - empty for already-live sports)
+  adminPublishDate?: string; // ISO datetime when sport becomes visible in admin
+  websitePublishDate?: string; // ISO datetime when sport page goes live
+  bookingPublishDate?: string; // ISO datetime when booking becomes available
+
+  // UI configuration
+  icon: string; // Material Design icon name (e.g., "mdi-tennis")
+  theme: string; // Vuetify theme name (e.g., "pickleballTheme")
+  backgroundImage: string; // Hero image URL
+  tag: string; // Display tag (e.g., "Indoor & Outdoor")
+  startingRate: number; // Starting price for display
+
+  // Terminology
   terminology: {
-    plural: string;
-    singular: string;
+    singular: string; // e.g., "pitch" for Futsal, "court" for Pickleball
+    plural: string; // e.g., "pitches" for Futsal, "courts" for Pickleball
   };
 };
 

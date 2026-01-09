@@ -67,6 +67,18 @@ async function handleBookNow() {
     showSidebar.value = false;
   }
 }
+
+async function handleLogoClick() {
+  // If on a sport sub-page, navigate to sport home
+  // Otherwise, navigate to main home page
+  if (sportSlug) {
+    await navigateTo(`/${sportSlug}`);
+  } else {
+    await navigateTo("/");
+  }
+  // Close the menu after navigation
+  showSidebar.value = false;
+}
 </script>
 
 <template>
@@ -78,7 +90,13 @@ async function handleBookNow() {
     <transition name="section">
       <div id="mySidenav" class="sidenav" v-show="showSidebar">
         <div class="header">
-          <img :src="themeLogo" alt="The Ark Logo" width="72px" />
+          <img
+            :src="themeLogo"
+            alt="The Ark Logo"
+            width="72px"
+            class="logo-clickable"
+            @click="handleLogoClick"
+          />
           <div
             class="closebtn"
             :style="{ color: accentColor }"
@@ -168,6 +186,10 @@ async function handleBookNow() {
 
   > img {
     width: 150px;
+  }
+
+  .logo-clickable {
+    cursor: pointer;
   }
 }
 
