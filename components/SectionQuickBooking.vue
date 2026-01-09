@@ -95,6 +95,18 @@ function format(date: Date) {
 const backgroundImage = computed(() => {
   return currentSport.value?.backgroundImage || "";
 });
+
+// Check if current sport is bookable
+const isBookable = computed(() => {
+  if (!currentSport.value) return false;
+  return sportsStore.isBookable(currentSport.value);
+});
+
+// Format publish date for display
+const publishDate = computed(() => {
+  if (!currentSport.value?.websitePublishDate) return "";
+  return dayjs(currentSport.value.websitePublishDate).format("MMMM D, YYYY");
+});
 </script>
 
 <template>
@@ -103,7 +115,21 @@ const backgroundImage = computed(() => {
     :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
     <div class="sectionContainer">
-      <div class="quickBooking">
+      <!-- Coming Soon Overlay -->
+      <div v-if="!isBookable" class="coming-soon-overlay">
+        <div class="coming-soon-content">
+          <VIcon icon="mdi-calendar-clock" size="80" class="coming-soon-icon" />
+          <h2>{{ currentSport?.name }} Coming Soon!</h2>
+          <p class="publish-date">Available from {{ publishDate }}</p>
+          <p class="description">
+            We're excited to bring {{ currentSport?.name }} to The Ark. Stay
+            tuned!
+          </p>
+        </div>
+      </div>
+
+      <!-- Regular Booking Form -->
+      <div v-else class="quickBooking">
         <h2>{{ currentSport?.name }} Quick Booking</h2>
         <div class="form__container">
           <FieldInputSelect
@@ -175,6 +201,59 @@ const backgroundImage = computed(() => {
   @include md {
     grid-auto-flow: column;
     grid-template-columns: 40% 40% 1fr;
+  }
+}
+
+.coming-soon-overlay {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  min-height: 180px;
+  border-radius: 8px;
+  padding: $p-margin * 2;
+  max-width: $main-max;
+  margin: 0 $margin;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include tablet {
+    margin: 0;
+    padding: $p-margin * 3;
+  }
+}
+
+.coming-soon-content {
+  text-align: center;
+  max-width: 600px;
+
+  .coming-soon-icon {
+    color: #999;
+    margin-bottom: $margin * 2;
+    opacity: 0.8;
+  }
+
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: $margin;
+    color: $functional-black;
+
+    @include mobile {
+      font-size: 2rem;
+    }
+  }
+
+  .publish-date {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: $margin * 2;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    color: #888;
+    line-height: 1.6;
   }
 }
 </style>
