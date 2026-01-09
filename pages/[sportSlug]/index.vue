@@ -15,13 +15,19 @@ const timeslotsStore = useTimeslotsStore();
 const configStore = useConfigStore();
 
 await Promise.all([
-  useAsyncData(() => locationsStore.fetchLocations()),
-  useAsyncData(() => pitchesStore.fetchPitches()),
-  useAsyncData(() => timeslotsStore.fetchTimeslots()),
-  useAsyncData(() => configStore.fetchConfig()),
-  useAsyncData(() => sportsStore.fetchSports()),
+  useAsyncData("locations", () => locationsStore.fetchLocations()),
+  useAsyncData("pitches", () => pitchesStore.fetchPitches()),
+  useAsyncData("timeslots", () => timeslotsStore.fetchTimeslots()),
+  useAsyncData("config", () => configStore.fetchConfig()),
+  useAsyncData("sports", () => sportsStore.fetchSports()),
 ]);
 
 // Set active sport after sports are loaded
+console.log("[sportSlug]/index.vue - Sports loaded:", sportsStore.sports);
+console.log("[sportSlug]/index.vue - Looking for slug:", sportSlug);
 sportsStore.setActiveSportBySlug(sportSlug as string);
+console.log(
+  "[sportSlug]/index.vue - Active sport set to:",
+  sportsStore.activeSport
+);
 </script>

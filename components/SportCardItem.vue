@@ -9,16 +9,26 @@ const props = defineProps({
     type: Object as PropType<Sport>,
     required: true,
   },
+  comingSoon: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const theme = useTheme();
 const router = useRouter();
+const sportsStore = useSportsStore();
+
+// Check if sport is bookable
+const isBookable = computed(() => {
+  return sportsStore.isBookable(props.sport);
+});
 
 function clickHandlerBookNow() {
+  if (!isBookable.value) return; // Don't navigate if coming soon
   router.push(`/${props.sport.slug}/venue`);
 }
 
-const sportsStore = useSportsStore();
 const accentColor = computed(() => {
   const sport = sportsStore.getSportByName(props.sport.name);
   if (!sport) return "#008000"; // Default green fallback
@@ -97,9 +107,14 @@ const startingRate = computed(() => {
           ><b>{{ props.sport.tag }}</b></sub
         >
         <div class="buttons__container">
-          <Button @click="clickHandlerBookNow" :color="accentColor"
-            >Book Now</Button
+          <Button
+            v-if="isBookable"
+            @click="clickHandlerBookNow"
+            :color="accentColor"
           >
+            Book Now
+          </Button>
+          <Button v-else :color="'#999'" :disabled="true"> Coming Soon </Button>
         </div>
       </div>
     </template>

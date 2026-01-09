@@ -7,7 +7,8 @@ export const useSportsStore = defineStore("sport", () => {
 
   /**
    * Fetch sports from Firebase config
-   * Filters based on websitePublishDate to show only live sports
+   * Loads ALL active sports (regardless of publish date)
+   * Use isBookable() to check if booking is available
    */
   const fetchSports = async (): Promise<Sport[]> => {
     try {
@@ -26,21 +27,11 @@ export const useSportsStore = defineStore("sport", () => {
         return sports.value;
       }
 
-      const now = new Date();
-
-      // Convert SportType[] to Sport[] and filter by publish dates
+      // Convert SportType[] to Sport[] - load ALL active sports
       sports.value = sportsTypes
         .filter((sportType: SportType) => {
-          // Must be active
-          if (!sportType.active) return false;
-
-          // If websitePublishDate is set, check if it's in the past
-          if (sportType.websitePublishDate) {
-            const publishDate = new Date(sportType.websitePublishDate);
-            if (publishDate > now) return false; // Not yet published
-          }
-
-          return true;
+          // Only filter by active status
+          return sportType.active;
         })
         .map((sportType: SportType) => ({
           name: sportType.name,
@@ -50,6 +41,7 @@ export const useSportsStore = defineStore("sport", () => {
           backgroundImage: sportType.backgroundImage,
           tag: sportType.tag,
           startingRate: sportType.startingRate,
+          websitePublishDate: sportType.websitePublishDate, // Keep for checking
         }));
 
       isLoaded.value = true;
@@ -80,6 +72,38 @@ export const useSportsStore = defineStore("sport", () => {
   const getSportBySlug = (slug: string) => {
     return sports.value.find((sport) => sport.slug === slug);
   };
+
+  /**
+   * Check if a sport is bookable (websitePublishDate has passed)
+   * @param sport - The sport to check
+   * @returns true if booking is available, false if coming soon
+   */
+  const isBookable = (sport: Sport): boolean => {
+    if (!sport.websitePublishDate) return true; // No date = always bookable
+
+    const publishDate = new Date(sport.websitePublishDate);
+    const now = new Date();
+    return publishDate <= now;
+  };
+
+  /**
+   * Check if a sport is coming soon (websitePublishDate is in the future)
+   * @param sport - The sport to check
+   * @returns true if coming soon, false if already bookable
+   */
+  const isComingSoon = (sport: Sport): boolean => {
+    return !isBookable(sport);
+  };
+
+  // Computed: Only bookable sports (for homepage display)
+  const bookableSports = computed(() => {
+    return sports.value.filter(isBookable);
+  });
+
+  // Computed: Only coming soon sports
+  const comingSoonSports = computed(() => {
+    return sports.value.filter(isComingSoon);
+  });
 
   // Helper function to check if a pitch matches the sport type
   // Handles legacy pitches where typeOfSports is null (defaults to futsal)
@@ -155,10 +179,14 @@ export const useSportsStore = defineStore("sport", () => {
     activeSport,
     activeSportVenues,
     activeSportPitches,
+    bookableSports,
+    comingSoonSports,
     setActiveSportBySlug,
     getSportPitches,
     getSportByName,
     getSportBySlug,
     getSportVenues,
+    isBookable,
+    isComingSoon,
   };
 });

@@ -12,13 +12,19 @@ await Promise.all([
   useAsyncData("sports", () => sportsStore.fetchSports()),
 ]);
 
-const { sports } = storeToRefs(sportsStore);
+const { bookableSports, comingSoonSports } = storeToRefs(sportsStore);
 </script>
 
 <template>
   <section class="sport__container">
-    <template v-for="sport in sports">
+    <!-- Show bookable sports -->
+    <template v-for="sport in bookableSports">
       <SectionSports :sport="sport" />
+    </template>
+
+    <!-- Show coming soon sports -->
+    <template v-for="sport in comingSoonSports">
+      <SectionSports :sport="sport" :coming-soon="true" />
     </template>
   </section>
 </template>
