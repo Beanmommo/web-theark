@@ -93,16 +93,7 @@ function format(date: Date) {
 }
 
 const backgroundImage = computed(() => {
-  const bg = currentSport.value?.backgroundImage || "";
-  console.log("SectionQuickBooking - currentSport:", currentSport.value);
-  console.log("SectionQuickBooking - backgroundImage:", bg);
-  console.log("SectionQuickBooking - activeSport:", activeSport.value);
-  console.log(
-    "SectionQuickBooking - route.params.sportSlug:",
-    route.params.sportSlug
-  );
-  console.log("SectionQuickBooking - all sports:", sports.value);
-  return bg;
+  return currentSport.value?.backgroundImage || "";
 });
 </script>
 

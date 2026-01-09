@@ -23,11 +23,5 @@ await Promise.all([
 ]);
 
 // Set active sport after sports are loaded
-console.log("[sportSlug]/index.vue - Sports loaded:", sportsStore.sports);
-console.log("[sportSlug]/index.vue - Looking for slug:", sportSlug);
 sportsStore.setActiveSportBySlug(sportSlug as string);
-console.log(
-  "[sportSlug]/index.vue - Active sport set to:",
-  sportsStore.activeSport
-);
 </script>
