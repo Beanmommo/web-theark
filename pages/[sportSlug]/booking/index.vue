@@ -121,8 +121,8 @@ const publishDate = computed(() => {
 <template>
   <PageBannerBooking :sport="activeSportName" />
 
-  <!-- Coming Soon Section -->
-  <SectionComingSoon
+  <!-- Coming Soon Section (Simple version without background) -->
+  <SectionComingSoonSimple
     v-if="!isBookable && currentSport"
     :sport="currentSport"
     :publish-date="publishDate"
