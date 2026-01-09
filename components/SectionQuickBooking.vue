@@ -236,7 +236,7 @@ const publishDate = computed(() => {
     font-size: 2.5rem;
     font-weight: 600;
     margin-bottom: $margin;
-    color: $functional-black;
+    color: #333;
 
     @include mobile {
       font-size: 2rem;
