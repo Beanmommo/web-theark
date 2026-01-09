@@ -41,7 +41,8 @@ export const useSportsStore = defineStore("sport", () => {
           backgroundImage: sportType.backgroundImage,
           tag: sportType.tag,
           startingRate: sportType.startingRate,
-          websitePublishDate: sportType.websitePublishDate, // Keep for checking
+          websitePublishDate: sportType.websitePublishDate, // When sport page goes live
+          bookingPublishDate: sportType.bookingPublishDate, // When booking becomes available
         }));
 
       isLoaded.value = true;
@@ -74,20 +75,20 @@ export const useSportsStore = defineStore("sport", () => {
   };
 
   /**
-   * Check if a sport is bookable (websitePublishDate has passed)
+   * Check if a sport is bookable (bookingPublishDate has passed)
    * @param sport - The sport to check
    * @returns true if booking is available, false if coming soon
    */
   const isBookable = (sport: Sport): boolean => {
-    if (!sport.websitePublishDate) return true; // No date = always bookable
+    if (!sport.bookingPublishDate) return true; // No date = always bookable
 
-    const publishDate = new Date(sport.websitePublishDate);
+    const publishDate = new Date(sport.bookingPublishDate);
     const now = new Date();
     return publishDate <= now;
   };
 
   /**
-   * Check if a sport is coming soon (websitePublishDate is in the future)
+   * Check if a sport is coming soon (bookingPublishDate is in the future)
    * @param sport - The sport to check
    * @returns true if coming soon, false if already bookable
    */

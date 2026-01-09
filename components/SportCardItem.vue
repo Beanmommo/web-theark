@@ -26,7 +26,7 @@ const isBookable = computed(() => {
 
 function clickHandlerBookNow() {
   if (!isBookable.value) return; // Don't navigate if coming soon
-  router.push(`/${props.sport.slug}/venue`);
+  router.push(`/${props.sport.slug}`);
 }
 
 const accentColor = computed(() => {
